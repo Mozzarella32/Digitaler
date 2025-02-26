@@ -7,6 +7,11 @@ include(FetchContent)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
+
 # WxWidgets
 find_package(wxWidgets QUIET)
 
@@ -178,7 +183,7 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH_HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR} ${STB_INCLUDE_DIR} ${Eigen3_SOURCE_DIR})
 
 # wxWidgets Linking
-target_link_libraries(${PROJECT_NAME} PUBLIC wx::net wx::core wx::base)
+target_link_libraries(${PROJECT_NAME} PUBLIC wx::net wx::core wx::base wx::adv wx::html wx::gl wx::qa wx::xml wx::xrc)
 
 # GLEW Linking
 if (NOT GLEW_FOUND)

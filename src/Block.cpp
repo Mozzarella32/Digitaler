@@ -416,18 +416,18 @@ void VisualBlock::UpdateVectsForVAOs(const MyRectI& ViewRect, const PointType& M
 	for (auto& p : Paths) {
 		const auto& e = p.ComputeAllAndGetEdges(ViewRect);
 		if (p.isMarked()) {
-			EdgesMarked.append_range(e);
-			Verts.append_range(p.getVerts());
+			EdgesMarked.insert(EdgesMarked.end(),e.begin(),e.end());
+			Verts.insert(Verts.end(),p.getVerts().begin(),p.getVerts().end());
 		}
 		else {
-			EdgesUnmarked.append_range(e);
+			EdgesUnmarked.insert(EdgesUnmarked.end(),e.begin(),e.end());
 		}
-		SpecialPoints.append_range(p.getSpecialPoints());
+		SpecialPoints.insert(SpecialPoints.end(),p.getSpecialPoints().begin(),p.getSpecialPoints().end());
 	}
 
 	Edges.reserve(EdgesMarked.size() + EdgesUnmarked.size());
-	Edges.append_range(EdgesMarked);
-	Edges.append_range(EdgesUnmarked);
+	Edges.insert(Edges.end(),EdgesMarked.begin(),EdgesMarked.end());
+	Edges.insert(Edges.end(),EdgesUnmarked.begin(),EdgesUnmarked.end());
 
 }
 
@@ -467,9 +467,10 @@ void VisualBlock::UpdateVectsForVAOsPreview(const MyRectI& ViewRect, const Point
 
 		auto& Preview = PreviewCached.value();
 
-		PreviewEdges.append_range(Preview.ComputeAllAndGetEdges(ViewRect));
-		PreviewVerts.append_range(Preview.getVerts());
-		PreviewSpecialPoints.append_range(Preview.getSpecialPoints());
+    const auto& ToAppend = Preview.ComputeAllAndGetEdges(ViewRect);
+		PreviewEdges.insert(PreviewEdges.end(),ToAppend.begin(),ToAppend.end());
+		PreviewVerts.insert(PreviewVerts.end(),Preview.getVerts().begin(),Preview.getVerts().end());
+		PreviewSpecialPoints.insert(PreviewSpecialPoints.end(),Preview.getSpecialPoints().begin(),Preview.getSpecialPoints().end());
 	}
 }
 

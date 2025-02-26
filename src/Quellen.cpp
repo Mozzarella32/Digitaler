@@ -14,8 +14,8 @@ MessageCallback(GLenum source,
 	const GLchar* message,
 	const void* userParam)
 {
-	Beep(200, 1000);
-	DebugBreak();
+	// Beep(200, 1000);
+	// DebugBreak();
 	std::ofstream o("Error.log", std::ios::app);
 	o << "[OpenGL ErrorCallback] ";
 	o << "Source: ";
@@ -103,9 +103,11 @@ MessageCallback(GLenum source,
 }
 
 bool MyApp::OnInit() {
+#ifdef _WIN32
 	SetProcessDPIAware();
+#endif
 	//wxSystemOptions::SetOption(_T("msw.remap"), 0);
-	srand(unsigned int(time(NULL)));
+	srand((unsigned int)time(NULL));
 
 	wxFileName exePath(wxStandardPaths::Get().GetExecutablePath());
 	wxFileName exeDir = exePath.GetPath();

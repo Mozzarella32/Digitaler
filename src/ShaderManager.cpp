@@ -49,7 +49,11 @@ UpdateShader(Frag,std::string("../Digitaler/Shaders/Source/")+STRINGIFY(Vert)+".
 void ShaderManager::Work() {
 	while (Running) {
 		XList_Shaders_Combined
+#ifdef _WIN32
 		Sleep(16);
+#else
+		sleep(16);
+#endif
 	}
 }
 
