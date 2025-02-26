@@ -36,9 +36,12 @@ build/*
 Png_Includes.hpp
 Png_X_List.hpp
 PngHeaders
+xxd
+PreparePngs
 
 Shader_Includes.hpp
 Shader_X_List.hpp
 CharArrays
+ShadersToCharArray
 
 .hash

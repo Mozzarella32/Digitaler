@@ -16,6 +16,7 @@ if (NOT wxWidgets_FOUND)
     set(wxBUILD_TESTS OFF)
     set(wxBUILD_DEMOS OFF)
     set(wxBUILD_EXAMPLES OFF)
+    set(wxBUILD_CXX_STANDARD 20)
 
     message(STATUS "Fetching wxWidgets...")
     FetchContent_Declare(
@@ -23,7 +24,7 @@ if (NOT wxWidgets_FOUND)
        GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
        GIT_SHALLOW ON
        CMAKE_ARGS
-           -DwxUSE_STD=0
+            -DwxUSE_STD=0
     )
     FetchContent_MakeAvailable(wxWidgets)
 else()
