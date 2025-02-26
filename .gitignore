@@ -32,6 +32,8 @@
 *.app
 *.pdb
 
+*.log
+
 build/*
 
 Png_Includes.hpp
