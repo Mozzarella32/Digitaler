@@ -1,6 +1,6 @@
 [submodule "submodules/Instrumentor"]
 	path = submodules/Instrumentor
-	url = https://github.com/Mozzarella32/Instrumentor
+	url = git@github.com:Mozzarella32/Instrumentor.git
 [submodule "Instrumentor"]
 	path = Instrumentor
 	url = git@github.com:Mozzarella32/Instrumentor.git
