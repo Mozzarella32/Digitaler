@@ -1,7 +1,11 @@
 #pragma once
 
+#ifndef _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
 #define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
+#endif
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 
 //#include <vld.h>
 
