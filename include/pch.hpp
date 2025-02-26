@@ -5,16 +5,16 @@
 
 //#include <vld.h>
 
-#include <MyWxWidgets/GLEWInitialiser.h>
-#include <MyWxWidgets/GLContextBinder.h>
-#include <MyWxWidgets/Utility.h>
+#include <GLEWInitialiser.hpp>
+#include <GLContextBinder.hpp>
+#include <Utility.hpp>
 //#include <MyWxWidgets/ElementLayerer.h>
-#include <MyWxWidgets/GameLoopTimer.h>
+#include <GameLoopTimer.hpp>
 
-#include <MyOpenGL/Shader.h>
-#include <MyOpenGl/Texture.h>
-#include <MyOpenGL/Utilities.h>
-#include <MyOpenGl/VertexBuffer.h>
+#include <Shader.hpp>
+#include <Texture.hpp>
+#include <Utilities.hpp>
+#include <VertexBuffer.hpp>
 
 #include <Visitor/Visitor.h>
 
