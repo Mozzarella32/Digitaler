@@ -43,7 +43,7 @@ ShaderManager& ShaderManager::GetInstance() {
 
 
 #define X(Vert,Frag) \
-UpdateShader(Frag,std::string("../Digitaler/Shaders/Source/")+STRINGIFY(Vert)+".vert",std::string("../Digitaler/Shaders/Source/")+STRINGIFY(Frag)+".frag");
+UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".vert",std::string("../resources/shaders/Source/")+STRINGIFY(Frag)+".frag");
 
 #ifdef HotShaderReload
 void ShaderManager::Work() {
