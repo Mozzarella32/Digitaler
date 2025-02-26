@@ -1,0 +1,67 @@
+#pragma once
+
+#define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
+#define _CRT_SECURE_NO_WARNINGS
+
+//#include <vld.h>
+
+#include <MyWxWidgets/GLEWInitialiser.h>
+#include <MyWxWidgets/GLContextBinder.h>
+#include <MyWxWidgets/Utility.h>
+//#include <MyWxWidgets/ElementLayerer.h>
+#include <MyWxWidgets/GameLoopTimer.h>
+
+#include <MyOpenGL/Shader.h>
+#include <MyOpenGl/Texture.h>
+#include <MyOpenGL/Utilities.h>
+#include <MyOpenGl/VertexBuffer.h>
+
+#include <Visitor/Visitor.h>
+
+#include <LinearAlgebra/Point.h>
+
+#include <wx/wx.h>
+#include <wx/image.h>
+#include <wx/sysopt.h>
+#include <wx/filename.h>
+#include <wx/stdpaths.h>
+#include <wx/gbsizer.h>
+#include <wx/wrapsizer.h>
+#include <wx/hyperlink.h>
+#include <wx/zipstrm.h>
+#include <wx/wfstream.h>
+#include <wx/mstream.h>
+#include <wx/splitter.h>
+#include <wx/treectrl.h>
+#include <wx/artprov.h>
+#include <wx/dnd.h>
+#include <wx/spinctrl.h>
+#include <wx/popupwin.h>
+
+#include <LinearAlgebra/Point.h>
+
+#include <thread>
+#include <array>
+#include <vector>
+#include <string>
+#include <tuple>
+#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
+#include <ranges>
+#include <variant>
+#include <string_view>
+#include <queue>
+#include <strstream>
+
+#include <numbers>
+
+//#include <json.hpp>
+
+#include <Eigen/Dense>
+////
+//#define MSDFGEN_PUBLIC
+////
+//#include <msdfgen/core/base.h>
+//
+//#include <msdf-atlas-gen/msdf-atlas-gen.h>
