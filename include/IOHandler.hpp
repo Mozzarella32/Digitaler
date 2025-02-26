@@ -33,7 +33,7 @@ public:
 	std::vector<VisualPathData> Paths;
 
 public:
-	KeyboardData Keyboarddata;
+	KeyboardData Keyboarddata{};
 	MyFrame* Frame;
 
 private:
