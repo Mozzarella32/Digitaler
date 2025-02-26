@@ -5,8 +5,8 @@ A logic Simulator
 ## Downloading 
 Don't forget the submodules
 ```bash
-git clone --recurse-submodules https://github.com/Mozzarella32/MyWxWidgets.git
-cd MyWxWidgets
+git clone --recurse-submodules git@github.com:Mozzarella32/Digitaler.git
+cd Digitaler
 ```
 
 ## Building
