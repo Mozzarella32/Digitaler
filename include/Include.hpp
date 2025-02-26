@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "pch.hpp"
 
 //#define Testing
 #define UseCollisionGrid
@@ -13,4 +13,4 @@
 #define HotShaderReload
 
 #define PROFILING
-#include "Instrumentor/Instrumentor.h"
+#include "../submodules/Instrumentor/Instrumentor.hpp"

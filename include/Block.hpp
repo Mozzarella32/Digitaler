@@ -1,10 +1,10 @@
 #pragma once
 
-#include "pch.h"
+#include "pch.hpp"
 
-#include "Include.h"
+#include "Include.hpp"
 
-#include "Path.h"
+#include "Path.hpp"
 
 class Renderer;
 struct PointNode;

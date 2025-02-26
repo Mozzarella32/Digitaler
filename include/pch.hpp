@@ -42,8 +42,6 @@
 #include <wx/spinctrl.h>
 #include <wx/popupwin.h>
 
-#include <LinearAlgebra/Point.h>
-
 #include <thread>
 #include <array>
 #include <vector>

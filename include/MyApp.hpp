@@ -1,7 +1,7 @@
 #pragma once
-#include "pch.h"
+#include "pch.hpp"
 
-#include "Include.h"
+#include "Include.hpp"
 
 class MyApp : public wxApp {
 public:

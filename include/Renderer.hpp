@@ -1,16 +1,16 @@
 #pragma once
 
-#include "pch.h"
+#include "pch.hpp"
 
-#include "Include.h"
+#include "Include.hpp"
 
-#include "OpenGlDefines.h"
+#include "OpenGlDefines.hpp"
 
-#include "BlockAndPathData.h"
+#include "BlockAndPathData.hpp"
 
-#include "MyRect.h"
+#include "MyRect.hpp"
 
-#include "Block.h"
+#include "Block.hpp"
 
 class MyApp;
 class MyFrame;

@@ -10,3 +10,9 @@
 [submodule "submodules/Visitor"]
 	path = submodules/Visitor
 	url = git@github.com:Mozzarella32/Visitor.git
+[submodule "submodules/PreparePngs"]
+	path = submodules/PreparePngs
+	url = git@github.com:Mozzarella32/PreparePngs.git
+[submodule "submodules/ShadersToCharArray"]
+	path = submodules/ShadersToCharArray
+	url = git@github.com:Mozzarella32/ShadersToCharArray.git

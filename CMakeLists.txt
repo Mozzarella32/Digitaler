@@ -151,7 +151,7 @@ add_library(${PROJECT_NAME} STATIC ${MY_SOURCE})
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH_HEADERS})
 
 # Include-Direktiven
-target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR} ${STB_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR} ${STB_INCLUDE_DIR} ${Eigen3_SOURCE_DIR})
 
 # wxWidgets Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC wx::net wx::core wx::base)
@@ -162,9 +162,6 @@ if (NOT GLEW_FOUND)
 else()
     target_link_libraries(${PROJECT_NAME} PUBLIC GLEW::glew_s)
 endif()
-
-# Eigen Linking
-target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_SOURCE_DIR})
 
 # MyOpenGl Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC MyOpenGl)
