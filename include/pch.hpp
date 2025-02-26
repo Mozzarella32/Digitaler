@@ -20,9 +20,9 @@
 #include <Utilities.hpp>
 #include <VertexBuffer.hpp>
 
-#include <Visitor/Visitor.h>
+#include <../submodules/Visitor/Visitor.hpp>
 
-#include <LinearAlgebra/Point.h>
+#include <../submodules/LinearAlgebra/Point.hpp>
 
 #include <wx/wx.h>
 #include <wx/image.h>

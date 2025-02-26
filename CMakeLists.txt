@@ -65,6 +65,46 @@ FetchContent_MakeAvailable(stb)
 
 set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
 
+# wxWidgets
+find_package(wxWidgets QUIET)
+
+if (NOT wxWidgets_FOUND)
+    message(STATUS "wxWidgets not found")
+    set(wxBUILD_SHARED OFF)
+    set(wxBUILD_TESTS OFF)
+    set(wxBUILD_DEMOS OFF)
+    set(wxBUILD_EXAMPLES OFF)
+
+    message(STATUS "Fetching wxWidgets...")
+    FetchContent_Declare(
+       wxWidgets
+       GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
+       GIT_SHALLOW ON
+       CMAKE_ARGS
+           -DwxUSE_STD=0
+    )
+    FetchContent_MakeAvailable(wxWidgets)
+else()
+    message(STATUS "wxWidgets Found")
+endif()
+
+# Eigen
+find_package(Eigen3 QUIET)
+
+if (NOT Eigen3_FOUND)
+    message(STATUS "Eigen3 not found")
+    message(STATUS "Fetching Eigen3...")
+    FetchContent_Declare(
+       Eigen3
+       GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+       GIT_SHALLOW ON
+    )
+    FetchContent_MakeAvailable(Eigen3)
+else()
+    message(STATUS "Eigen3 Found")
+endif()
+
+
 # MyWxWidgets
 message(STATUS "Fetching MyWxWidgets...")
 
@@ -122,6 +162,9 @@ if (NOT GLEW_FOUND)
 else()
     target_link_libraries(${PROJECT_NAME} PUBLIC GLEW::glew_s)
 endif()
+
+# Eigen Linking
+target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_SOURCE_DIR})
 
 # MyOpenGl Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC MyOpenGl)
