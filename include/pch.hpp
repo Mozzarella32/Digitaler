@@ -5,7 +5,7 @@
 
 //#include <vld.h>
 
-#include <GLEWInitialiser.hpp>
+#include <GLEWInitiliser.hpp>
 #include <GLContextBinder.hpp>
 #include <Utility.hpp>
 //#include <MyWxWidgets/ElementLayerer.h>

@@ -65,6 +65,17 @@ FetchContent_MakeAvailable(stb)
 
 set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
 
+# MyWxWidgets
+message(STATUS "Fetching MyWxWidgets...")
+
+FetchContent_Declare(
+       MyWxWidgets
+       GIT_REPOSITORY https://github.com/Mozzarella32/MyWxWidgets.git
+       GIT_SHALLOW ON
+       GIT_TAG main
+)
+FetchContent_MakeAvailable(MyWxWidgets)
+
 # MyOpenGl
 message(STATUS "Fetching MyOpenGl...")
 
@@ -114,3 +125,6 @@ endif()
 
 # MyOpenGl Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC MyOpenGl)
+
+# MyWxWidgets Linking
+target_link_libraries(${PROJECT_NAME} PUBLIC MyWxWidgets)
