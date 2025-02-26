@@ -4,7 +4,7 @@ project(Digitaler)
 
 include(FetchContent)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # WxWidgets
@@ -127,25 +127,48 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(MyOpenGl)
 
+# PreparePngs
+FetchContent_Declare(
+    PreparePngs
+    GIT_REPOSITORY git@github.com:Mozzarella32/PreparePngs.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(PreparePngs)
+
+# ShadersToCharArray
+FetchContent_Declare(
+    ShadersToCharArray
+    GIT_REPOSITORY git@github.com:Mozzarella32/ShadersToCharArray.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(ShadersToCharArray)
+
 # Directories
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/lib")
 
+set(SHADER_DIR "${PROJECT_SOURCE_DIR}/resources/shaders/Source")
+set(PNG_DIR "${PROJECT_SOURCE_DIR}/resources/art/Source")
+
 set(PCH_HEADERS "${INCLUDE_DIR}/pch.hpp")
 
 file(GLOB_RECURSE MY_SOURCE CONFIGURE_DEPENDS "${SRC_DIR}/*")
-
 file(GLOB_RECURSE MY_HEADERS CONFIGURE_DEPENDS "${INCLUDE_DIR}/*")
 
-source_group("Source Files" FILES ${MY_SOURCE})
-source_group("Header Files" FILES ${MY_HEADERS})
+file(GLOB_RECURSE MY_SHADERS CONFIGURE_DEPENDS "${SHADER_DIR}/*")
+file(GLOB_RECURSE MY_PNGS CONFIGURE_DEPENDS "${PNG_DIR}/*")
+
+source_group("Source" FILES ${MY_SOURCE})
+source_group("Include" FILES ${MY_HEADERS})
+source_group("Shaders" FILES ${MY_SHADERS})
+source_group("Pngs" FILES ${MY_PNGS})
 
 list(REMOVE_ITEM MY_SOURCE ${PCH_HEADERS})
 list(REMOVE_ITEM MY_HEADERS ${PCH_HEADERS})
 
-# Statische Bibliothek erstellen
-add_library(${PROJECT_NAME} STATIC ${MY_SOURCE})
+# Create Executable
+add_executable(${PROJECT_NAME} ${MY_SOURCE})
 
 # Precompiled Header (falls verwendet)
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH_HEADERS})
@@ -168,3 +191,26 @@ target_link_libraries(${PROJECT_NAME} PUBLIC MyOpenGl)
 
 # MyWxWidgets Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC MyWxWidgets)
+
+# PRE BUILD
+if(WIN32)
+    set(ShadersToCharArray_EXECUTABLE "ShadersToCharArray.exe")
+    set(PreparePngs_EXECUTABLE "PreparePngs.exe")
+else()
+    set(ShadersToCharArray_EXECUTABLE "ShadersToCharArray")
+    set(PreparePngs_EXECUTABLE "PreparePngs")
+endif()
+
+add_dependencies(${PROJECT_NAME} ShadersToCharArray PreparePngs)
+
+add_custom_command(
+    TARGET ${PROJECT_NAME} PRE_BUILD
+    COMMAND ${PROJECT_SOURCE_DIR}/resources/shaders/${ShadersToCharArray_EXECUTABLE}
+    COMMENT "Calling ${ShadersToCharArray_EXECUTABLE}"
+)
+
+add_custom_command(
+    TARGET ${PROJECT_NAME} PRE_BUILD
+    COMMAND ${PROJECT_SOURCE_DIR}/resources/art/${PreparePngs_EXECUTABLE}
+    COMMENT "Calling ${PreparePngs_EXECUTABLE}"
+)

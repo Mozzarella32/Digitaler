@@ -1,10 +1,10 @@
 #pragma once
 
-#include "pch.h"
+#include "pch.hpp"
 
-#include "math.h"
+//#include "math.h"
 
-#include "BlockAndPathData.h"
+#include "BlockAndPathData.hpp"
 
 struct PathVertex {
 

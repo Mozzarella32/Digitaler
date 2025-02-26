@@ -4,7 +4,7 @@
 #define DEFINE_MAKRO_UTILITIES
 #include "Makros.hpp"
 
-#include "../resources/art/Png_Includes.h"
+#include "../resources/art/Png_Includes.hpp"
 
 
 PngManager::PngManager()

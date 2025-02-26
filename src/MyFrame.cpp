@@ -223,7 +223,8 @@ MyFrame::MyFrame(MyApp* App)
 
 	Maximize();
 
-	PROFILE_SESSION_START("Hi");
+
+	PROFILE_SESSION_START("Hi", std::filesystem::path(wxGetHomeDir().ToStdString()) / "/Profiled.json");
 
 }
 

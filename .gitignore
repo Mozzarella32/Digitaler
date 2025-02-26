@@ -33,12 +33,12 @@
 
 build/*
 
-Png_Includes.h
-Png_X_List.h
+Png_Includes.hpp
+Png_X_List.hpp
 PngHeaders
 
-Shader_Includes.h
-Shader_X_List.h
+Shader_Includes.hpp
+Shader_X_List.hpp
 CharArrays
 
 .hash

@@ -4,7 +4,7 @@
 #define DEFINE_MAKRO_UTILITIES
 #include "Makros.hpp"
 
-#include "../resources/shaders/Shader_Includes.h"
+#include "../resources/shaders/Shader_Includes.hpp"
 
 bool ShaderManager::IsDirty = false;
 

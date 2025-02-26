@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pch.h"
+#include "pch.hpp"
 
-#include "Include.h"
+#include "Include.hpp"
 
 template<typename T>
 class MyRect {

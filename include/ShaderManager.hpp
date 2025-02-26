@@ -3,7 +3,7 @@
 #include "pch.hpp"
 
 #include "Include.hpp"
-#include "Shaders/Shader_X_List.h"
+#include "../resources/shaders/Shader_X_List.hpp"
 
 //Singilton
 class ShaderManager {

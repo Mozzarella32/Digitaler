@@ -1,10 +1,10 @@
 #pragma once
 
-#include "pch.h"
+#include "pch.hpp"
 
-#include "Include.h"
+#include "Include.hpp"
 
-#include "BlockAndPathData.h"
+#include "BlockAndPathData.hpp"
 
 class VisualPath {
 	/*class State {
