@@ -34,6 +34,8 @@
 
 *.log
 
+.cache
+
 build/*
 
 Png_Includes.hpp
@@ -48,3 +50,5 @@ CharArrays
 ShadersToCharArray
 
 .hash
+
+Digitaler

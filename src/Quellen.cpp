@@ -118,6 +118,9 @@ bool MyApp::OnInit() {
 	//Init Context - for wxGlCanvas
 	auto* Initlisier = new GLEWFrameIndependentInitiliser();
 
+	Show();
+	wxYield();    
+
 	GlContext.reset(Initlisier->RetriveContextAndClose());
 
 	//Create ContextBinder
