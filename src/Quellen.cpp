@@ -116,11 +116,12 @@ bool MyApp::OnInit() {
 	wxInitAllImageHandlers();
 
 	//Init Context - for wxGlCanvas
-	auto* Initlisier = new GLEWFrameIndependentInitiliser();
+	Initlisier = new GLEWFrameIndependentInitiliser([=]() {OnOGLInit(); });
 
-	Show();
-	wxYield();    
+	return true;
+}
 
+void MyApp::OnOGLInit() {
 	GlContext.reset(Initlisier->RetriveContextAndClose());
 
 	//Create ContextBinder
@@ -144,8 +145,8 @@ bool MyApp::OnInit() {
 			{ 1.0,-1.0 },
 			{ 1.0,1.0 },
 	}, 0);
-	
-	
+
+
 	//Init Opengl
 #ifdef _DEBUG
 	{
@@ -168,8 +169,6 @@ bool MyApp::OnInit() {
 	GLCALL(glStencilMask(0x00));
 
 	new MyFrame(this);
-
-	return true;
 }
 
 //

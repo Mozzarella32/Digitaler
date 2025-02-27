@@ -12,8 +12,12 @@ public:
 
 	std::unique_ptr<VertexArrayObject> HoleScreenVAO;
 
+	GLEWFrameIndependentInitiliser* Initlisier;
+
 public:
 	bool OnInit() override;
+
+	void OnOGLInit();
 
 	//bool OnExceptionInMainLoop() override;
 };
