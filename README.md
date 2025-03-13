@@ -20,3 +20,6 @@ cmake ../ && cmake --build . -j8
 
 ## Running
 The executable is moved to the app directory
+
+## State of development
+This (should) compile on Windows however ther is no gui and simulation yet, you can play around with the DataResourceManager.cpp to insert blocks
