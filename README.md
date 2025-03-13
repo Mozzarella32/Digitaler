@@ -6,8 +6,8 @@ A logic Simulator
 Don't forget the submodules
 ```bash
 git clone git@github.com:Mozzarella32/Digitaler.git
-git submodule update --recursive --remote
 cd Digitaler
+git submodule update --recursive --remote
 ```
 
 ## Building
