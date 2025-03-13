@@ -7,7 +7,7 @@ Don't forget the submodules
 ```bash
 git clone git@github.com:Mozzarella32/Digitaler.git
 cd Digitaler
-git submodule update --recursive --remote
+git submodule update --recursive --init --remote
 ```
 
 ## Building
