@@ -2,6 +2,9 @@
 ## Description
 A logic Simulator
 
+## Prerequisites
+You must install cmake, a c++ compiler and have accas to a stl implementation.
+
 ## Downloading 
 Don't forget the submodules
 ```bash
