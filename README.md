@@ -16,3 +16,6 @@ mkdir build
 cd build
 cmake ../ && cmake --build . -j8
 ```
+
+## Running
+The executable is moved to the app directory
