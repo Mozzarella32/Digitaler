@@ -11,6 +11,8 @@
 
 #include "ShaderManager.hpp"
 
+#include "DataResourceManager.hpp"
+
 MyFrame::MyFrame(MyApp* App)
 	:
 	wxFrame(nullptr, wxID_ANY, "MyFrame", wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxFULL_REPAINT_ON_RESIZE),
@@ -109,8 +111,8 @@ MyFrame::MyFrame(MyApp* App)
 		Sizer->Add(Trenner, 0, wxEXPAND | wxALL, 5);
 		};
 
-	AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::Home), &MyFrame::OnHomeButton);
-	AddTrenner(MenuBarPanel, MenuBarPanelSizer);
+	//AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::Home), &MyFrame::OnHomeButton);
+	//AddTrenner(MenuBarPanel, MenuBarPanelSizer);
 	//AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::SelectAll), &MyFrame::OnSelectAll);
 	//AddTrenner(MenuBarPanel, MenuBarPanelSizer);
 	//CopyButton = AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::Copy), &MyFrame::OnCopyMenu);
@@ -132,29 +134,120 @@ MyFrame::MyFrame(MyApp* App)
 	//AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::ChangeRules), &MyFrame::OnChangeRulesButton);
 	//AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::ChangeSize), &MyFrame::OnChangeSizeButton);
 	//AddTrenner(MenuBarPanel, MenuBarPanelSizer);
-	StartStopButton = AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::Start), &MyFrame::OnStartStopButton);
-	AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::SingleStep), &MyFrame::OnSingleStepButton);
-	AddTrenner(MenuBarPanel, MenuBarPanelSizer);
+	//StartStopButton = AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::Start), &MyFrame::OnStartStopButton);
+	//AddButton(MenuBarPanel, MenuBarPanelSizer, PngManager::GetPng(PngManager::SingleStep), &MyFrame::OnSingleStepButton);
+	//AddTrenner(MenuBarPanel, MenuBarPanelSizer);
 
 	//Slider
-	auto* SliderText = new wxStaticText(MenuBarPanel, wxID_ANY, "Speed");
-	SliderText->SetBackgroundColour(wxColour(70, 70, 70));
-	SliderText->SetForegroundColour("White");
-	MenuBarPanelSizer->Add(SliderText, 0, wxUP | wxDOWN | wxALIGN_CENTER_VERTICAL, 5);
-	SpeedSlider = new wxSlider(MenuBarPanel, wxID_ANY, 100, 0, 100);
-	SpeedSlider->SetValue(50);
+	//auto* SliderText = new wxStaticText(MenuBarPanel, wxID_ANY, "Speed");
+	//SliderText->SetBackgroundColour(wxColour(70, 70, 70));
+	//SliderText->SetForegroundColour("White");
+	//MenuBarPanelSizer->Add(SliderText, 0, wxUP | wxDOWN | wxALIGN_CENTER_VERTICAL, 5);
+	//SpeedSlider = new wxSlider(MenuBarPanel, wxID_ANY, 100, 0, 100);
+	//SpeedSlider->SetValue(50);
 	//SpeedSlider->SetBackgroundColour(wxColour(70, 70, 70));
 	//SpeedSlider->SetForegroundColour("White");
 	//SpeedSlider->Disable();
 
-	CallAfter([=]() {
-		SpeedSlider->Bind(wxEVT_SLIDER, [this](wxCommandEvent& evt) {OnSpeedSlider(); evt.Skip(); });
-		});
+	//CallAfter([=]() {
+		//SpeedSlider->Bind(wxEVT_SLIDER, [this](wxCommandEvent& evt) {OnSpeedSlider(); evt.Skip(); });
+		//});
 
-	MenuBarPanelSizer->Add(SpeedSlider, 1, wxALIGN_CENTER_VERTICAL);
+	//MenuBarPanelSizer->Add(SpeedSlider, 1, wxALIGN_CENTER_VERTICAL);
+
+	/*wxTreeCtrl* Tree = new wxTreeCtrl(MenuBarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize,  wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT | wxTR_SINGLE | wxTR_FULL_ROW_HIGHLIGHT | wxTR_NO_LINES);
+	Tree->SetBackgroundColour(wxColour(70, 70, 70));
+	Tree->SetForegroundColour("White");
+	Tree->SetDoubleBuffered(true);
+	Tree->AddRoot("Root");
+
+	auto Child0 = Tree->AppendItem(Tree->GetRootItem(), "Child0");
+	auto Child1 = Tree->AppendItem(Tree->GetRootItem(), "Child1");
+
+	auto Child00 = Tree->AppendItem(Child0, "Child00");
+	auto Child01 = Tree->AppendItem(Child0, "Child01");
+
+	auto Child10 = Tree->AppendItem(Child1, "Child10");
+	auto Child11 = Tree->AppendItem(Child1, "Child11");
+
+	MenuBarPanelSizer->Add(Tree, 1, wxEXPAND);*/
+
+	//auto Tree = new wxTreeListCtrl(MenuBarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTL_DEFAULT_STYLE | wxTL_CHECKBOX);
+
+	//auto Col_Desc1 = Tree->AppendColumn("Desc1", wxCOL_RESIZABLE | wxCOL_WIDTH_AUTOSIZE);
+	//auto Col_Desc2 = Tree->AppendColumn("Desc2", wxCOL_RESIZABLE | wxCOL_WIDTH_AUTOSIZE);
+
+	//auto AppendChild = [Tree, Col_Desc1, Col_Desc2](wxTreeListItem Parent, const wxString& Title, const wxString& Desc1, const wxString& Desc2) {
+	//	auto Item = Tree->AppendItem(Parent, Title);
+	//	Tree->SetItemText(Item, Col_Desc1, Desc1);
+	//	Tree->SetItemText(Item, Col_Desc2, Desc2);
+	//	return Item;
+	//	};
+
+	//auto Child0 = AppendChild(Tree->GetRootItem(), "Child0", "HI", "Zwei");
+	//auto Child1 = AppendChild(Tree->GetRootItem(), "Child1", "Ne", "Drei");
+
+	//auto Child00 = AppendChild(Child0, "Child00", "Ich", "Fünf");
+
+	//auto Child000 = AppendChild(Child00, "Child000", "Ich", "Fünf");
+	//auto Child001 = AppendChild(Child00, "Child001", "Ich", "Fünf");
+
+	//auto Child01 = AppendChild(Child0, "Child01", "Weiß", "Sieben");
+
+	//auto Child010 = AppendChild(Child01, "Child010", "Ich", "Fünf");
+	//auto Child011 = AppendChild(Child01, "Child011", "Ich", "Fünf");
+
+
+	//auto Child10 = AppendChild(Child1, "Child10", "Nicht", "Dreizen");
+
+	//auto Child100 = AppendChild(Child10, "Child100", "Ich", "Fünf");
+	//auto Child101 = AppendChild(Child10, "Child101", "Ich", "Fünf");
+
+	//auto Child11 = AppendChild(Child1, "Child11", "weiter", "Neun");
+
+	//auto Child110 = AppendChild(Child11, "Child110", "Ich", "Fünf");
+	//auto Child111 = AppendChild(Child11, "Child111", "Ich", "Fünf");
+
+	////Tree->Bind(wxEVT_TREELIST_ITEM_EXPANDING, [Tree,AppendChild](wxTreeListEvent& evt) {
+	////	evt.Skip();
+	////	auto item = evt.GetItem();
+	////	auto hasChild = Tree->GetFirstChild(item).IsOk();
+	////	if (!hasChild) {
+	////		AppendChild(item, "Child", "HI", "What");
+	////	}
+	////	//Tree->Expand(evt.GetItem());
+	////	});
+
+	//Tree->Bind(wxEVT_TREELIST_ITEM_CHECKED, [this, AppendChild, Tree](wxTreeListEvent& evt) {
+	//	evt.Skip();
+	//	wxCheckBoxState Check = Tree->GetCheckedState(evt.GetItem());
+
+	//	/*if (Check == wxCHK_CHECKED) {
+	//		Check = wxCHK_UNCHECKED;
+	//	}
+	//	else if (Check == wxCHK_UNCHECKED) {
+	//		Check = wxCHK_CHECKED;
+	//	}*/
+
+	//	//auto child = AppendChild(evt.GetItem(), "Child", "HI", "What");
+	//	//auto child = Tree->GetFirstChild(evt.GetItem());
+
+	//	Tree->CheckItemRecursively(evt.GetItem(), Check);
+
+	//	
+	//	//Tree->Expand(evt.GetItem());
+	//	Tree->Refresh();
+	//	Layout();
+	//	Refresh();
+	//	});
+	///*CallAfter([=]() {
+	//	Tree->SendSizeEvent();
+	//	});*/
+
+	//MenuBarPanelSizer->Add(Tree, 1, wxEXPAND);
 
 	MenuBarPanel->SetSizerAndFit(MenuBarPanelSizer);
-	Sizer->Add(MenuBarPanel, 0, wxEXPAND | wxALL, 5);
+	Sizer->Add(MenuBarPanel, 0, wxEXPAND | wxALL, 0);
 
 	Canvas = new wxGLCanvas(this);
 
@@ -162,7 +255,8 @@ MyFrame::MyFrame(MyApp* App)
 
 	IO = std::make_unique<IOHandler>(this);
 	renderer = std::make_unique<Renderer>(App, this);
-	CurrentBlock = std::make_unique<VisualBlock>(0);
+	//CurrentBlock = std::make_unique<VisualBlockInterior>(0);
+	BlockManager = std::make_unique<DataResourceManager>();
 
 	Canvas->Bind(wxEVT_SIZE, [this](wxSizeEvent& evt) {
 		evt.Skip();
@@ -243,7 +337,7 @@ void MyFrame::Loop() {
 	*/
 	//for (int i = 0; i < 1000; i++) {
 #ifdef Testing
-	CurrentBlock = std::make_unique<VisualBlock>(renderer->FrameCount);
+	CurrentBlock = std::make_unique<VisualBlockInterior>(renderer->FrameCount);
 #endif
 	renderer->FrameCount++;
 	//}
@@ -258,7 +352,7 @@ void MyFrame::Loop() {
 		renderer->Dirty = true;
 	}
 #endif
-
+	//renderer->Dirty = true;
 	renderer->Render();
 	//SetTitle("HI");
 
@@ -307,16 +401,18 @@ void MyFrame::Loop() {
 	//if (boxFloat < minBoxSize) boxFloat = minBoxSize;
 	//if (boxFloat > maxBoxSize) boxFloat = maxBoxSize;
 
-	//VisualBlock::BoxSize = boxFloat;
+	//VisualBlockInterior::BoxSize = boxFloat;
 
 	auto Info = LoopTimer.GetInfo();
 
 	std::stringstream s;
 
 #ifdef UseCollisionGrid
-	s << "BoxSize: " << std::setprecision(2) << std::setw(10) << VisualBlock::BoxSize;
+	s << "BoxSize: " << std::setprecision(2) << std::setw(10) << VisualBlockInterior::BoxSize;
 #endif
-	s << " FPS:" << std::setw(10) << 1000.0 / dur.count() << " Frametime: " << std::setw(10) << dur.count() / 1000.0 << "ms" << " FPS: " << std::setw(10) << std::setprecision(4) << Info.FPS
-		<< " Sleep: " << std::setw(10) << std::chrono::duration_cast<std::chrono::microseconds>(Info.Sleep).count() / 1000.0 << "ms";
+	//s << " FPS:" << std::setw(10) << 1000.0 / dur.count() << " Frametime: " << std::setw(10) << dur.count() / 1000.0 << "ms" << " FPS: " << std::setw(10) << std::setprecision(4) << Info.FPS
+		//<< " Sleep: " << std::setw(10) << std::chrono::duration_cast<std::chrono::microseconds>(Info.Sleep).count() / 1000.0 << "ms";
+	
+	s << IO->GetStateString();
 	SetTitle(s.str());
 }

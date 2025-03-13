@@ -36,8 +36,17 @@ float sdBox( in vec2 p, in vec2 a, in vec2 b )
 //}
 
 void main(){
-    float expr = 1.0-10*sdBox(PosInWorld,A,B);
-    FragColor = vec4(Color.rgb,min(expr,0.5));
+    float expr = -1.0+10*sdBox(PosInWorld,A,B);
+    if(expr > 0){
+//        FragColor = vec4(1.0,1.0,0.0,0.1);
+        FragColor = vec4(1.0,1.0,0.0,max(1.0-0.5*373.0/416.0*expr,0.0));
+//        FragColor = vec4(0,0,0,0);
+    }
+    else{
+        FragColor = vec4(Color.rgb,min(step(expr,0.0),Color.a));
+    }
+//    FragColor = vec4(1.0,0.0,0.0,1.0);
+//    FragColor = vec4(1.0,1.0,0.0,1.0);
 //    FragColor = vec4(PosInWorld.rg,0,0.5);
 }
 

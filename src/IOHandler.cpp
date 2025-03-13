@@ -10,6 +10,8 @@
 #include "Renderer.hpp"
 #include "RenderTextUtility.hpp"
 
+#include "DataResourceManager.hpp"
+
 void IOHandler::OnCanvasSizeChange() {
 	Renderer& r = *Frame->renderer;
 
@@ -171,7 +173,6 @@ void IOHandler::OnMouseMove(const wxPoint& wxPos) {
 	Keyboarddata.MousePosition = { wxPos.x,wxPos.y };
 
 
-	UpdateMouseIndex(wxPos);
 
 
 	//SetTitle(ss.str());
@@ -192,6 +193,9 @@ void IOHandler::OnMouseMove(const wxPoint& wxPos) {
 		r.Dirty = true;
 		r.Render();
 	}
+	else {
+		UpdateMouseIndex(wxPos);
+	}
 }
 
 void IOHandler::OnMouseDown(const wxPoint& wxPos) {
@@ -211,19 +215,19 @@ void IOHandler::OnMouseDown(const wxPoint& wxPos) {
 	DraggingOrigin = wxPos;
 }
 
-void IOHandler::OnMouseUp(const wxPoint& wxPos){
+void IOHandler::OnMouseUp(const wxPoint& wxPos) {
 	StoppDragg();
 	if (Click) {
 		Click = false;
 		if (state == State::Normal) {
 			SetState(State::PlacingLine);
-			Frame->CurrentBlock->StartDrag(MouseIndex);
+			Frame->BlockManager->CurrentInterior->StartDrag(MouseIndex);
 			return;
 		}
 		if (state == State::PlacingLine) {
-			if (Frame->CurrentBlock->AddDrag(MouseIndex)) {
-				Frame->CurrentBlock->EndDrag();
-				SetState(State::Normal);	
+			if (Frame->BlockManager->CurrentInterior->AddDrag(MouseIndex)) {
+				Frame->BlockManager->CurrentInterior->EndDrag();
+				SetState(State::Normal);
 			}
 			Renderer& r = *Frame->renderer;
 			r.Dirty = true;
@@ -237,7 +241,7 @@ void IOHandler::StoppDragg() {
 	if (state == State::Dragging) {
 		SetState(State::Normal);
 	}
-	else if(state == State::DraggingWhilePlacingLine){
+	else if (state == State::DraggingWhilePlacingLine) {
 		SetState(State::PlacingLine);
 	}
 	DraggingOrigin = { 0,0 };
@@ -266,6 +270,24 @@ void IOHandler::OnKeyDown(bool Shift, const int& KeyCode) {
 	case 'F':
 		Keyboarddata.F = true;
 		break;
+	case 'R':
+	{
+		VisualBlockInterior& b = *Frame->BlockManager->CurrentInterior;
+
+		const auto& MetadataOpt = b.GetBlockMetadata({ Frame->BlockManager->GetBlockIndex("ContainedBlock"),4 });
+		if (MetadataOpt) {
+			auto Metadata = MetadataOpt.value();
+			Metadata.Rotation = MyDirektion::RotateCW(Metadata.Rotation);
+			b.SetBlockMetadata({ Frame->BlockManager->GetBlockIndex("ContainedBlock"),4 }, Metadata);
+		}
+
+		Renderer& r = *Frame->renderer;
+
+		r.Dirty = true;
+		r.Render();
+
+	}
+	break;
 	}
 }
 
@@ -307,7 +329,7 @@ void IOHandler::OnChar(const int& KeyCode) {
 	switch (KeyCode) {
 	case WXK_ESCAPE:
 		if (state == State::PlacingLine) {
-			Frame->CurrentBlock->EndDrag();
+			Frame->BlockManager->CurrentInterior->EndDrag();
 			SetState(State::Normal);
 
 			Renderer& r = *Frame->renderer;
@@ -318,12 +340,12 @@ void IOHandler::OnChar(const int& KeyCode) {
 	case WXK_RETURN:
 		if (state == State::Normal) {
 			SetState(State::PlacingLine);
-			Frame->CurrentBlock->StartDrag(MouseIndex);
+			Frame->BlockManager->CurrentInterior->StartDrag(MouseIndex);
 			return;
 		}
 		if (state == State::PlacingLine) {
-			if (Frame->CurrentBlock->AddDrag(MouseIndex)) {
-				Frame->CurrentBlock->EndDrag();
+			if (Frame->BlockManager->CurrentInterior->AddDrag(MouseIndex)) {
+				Frame->BlockManager->CurrentInterior->EndDrag();
 				SetState(State::Normal);
 			}
 			Renderer& r = *Frame->renderer;
@@ -333,12 +355,12 @@ void IOHandler::OnChar(const int& KeyCode) {
 		}
 #ifdef UseCollisionGrid
 	case 'I':
-		VisualBlock::BoxSize++;
-		//Frame->CurrentBlock->CollisionMap.clear();
+		VisualBlockInterior::BoxSize++;
+		//Frame->BlockManager->CurrentInterior->CollisionMap.clear();
 		break;
 	case 'K':
-		VisualBlock::BoxSize--;
-		//Frame->CurrentBlock->CollisionMap.clear();
+		VisualBlockInterior::BoxSize--;
+		//Frame->BlockManager->CurrentInterior->CollisionMap.clear();
 		break;
 #endif
 		/*case WXK_SPACE:

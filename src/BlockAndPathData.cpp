@@ -8,7 +8,7 @@
 VisualPathData::VisualPathDataId VisualPathData::KlassInstanceCounter = 0;
 
 const PointIndex InvalidPointIndex = PointIndex(-1);
-//const LineIndex PathData::InvalidLineIndex = LineIndex(-1);
+//const LineIndex VisualPathData::InvalidLineIndex = LineIndex(-1);
 const PointIndex FreePointIndex = PointIndex(-2);
 const PointIndex ReservedPointIndex = PointIndex(-3);
 const PointIndex FreeListEndPointIndex = PointIndex(-4);
@@ -17,7 +17,7 @@ const PointType InvalidPoint = PointType(std::numeric_limits<int>::min(), std::n
 
 const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointIndex };
 
-//void PathData::PopPCAIC() {
+//void VisualPathData::PopPCAIC() {
 //	assert(PCAICSize > 0);
 //	assert(!PCAIC.empty());
 //	SetPCAIC(PCAICSize - 1, 0);
@@ -27,7 +27,7 @@ const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointInde
 //	}
 //}
 
-//void PathData::PushPCAIC(unsigned char val) {
+//void VisualPathData::PushPCAIC(unsigned char val) {
 //	assert(val < 8);
 //	size_t index = PCAICSize / 21;
 //	size_t bitPos = (PCAICSize % 21) * 3;
@@ -41,7 +41,7 @@ const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointInde
 //	PCAICSize++;
 //}
 
-//void PathData::ErasePCAIC(size_t i) {
+//void VisualPathData::ErasePCAIC(size_t i) {
 //	assert(i < PCAICSize);
 //
 //	size_t blockCount = i / 21;
@@ -54,14 +54,14 @@ const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointInde
 //	PopPCAIC();
 //}
 
-//unsigned char PathData::GetPCAIC(size_t i) const {
+//unsigned char VisualPathData::GetPCAIC(size_t i) const {
 //	assert(i < PCAICSize);
 //	size_t index = i / 21;
 //	size_t bitPos = (i % 21) * 3;
 //	return (unsigned char)((PCAIC[index] >> bitPos) & 0b111);
 //}
 
-//void PathData::SetPCAIC(size_t i, unsigned char val) {
+//void VisualPathData::SetPCAIC(size_t i, unsigned char val) {
 //	assert(val < 8);
 //
 //	size_t index = i / 21;
@@ -71,7 +71,7 @@ const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointInde
 //	PCAIC[index] = ((uint64_t)val << bitPos) | (PCAIC[index] & ~((uint64_t)0b111 << bitPos));
 //}
 
-//void PathData::IncrPointConnectionCount(const PointIndex& i, bool allowNewConnect) {
+//void VisualPathData::IncrPointConnectionCount(const PointIndex& i, bool allowNewConnect) {
 //#ifdef _DEBUG 
 //	IsValidCaller __vc(this);
 //#endif
@@ -97,7 +97,7 @@ const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointInde
 //
 //}
 
-//void PathData::DecrPointConnectionCount(const PointIndex& i, bool allowRejoining) {
+//void VisualPathData::DecrPointConnectionCount(const PointIndex& i, bool allowRejoining) {
 //#ifdef _DEBUG 
 //	IsValidCaller __vc(this);
 //#endif
@@ -116,7 +116,7 @@ const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointInde
 //	SetPCAIC(i, Count);
 //}
 
-//int PathData::GetConnectionCount(const PointIndex& i) const {
+//int VisualPathData::GetConnectionCount(const PointIndex& i) const {
 //#ifdef _DEBUG
 //	IsValidCaller __vc(this);
 //#endif
@@ -253,7 +253,7 @@ PointIndex VisualPathData::PointExists(const PointType& p) const {
 	return InvalidPointIndex;
 }
 
-//bool PathData::PointIsDeleted(const PointIndex& p) const {
+//bool VisualPathData::PointIsDeleted(const PointIndex& p) const {
 //	//#ifdef _DEBUG IsValidCaller __vc(this); #endif
 //	assert(p < Points.size());
 //
@@ -262,7 +262,7 @@ PointIndex VisualPathData::PointExists(const PointType& p) const {
 //	return ret == Deleted;
 //}
 
-//bool PathData::PointIsRejoining(const PointIndex& p) const {
+//bool VisualPathData::PointIsRejoining(const PointIndex& p) const {
 //#ifdef _DEBUG
 //	IsValidCaller __vc(this);
 //#endif
@@ -511,7 +511,7 @@ PointIndex VisualPathData::AddLine(const PointIndex& aIndex, const PointType& p,
 }
 //
 ////returnes index of created line
-//LineIndex PathData::AddLine(const PointIndex& aIndex, const PointIndex& bIndex) {
+//LineIndex VisualPathData::AddLine(const PointIndex& aIndex, const PointIndex& bIndex) {
 //#ifdef _DEBUG 
 //	IsValidCaller __vc(this);
 //#endif
@@ -734,7 +734,7 @@ void VisualPathData::RecalculateBoundingBox() {
 	}
 }
 //
-//void PathData::Cleanup() {
+//void VisualPathData::Cleanup() {
 //	std::sort(LinesToDelete.begin(), LinesToDelete.end(), std::greater());
 //	for (const auto& i : LinesToDelete) {
 //		Lines.erase(Lines.begin() + i);
@@ -850,7 +850,7 @@ LineIndex VisualPathData::StreightLineMiddelRemove(const PointIndex& p) {
 	//AddLine(a, b);
 }
 
-VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlock* Block)
+VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlockInterior* Block)
 : Block(Block), Id(KlassInstanceCounter++)
 {
 	assert(PointsMakeStreightLine(a, b));
@@ -864,8 +864,8 @@ VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlo
 	LastAddedLine = LineIndex{ aIndex,bIndex};
 }
 
-VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlock* Block)
-	:LastAddedLine(pd.LastAddedLine), BoundingBox(pd.BoundingBox),Block(Block), Id(KlassInstanceCounter++) {
+VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block)
+	:LastAddedLine(pd.LastAddedLine)/*, BoundingBox(pd.BoundingBox)*/, Block(Block), Id(KlassInstanceCounter++) {
 	for (const PointType& p : pd.Points) {
 		AddPoint(p);
 	}
@@ -882,14 +882,14 @@ bool VisualPathData::PointsMakeStreightLine(const PointType& a, const PointType&
 	return a.x() == b.x() || a.y() == b.y();
 }
 //
-//bool PathData::LineIsDeleted(const LineIndex& l) const {
+//bool VisualPathData::LineIsDeleted(const LineIndex& l) const {
 //	assert(Lines.size() > 0);
 //	assert(l != InvalidLineIndex);
 //
 //	return LinesToDelete.end() != std::find(LinesToDelete.begin(), LinesToDelete.end(), l);
 //}
 //
-//std::vector<LineIndex> PathData::LinesWithPoint(const PointIndex& p) const {
+//std::vector<LineIndex> VisualPathData::LinesWithPoint(const PointIndex& p) const {
 //#ifdef _DEBUG
 //	IsValidCaller __vc(this);
 //#endif
@@ -1092,7 +1092,7 @@ void VisualPathData::SetLastAdded(const LineIndex& pIndex) {
 }
 
 //
-//bool PathData::addTo(const LineIndex& l, const PointType& p) {
+//bool VisualPathData::addTo(const LineIndex& l, const PointType& p) {
 //#ifdef _DEBUG
 //	IsValidCaller __vc(this);
 //#endif
@@ -1424,7 +1424,7 @@ std::string VisualPathData::toHumanReadable() const {
 	//return ss.str();
 }
 //
-//PathData::SceduleCleanup::~SceduleCleanup() {
+//VisualPathData::SceduleCleanup::~SceduleCleanup() {
 //	Data->Cleanup();
 //}
 
@@ -1546,7 +1546,7 @@ void PointNode::RemoveConnection(const PointIndex& p) {
 }
 
 CompressedPathData::CompressedPathData(const VisualPathData& pd)
-	:LastAddedLine(pd.LastAddedLine), BoundingBox(pd.BoundingBox)
+	:LastAddedLine(pd.LastAddedLine) /*, BoundingBox(pd.BoundingBox)*/
 {
 	std::vector<PointIndex> IndexInSelf(pd.Points.size(), InvalidPointIndex);
 

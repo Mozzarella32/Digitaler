@@ -6,11 +6,11 @@
 
 #include "MyRect.hpp"
 
-struct PathVertex;
-struct PointVertex;
+struct TwoPointIVertex;
+struct PointIVertex;
 class VisualPath;
 class CompressedPathData;
-class VisualBlock;
+class VisualBlockInterior;
 
 namespace std {
 	template<>
@@ -29,12 +29,182 @@ using LineIndexInPoint = unsigned char;
 using ColourType = Eigen::Vector4f;
 //using Line = std::pair<PointIndex, PointIndex>;
 //using LineIndex = unsigned int;
+//
+//struct BlockExteriorData;
+//
+//struct CompressedBlockData {
+//	std::string Name;
+//	
+//	struct Pin {
+//		PointType Pos;//Unique
+//		std::string Name;//Unique
+//	};
+//
+//	PointType Size;
+//
+//	std::vector<Pin> InputPin;
+//	std::vector<Pin> OutputPin;
+//
+//	//CompressedBlockData(std::string Name) {};
+//	explicit CompressedBlockData(const BlockExteriorData& vbd) 
+//	:
+//		Name(vbd.Name), Size(vbd.Size)
+//	{
+//		InputPin.reserve(vbd.InputPin.size());
+//		for (const auto& P : vbd.InputPin) {
+//			InputPin.emplace_back(P.Pos, P.Name);
+//		}
+//		OutputPin.reserve(vbd.OutputPin.size());
+//		for (const auto& P : vbd.OutputPin) {
+//			OutputPin.emplace_back(P.Pos, P.Name);
+//		}
+//	}
+//};
 
-struct BlockData {
-	std::string Name;
-	std::vector<std::string> InputStrings;
-	std::vector<std::string> OutputStrings;
+struct BlockMetadata {
+	PointType Pos;
+	MyDirektion::Direktion Rotation;
 };
+
+using CompressedBlockDataIndex = size_t;
+
+static const constexpr CompressedBlockDataIndex InvalidCompressedBlockDataIndex = -2;
+
+struct CompressedBlockData {
+	std::vector<CompressedPathData> Paths;
+
+	struct BlockExteriorData {
+
+		std::unordered_map<std::string, std::vector<BlockMetadata>> ContainedBlocks;
+
+		//std::string Package;
+		//std::filesystem::path PathInPackage;
+		std::string Name;
+		/*
+		Special Names:
+        "Seven Segment Display"
+
+		*/
+
+		struct Pin {
+			MyDirektion::Direktion rotation;
+			unsigned int offset;
+			std::string Name;
+		};
+
+		PointType Size;
+
+		std::vector<Pin> InputPin;
+		std::vector<Pin> OutputPin;
+	} blockExteriorData;
+};
+
+//struct BlockExteriorData {
+//	std::string Name;
+//
+//	struct Pin {
+//		PointType Pos;//Unique Relative
+//		std::string Name;//Unique
+		//MyDirektion::Direktion Direktion;//ForDisplay
+//	};
+//
+//	PointType Size;
+//
+//	std::vector<Pin> InputPin;
+//	std::vector<Pin> OutputPin;
+//
+//	//RelativeTo 0,0 wich is the top left corner
+//	std::optional<MyDirektion::Direktion> GetPinDirektion(const PointType& PinPos) {
+//		const auto& Corner1 = PointType{0,0};
+//		const auto& Corner2 = Size;
+//
+//		bool XInside = Corner1.x() < PinPos.x() && PinPos.x() < Corner2.x();
+//		bool YInside = Corner1.y() < PinPos.y() && PinPos.y() < Corner2.y();
+//
+//		//false == false has to be on some corner field
+//		//true == true is inside
+//		if (XInside == YInside) return std::nullopt;
+//		if (XInside) {
+//			if (PinPos.y() == Corner1.y() - 1) {
+//				return MyDirektion::Up;
+//			}
+//			else if (PinPos.y() == Corner2.y() + 1) {
+//				return MyDirektion::Down;
+//			}
+//		}
+//		else {
+//			if (PinPos.x() == Corner1.x() - 1) {
+//				return MyDirektion::Right;
+//			}
+//			else if (PinPos.x() == Corner2.x() + 1) {
+//				return MyDirektion::Left;
+//			}
+//		}
+//		return std::nullopt;
+//	}
+//
+//	//Shall be moved To VisualBlockData becaous it has positions
+//	/*bool AddPin(const Pin& Pin, bool IsInput) {
+//		for (const auto& P : InputPin) {
+//			if (P.Pos == Pin.Pos) {
+//				return false;
+//			}
+//		}
+//		if (IsInput) {
+//			for (const auto& P : InputPin) {
+//				if (P.Name == Pin.Name) return false;
+//			}
+//		}
+//		for (const auto& P : OutputPin) {
+//			if (P.Pos == Pin.Pos) {
+//				return false;
+//			}
+//		}
+//		if (!IsInput) {
+//			for (const auto& P : OutputPin) {
+//				if (P.Name == Pin.Name) return false;
+//			}
+//		}
+//
+//		if (!GetPinDirektion(Pin.Pos).has_value()) return false;
+//
+//
+//		if (IsInput) {
+//			InputPin.emplace_back(Pin);
+//		}
+//		else {
+//			OutputPin.emplace_back(Pin);
+//		}
+//	}*/
+//
+//	/*BlockExteriorData(const std::string& Name, const PointType& Size)
+//	:Name(Name), Size(Size){};*/
+//
+//	//Wrong Level
+//	explicit BlockExteriorData(const CompressedBlockData& cbd)
+//		:Name(cbd.Name),
+//		Size(cbd.Size)
+//	{
+//		InputPin.reserve(cbd.InputPin.size());
+//		for (const auto& P : cbd.InputPin) {
+//			auto DirOpt = GetPinDirektion(P.Pos);
+//			if (!DirOpt.has_value()) {
+//				assert(false);
+//				continue;
+//			}
+//			InputPin.emplace_back(P.Pos, P.Name,DirOpt.value());
+//		}
+//		OutputPin.reserve(cbd.OutputPin.size());
+//		for (const auto& P : cbd.OutputPin) {
+//			auto DirOpt = GetPinDirektion(P.Pos);
+//			if (!DirOpt.has_value()) {
+//				assert(false);
+//				continue;
+//			}
+//			OutputPin.emplace_back(P.Pos, P.Name, DirOpt.value());
+//		}
+//	}
+//};
 
 extern const PointIndex InvalidPointIndex;
 extern const PointIndex FreePointIndex;
@@ -48,7 +218,7 @@ struct PointNode {
 	Eigen::Vector2i Pos;
 	std::array<PointIndex, 4> Connections;
 
-	VisualBlock* Block = nullptr;
+	VisualBlockInterior* Block = nullptr;
 
 	/*auto GetConnections() const noexcept {
 		return Connections | std::views::filter([](const PointIndex& p) {
@@ -110,7 +280,7 @@ struct VisualPathData {
 
 	friend VisualPath;
 	friend CompressedPathData;
-	friend VisualBlock;
+	friend VisualBlockInterior;
 
 	using VisualPathDataId = unsigned int;
 
@@ -270,22 +440,22 @@ private:
 
 
 private:
-	VisualBlock* Block = nullptr;
+	VisualBlockInterior* Block = nullptr;
 	static VisualPathDataId KlassInstanceCounter;
 	VisualPathDataId Id;
 public:
 
 	//Is unusable until reassigned(every funktion fails assert)
-	VisualPathData(VisualBlock* Block = nullptr): Block(Block),Id(KlassInstanceCounter++) {}
-	VisualPathData(const PointType& p1, const PointType& p2, VisualBlock* Block);
-	VisualPathData(const CompressedPathData& pd, VisualBlock* Block);
+	VisualPathData(VisualBlockInterior* Block = nullptr) : Block(Block), Id(KlassInstanceCounter++) {}
+	VisualPathData(const PointType& p1, const PointType& p2, VisualBlockInterior* Block);
+	VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block);
 	VisualPathData(VisualPathData&& other) noexcept
-		:Points(std::move(other.Points)), 
+		:Points(std::move(other.Points)),
 		Head(std::exchange(other.Head, FreeListEndPointIndex)),
-		BoundingBox(std::exchange(other.BoundingBox,{})),
-		Block(std::exchange(other.Block,nullptr)),
-		Id(std::exchange(other.Id,InvalidId)),
-		LastAddedLine(std::exchange(other.LastAddedLine,InvalidLineIndex)){
+		BoundingBox(std::exchange(other.BoundingBox, {})),
+		Block(std::exchange(other.Block, nullptr)),
+		Id(std::exchange(other.Id, InvalidId)),
+		LastAddedLine(std::exchange(other.LastAddedLine, InvalidLineIndex)) {
 	}
 
 	VisualPathData& operator=(VisualPathData&& other) noexcept {
@@ -297,8 +467,8 @@ public:
 		Points = std::move(other.Points);
 		Head = std::exchange(other.Head, FreeListEndPointIndex);
 		BoundingBox = std::exchange(other.BoundingBox, {});
-		Block = std::exchange(other.Block,nullptr);
-		LastAddedLine = std::exchange(other.LastAddedLine,InvalidLineIndex);
+		Block = std::exchange(other.Block, nullptr);
+		LastAddedLine = std::exchange(other.LastAddedLine, InvalidLineIndex);
 		Id = std::exchange(other.Id, InvalidId);
 		return *this;
 	}
@@ -347,15 +517,24 @@ public:
 	using Line = std::pair<PointIndex, PointIndex>;
 
 public:
-	MyRectI BoundingBox;
+	//MyRectI BoundingBox;
 
-private:
+public:
 	std::vector<PointType> Points;
 	std::vector<Line> Lines;
 	::LineIndex LastAddedLine;
 public:
 
+	//CompressedPathData() = default;
+
 	CompressedPathData(const VisualPathData& pd);
+
+	CompressedPathData(std::vector<PointType>&& Points,
+		std::vector<Line>&& Lines,
+		::LineIndex&& LastAddedLine) 
+		:Points(std::move(Points)), 
+		Lines(std::move(Lines)), 
+		LastAddedLine(LastAddedLine){}
 
 	std::string toHumanReadable() const;
 

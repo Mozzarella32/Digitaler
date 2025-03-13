@@ -6,11 +6,8 @@
 
 #include "BlockAndPathData.hpp"
 
+//Is Works as FreeListElements in VisualBlockInterior 
 class VisualPath {
-	/*class State {
-		bool Marked : 1 = false;
-		bool Green : 1 = false;
-	};*/
 public:
 	using PathIndex = unsigned int;
 
@@ -24,9 +21,9 @@ public:
 	VisualPathData Data;
 private:
 
-	std::vector<PathVertex> Edges;
-	std::vector<PointVertex> SpecialPoints;
-	std::vector<PathVertex> Verts;
+	std::vector<TwoPointIVertex> Edges;
+	std::vector<PointIVertex> SpecialPoints;
+	std::vector<TwoPointIVertex> Verts;
 
 	MyRectI CachedBoundingBox;
 
@@ -35,45 +32,27 @@ public:
 	//VisualPath(const VisualPath& Other) 
 	//	:Data(Other.Data),CachedBoundingBox(MyRectI()){}
 
-	bool isMarked() { return Marked; }
-	const bool isMarked() const { return Marked; }
-	void setMarked(bool Marked) { this->Marked = Marked; }
+	bool IsMarked() { return Marked; }
+	const bool IsMarked() const { return Marked; }
+	void SetMarked(bool Marked) { this->Marked = Marked; }
 
 	//Cached therfore not const
-	const std::vector<PathVertex>& ComputeAllAndGetEdges(const MyRectI& BoundingBox);
+	const std::vector<TwoPointIVertex>& ComputeAllAndGetEdges(const MyRectI& BoundingBox);
 
-	const std::vector<PointVertex>& getSpecialPoints() const;
-	const std::vector<PathVertex>& getVerts() const;
+	const std::vector<PointIVertex>& getSpecialPoints() const;
+	const std::vector<TwoPointIVertex>& getVerts() const;
 
 	bool Intercept(const PointType& Pos) const;
 
 	bool TryAbsorb(VisualPath& Other);
 
 	//Returnes the Next Free
-	PathIndex Init(VisualPathData&& pd) {
-		assert(!IsFree());
-		PathIndex PathIndexNext = CachedBoundingBox.Position.x();
-		Data = std::move(pd);
-		ThisIsFree = false;
-		return PathIndexNext;
-	}
+	PathIndex Init(VisualPathData&& pd);
 
 	//Set this head afterwareds
-	void Free(const PathIndex& head) {
-		Data = {};
-		CachedBoundingBox = {};
-		Edges.clear();
-		SpecialPoints.clear();
-		Verts.clear();
-		IsDirty = true;
-		Marked = false;
-		CachedBoundingBox.Position.x() = head;
-		ThisIsFree = true;
-	}
+	void Free(const PathIndex& head);
 
-	bool IsFree() const {
-		return ThisIsFree;
-	}
+	bool IsFree() const;
 
 	//modify....
 };

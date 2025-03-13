@@ -22,10 +22,10 @@ uniform vec2 UOffset;
 uniform vec2 UZoom;
 
 void main() {
-    vec2 Pos = int(InIndex == 0)*vec2(InstanceInFirst.xy - vec2(0.0))
-    + int(InIndex == 1)*vec2(InstanceInFirst.x-0.0,InstanceInSecond.y+0.0)
-    + int(InIndex == 2)*vec2(InstanceInSecond.x+0.0,InstanceInFirst.y-0.0)
-    + int(InIndex == 3)*vec2(InstanceInSecond.xy+vec2(0.0));
+    vec2 Pos = int(InIndex == 0)*vec2(InstanceInFirst.xy - vec2(1.0))
+    + int(InIndex == 1)*vec2(InstanceInFirst.x-1.0,InstanceInSecond.y+1.0)
+    + int(InIndex == 2)*vec2(InstanceInSecond.x+1.0,InstanceInFirst.y-1.0)
+    + int(InIndex == 3)*vec2(InstanceInSecond.xy+vec2(1.0));
 
     PosInWorld = Pos;
 //
@@ -35,8 +35,8 @@ void main() {
 //    + int(InIndex == 5)*vec2(InstanceInSecond.xy+vec2(0.5));
 //
 
-    A = InstanceInFirst + vec2(0.25);
-    B = InstanceInSecond - vec2(0.25);
+    A = InstanceInFirst - vec2(0.3);
+    B = InstanceInSecond + vec2(0.3);
     
     ScreenPos = (Pos+UOffset)/UZoom;
 

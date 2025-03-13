@@ -6,10 +6,23 @@
 
 #include "Path.hpp"
 
+#include "OpenGlDefines.hpp"
+
+#include <type_traits>
+
 class Renderer;
 struct PointNode;
+class DataResourceManager;
 
-class VisualBlock {
+
+//
+//class VisualBlockExterior {
+//
+//};
+
+//There schould only exist one
+//exept for multiple editors
+class VisualBlockInterior {
 private:
 	/*enum DragDirection {
 		Horizontal,
@@ -19,53 +32,56 @@ private:
 
 private:
 
-	std::vector<PathVertex> Edges;
-	std::vector<PathVertex> EdgesMarked;
-	std::vector<PathVertex> EdgesUnmarked;
-	std::vector<PointVertex> SpecialPoints;
-	std::vector<PathVertex> Verts;
+	DataResourceManager* ResourceManager;
 
-	std::vector<PathVertex> PreviewEdges;
-	std::vector<PointVertex> PreviewSpecialPoints;
-	std::vector<PathVertex> PreviewVerts;
+	std::vector<TwoPointIVertex> Edges;
+	std::vector<TwoPointIVertex> EdgesMarked;
+	std::vector<TwoPointIVertex> EdgesUnmarked;
+	std::vector<PointIVertex> SpecialPoints;
+	std::vector<TwoPointIVertex> Verts;
+
+	std::vector<TwoPointIVertex> PreviewEdges;
+	std::vector<PointIVertex> PreviewSpecialPoints;
+	std::vector<TwoPointIVertex> PreviewVerts;
 
 	//std::vector<std::pair<PointType, DragDirection>> PreviewData;
-	std::vector<PointType> PreviewData;
+	std::vector<PointType> PreviewData;//Data of the Point
 
-	//std::vector<RectRGBAVertex> Boxes;
+	//std::vector<TwoPointIRGBAVertex> Boxes;
 
 public:
-	const std::vector<PathVertex>& GetEdges(bool Preview) const;
+	const std::vector<TwoPointIVertex>& GetEdges(bool Preview) const;
 
-	const std::vector<PathVertex>& GetEdgesMarked(bool Preview) const;
+	const std::vector<TwoPointIVertex>& GetEdgesMarked(bool Preview) const;
 
-	const std::vector<PathVertex>& GetEdgesUnmarked(bool Preview) const;
+	const std::vector<TwoPointIVertex>& GetEdgesUnmarked(bool Preview) const;
 
-	const std::vector<PointVertex>& GetSpecialPoints(bool Preview) const;
+	const std::vector<PointIVertex>& GetSpecialPoints(bool Preview) const;
 
-	const std::vector<PathVertex>& GetVerts(bool Preview) const;
+	const std::vector<TwoPointIVertex>& GetVerts(bool Preview) const;
 
-	//const std::vector<RectRGBAVertex>& GetBoxes() const;
+	//const std::vector<TwoPointIRGBAVertex>& GetBoxes() const;
 
+private:
 	PointType PreviewMouseCached;
 	std::optional<VisualPath> PreviewCached;
 	bool PreviewIsDirty : 1 = true;
 	bool PreviewBoundingBoxIsDirty : 1 = true;
 	bool Dirty : 1 = true;
 	bool Destructing : 1 = false;
+	bool DirtyBlocks : 1 = true;
+
 	MyRectI PreviewCachedBoundingBox;
 
 	PointType MouseCached;
 	MyRectI CachedBoundingBox;
 public:
 
-	Renderer* renderer;
+	//Renderer* renderer;
 
-	VisualBlock(int FrameCount);
+	VisualBlockInterior(const CompressedBlockData& data, DataResourceManager* ResourceManager);
 
-	~VisualBlock() noexcept {
-		Destructing = true;
-	}
+	~VisualBlockInterior() noexcept;
 
 	void UpdateVectsForVAOs(const MyRectI& ViewRect, const PointType& Mouse);
 	void UpdateVectsForVAOsPreview(const MyRectI& ViewRect, const PointType& Mouse);
@@ -137,6 +153,44 @@ public:
 	void CancleDrag();
 
 	bool HasPreview() const;
+private:
+
+	std::unordered_map<CompressedBlockDataIndex, std::vector<BlockMetadata>> Blocks;
+
+	std::vector<PointIOrientationRGBVertex> PinVerts;
+	std::vector<TwoPointIRGBAVertex> BlockVerts;
+	std::vector<SevenSegVertex> SevenSegVerts;
+	std::vector<SixteenSegVertex> SixteenSegVerts;
+
+public:
+	using BlockIndex = std::pair<CompressedBlockDataIndex, unsigned int>;
+
+	void AddBlock(const CompressedBlockDataIndex& bedi, const BlockMetadata& Transform);
+
+	//Invalidates iterators/reverences
+	bool RemoveBlock(const BlockIndex& index);
+
+	std::optional<BlockMetadata> GetBlockMetadata(const BlockIndex& index);
+
+	void SetBlockMetadata(const BlockIndex& index, const BlockMetadata& Transform);
+
+private:
+	void UpdateBlocks();
+public:
+
+	const std::vector<PointIOrientationRGBVertex>& GetPinVerts() const;
+	const std::vector<TwoPointIRGBAVertex>& GetBlockVerts() const;
+	const std::vector<SevenSegVertex>& GetSevenSegVerts() const;
+	const std::vector<SixteenSegVertex>& GetSixteenSegVerts() const;
+private:
+
+	std::optional<std::pair<CompressedBlockDataIndex, BlockMetadata>> PlacingBlock;
+public:
+
+	void StartPlacingBlock(const CompressedBlockDataIndex& bedi, const BlockMetadata& Transform);
+	std::optional<std::reference_wrapper<BlockMetadata>> GetPlacingBlockTransform();
+	void EndPlacingBlock();
+	void CancalePlacingBlock();
 
 	//std::string CollisionMapToString() const;
 };

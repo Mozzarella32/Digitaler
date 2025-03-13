@@ -165,10 +165,6 @@ file(GLOB_RECURSE MY_HEADERS CONFIGURE_DEPENDS "${INCLUDE_DIR}/*")
 file(GLOB_RECURSE MY_SHADERS CONFIGURE_DEPENDS "${SHADER_DIR}/*")
 file(GLOB_RECURSE MY_PNGS CONFIGURE_DEPENDS "${PNG_DIR}/*")
 
-source_group("Source" FILES ${MY_SOURCE})
-source_group("Include" FILES ${MY_HEADERS})
-source_group("Shaders" FILES ${MY_SHADERS})
-source_group("Pngs" FILES ${MY_PNGS})
 
 list(REMOVE_ITEM MY_SOURCE ${PCH_HEADERS})
 list(REMOVE_ITEM MY_HEADERS ${PCH_HEADERS})
@@ -182,6 +178,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${PROJECT_SOURCE_DIR}/app)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${PROJECT_SOURCE_DIR}/app)
 
 add_executable(${PROJECT_NAME} ${MY_SOURCE})
+
+#set_property(GLOBAL PROPERTY USE_FOLDERS ON).
+
+#source_group("Test\\Source" FILES ${MY_SOURCE})
+#source_group("Test\\Include" FILES ${MY_HEADERS})
+#source_group("Resources\\Shaders" FILES ${MY_SHADERS})
+#source_group("Resources\\Pngs" FILES ${MY_PNGS})
 
 if(WIN32)
     target_link_options(${PROJECT_NAME} PRIVATE

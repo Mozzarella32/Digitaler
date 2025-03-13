@@ -58,9 +58,16 @@ void ShaderManager::Work() {
 }
 
 void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::path& Vert, const std::filesystem::path& Frag) {
-	auto VertTime = std::filesystem::last_write_time(Vert);
-	auto FragTime = std::filesystem::last_write_time(Frag);
-
+	std::filesystem::file_time_type VertTime;
+	std::filesystem::file_time_type FragTime;
+	try {
+		 VertTime = std::filesystem::last_write_time(Vert);
+		 FragTime = std::filesystem::last_write_time(Frag);
+	}
+	catch (...) {
+		Beep(200, 200);
+		return;
+	}
 	bool Update = false;
 
 	if (!LastUpdate.contains(shader)) {

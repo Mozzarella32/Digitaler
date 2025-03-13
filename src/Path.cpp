@@ -7,9 +7,9 @@ VisualPath::VisualPath(VisualPathData&& Data)
 	:Data(std::move(Data)) {
 }
 
-static const std::vector<PathVertex> EmptyVerts;
+static const std::vector<TwoPointIVertex> EmptyVerts;
 
-const std::vector<PathVertex>& VisualPath::ComputeAllAndGetEdges(const MyRectI& BoundingBox) {
+const std::vector<TwoPointIVertex>& VisualPath::ComputeAllAndGetEdges(const MyRectI& BoundingBox) {
 	if (!Data.BoundingBox.Intersectes(BoundingBox)) return EmptyVerts;
 
 	if (CachedBoundingBox != BoundingBox) {
@@ -26,7 +26,7 @@ const std::vector<PathVertex>& VisualPath::ComputeAllAndGetEdges(const MyRectI& 
 	Verts.clear();
 
 	//Calculate Edges and SpecialPoints
-	std::unordered_set<PointVertex> specialPoints;
+	std::unordered_set<PointIVertex> specialPoints;
 	/*Edges.reserve(Data.Lines.size());
 
 	auto hr = Data.toHumanReadable();
@@ -77,7 +77,7 @@ const std::vector<PathVertex>& VisualPath::ComputeAllAndGetEdges(const MyRectI& 
 	SpecialPoints = std::vector(specialPoints.begin(), specialPoints.end());
 
 	//Calculate Verts
-	std::unordered_set<PathVertex> verts;
+	std::unordered_set<TwoPointIVertex> verts;
 	verts.reserve(2 * Edges.size());
 	for (const auto& edge : Edges) {
 		if (BoundingBox.Contains({ edge.x1, edge.y1 })) {
@@ -93,11 +93,11 @@ const std::vector<PathVertex>& VisualPath::ComputeAllAndGetEdges(const MyRectI& 
 	return Edges;
 }
 
-const std::vector<PointVertex>& VisualPath::getSpecialPoints() const {
+const std::vector<PointIVertex>& VisualPath::getSpecialPoints() const {
 	return SpecialPoints;
 }
 
-const std::vector<PathVertex>& VisualPath::getVerts() const {
+const std::vector<TwoPointIVertex>& VisualPath::getVerts() const {
 	return Verts;
 }
 
@@ -111,4 +111,30 @@ bool VisualPath::TryAbsorb(VisualPath& Other) {
 		return true;
 	}
 	return false;
+}
+
+//Returnes the Next Free
+VisualPath::PathIndex VisualPath::Init(VisualPathData&& pd) {
+	assert(!IsFree());
+	PathIndex PathIndexNext = CachedBoundingBox.Position.x();
+	Data = std::move(pd);
+	ThisIsFree = false;
+	return PathIndexNext;
+}
+
+//Set this head afterwareds
+void VisualPath::Free(const PathIndex& head) {
+	Data = {};
+	CachedBoundingBox = {};
+	Edges.clear();
+	SpecialPoints.clear();
+	Verts.clear();
+	IsDirty = true;
+	Marked = false;
+	CachedBoundingBox.Position.x() = head;
+	ThisIsFree = true;
+}
+
+bool VisualPath::IsFree() const {
+	return ThisIsFree;
 }

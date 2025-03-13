@@ -35,8 +35,11 @@ private:
 	Texture FBOBackgroundTexture;
 	FrameBufferObject FBOBackground;
 
-private:
 	void RenderBackground();
+
+	Texture FBOPathStencileDepthTexture;
+	Texture FBOPathColorTexture;
+	FrameBufferObject FBOPath;
 
 	VertexArrayObject EdgesVAO;
 	VertexArrayObject EdgesMarkedVAO;
@@ -45,64 +48,35 @@ private:
 	VertexArrayObject SpecialPointsVAO;
 	VertexArrayObject VertsVAO;
 
+	VertexArrayObject SevenSegVAO;
+	VertexArrayObject SixteenSegVAO;
+
+	VertexArrayObject MuxVAO;
+
 #ifdef RenderCollisionGrid
 	VertexArrayObject BlocksVAO;
 #endif
+	VertexArrayObject PinVAO;
+	VertexArrayObject RoundPinVAO;
 
 	PointType MouseIndex;
 
-	VertexArrayObject CreatePathVertexVAO() {
-		VertexArrayObject VAO = { std::vector<VertexBufferObjectDescriptor>{
-			{GL_STATIC_DRAW, IndexVertex{}},
-			{ GL_DYNAMIC_DRAW, PathVertex{ 0,0,0,0 },1 }
-		} };
+	VertexArrayObject CreateTwoPointIVertexVAO();
 
-		VAO.bind();
-		VAO.ReplaceVertexBuffer(
-			std::vector<IndexVertex>{
-				{ 0 },
-				{ 1 },
-				{ 2 },
-			{ 3 }}, 0);
-		VAO.unbind();
-		return VAO;
-	}
+	VertexArrayObject CreatePointIVertexVAO();
 
-	VertexArrayObject CreatePointVertexVAO() {
-		VertexArrayObject VAO = { std::vector<VertexBufferObjectDescriptor>{
-			{GL_STATIC_DRAW, IndexVertex{}},
-			{ GL_DYNAMIC_DRAW, PointVertex{ 0,0 },1 }
-		} };
+	VertexArrayObject CreateSevenSegVAO();
+	VertexArrayObject CreateSixteenSegVAO();
 
-		VAO.bind();
-		VAO.ReplaceVertexBuffer(
-			std::vector<IndexVertex>{
-				{ 0 },
-				{ 1 },
-				{ 2 },
-			{ 3 }}, 0);
-		VAO.unbind();
-		return VAO;
-	}
+	VertexArrayObject CreateMuxVAO();
 
 #ifdef RenderCollisionGrid
-	VertexArrayObject CreateBlockRGBAVAO() {
-		VertexArrayObject VAO = { std::vector<VertexBufferObjectDescriptor>{
-			{GL_STATIC_DRAW, IndexVertex{}},
-			{ GL_DYNAMIC_DRAW, RectRGBAVertex{ 0,0,0,0, 0,0,0,0 },1 }
-		} };
-
-		VAO.bind();
-		VAO.ReplaceVertexBuffer(
-			std::vector<IndexVertex>{
-				{ 0 },
-				{ 1 },
-				{ 2 },
-			{ 3 }}, 0);
-		VAO.unbind();
-		return VAO;
-	}
+	VertexArrayObject CreateBlockRGBAVAO();
 #endif
+	VertexArrayObject CreatePointIOrientationRGBVertexVAO();
+
+	VertexArrayObject CreatePointIRGBVertex();
+
 public:
 	unsigned int FrameCount = 0;
 

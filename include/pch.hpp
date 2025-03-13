@@ -42,6 +42,7 @@
 #include <wx/spinctrl.h>
 #include <wx/popupwin.h>
 
+#include <wx/treelist.h>
 #include <thread>
 #include <array>
 #include <vector>

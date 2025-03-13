@@ -4,7 +4,8 @@
 class MyApp;
 class IOHandler;
 class Renderer;
-class VisualBlock;
+class VisualBlockInterior;
+class DataResourceManager;
 
 class MyFrame : public wxFrame {
 	GameLoopTimer LoopTimer;
@@ -16,7 +17,7 @@ class MyFrame : public wxFrame {
 public:
 	std::unique_ptr<IOHandler> IO;
 	std::unique_ptr<Renderer> renderer;
-	std::unique_ptr<VisualBlock> CurrentBlock;
+	std::unique_ptr<DataResourceManager> BlockManager;
 	wxGLCanvas* Canvas;
 	//std::unique_ptr<Board> board;
 

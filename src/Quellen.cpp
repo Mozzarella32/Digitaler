@@ -76,7 +76,13 @@ MessageCallback(GLenum source,
 		break;
 	}
 	o << " ID: " << id;
-	o << " as Error: " << gluErrorString(id);
+	auto error = gluErrorString(id);
+	if (error == nullptr) {
+		o << " as Error: " <<  "gluErrorString returned nullptr";
+	}
+	else {
+		o << " as Error: " << error;
+	}
 
 	o << " Severity: ";
 	switch (severity) {

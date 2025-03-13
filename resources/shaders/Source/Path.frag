@@ -17,7 +17,7 @@ float sdSegment( in vec2 p, in vec2 a, in vec2 b )
 {
     vec2 pa = p-a, ba = b-a;
     float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
-    return length( pa - ba*h );
+    return length(pa-ba*h);
 }
 //
 //float sdBox( in vec2 p, in vec2 b )
@@ -38,7 +38,8 @@ void main(){
         return;
     }
 	FragColor = vec4(0.941,0.286,0.351,step(-0.1,1.0-10*sdSegment(PosInWorld,A,B)));
-//	FragColor = vec4(0.0,0.0,1.0,step(-0.1,1.0-5*sdSegment(PosInWorld,A,B)));
+//    FragColor = vec4(0.0);
+//	FragColor = vec4(0.0,0.0,1.0,1.0-3*sdSegment(PosInWorld,A,B));
 //	FragColor = vec4(0.0,0.0,1.0,step(-0.1,1.0-10*sdSegment(PosInWorld,A,B)));
 }
 
