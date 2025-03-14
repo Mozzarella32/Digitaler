@@ -13,6 +13,7 @@ layout(location = 3) in vec3 InstanceInColor;
 //Out
 out vec2 PosInWorld;
 out vec2 ScreenPos;
+
 flat out vec3 Color;
 flat out vec2 PosOfPin;
 flat out vec2 A;
@@ -26,17 +27,17 @@ uniform vec2 UOffset;
 uniform vec2 UZoom;
 // lx dy rx uy
 float Offset[4*4] = {
-    0.5,0.5,-0.6,-0.5,
     0.5,-0.6,-0.5,0.5,
     -0.5,-0.5,0.6,0.5,
     -0.5,0.6,0.5,-0.5,
+    0.5,0.5,-0.6,-0.5,
 };
 
 float OtherOffset[2*4] = {
-    -1.0,0.0,
     0.0,-1.0,
     1.0,0.0,
     0.0,1.0,
+   -1.0,0.0,
 };
 
 
@@ -68,7 +69,9 @@ void main() {
     A = vec2(min(InstanceInPos.x,Other.x),min(InstanceInPos.y,Other.y));
     B = vec2(max(InstanceInPos.x,Other.x),max(InstanceInPos.y,Other.y));
 
-    ScreenPos = (Pos+UOffset)/UZoom;
+   vec2 PosOnScreen = (Pos+UOffset)/UZoom;
+
+    ScreenPos = (PosOnScreen+1.0) / 2.0;
 
     Color = InstanceInColor;
 

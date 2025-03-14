@@ -11,6 +11,7 @@ layout(location = 2) in vec3 InstanceInColor;
 
 //Out
 out vec2 PosInWorld;
+out vec2 ScreenPos;
 flat out vec2 PosOfPin;
 flat out vec3 Color;
 
@@ -32,6 +33,10 @@ void main() {
     PosOfPin = InstanceInPos;
 
     Color = InstanceInColor;
+
+   vec2 PosOnScreen = (Pos+UOffset)/UZoom;
+
+    ScreenPos = (PosOnScreen+1.0) / 2.0;
 
     gl_Position = vec4((Pos+UOffset)/UZoom, 0.0, 1.0);
 }

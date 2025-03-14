@@ -284,7 +284,7 @@ struct PointIOrientationRGBVertex{
 		x(p.x()),
 		y(p.y()),
 		Orientation([d]() {
-		switch (d) {
+		switch (MyDirektion::RotateCW(d)) {
 		case MyDirektion::Right: return 0;
 		case MyDirektion::Up: return 1;
 		case MyDirektion::Left: return 2;

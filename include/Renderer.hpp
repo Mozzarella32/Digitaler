@@ -59,6 +59,10 @@ private:
 	VertexArrayObject PinVAO;
 	VertexArrayObject RoundPinVAO;
 
+	VertexArrayObject AndVAO;
+	VertexArrayObject OrVAO;
+	VertexArrayObject XOrVAO;
+
 	PointType MouseIndex;
 
 	VertexArrayObject CreateTwoPointIVertexVAO();

@@ -4,9 +4,7 @@
 
 //In
 in vec2 PosInWorld;
-
-//Out
-out vec4 FragColor;
+in vec2 ScreenPos;
 
 flat in vec2 PosOfPin;
 flat in vec2 A;
@@ -15,10 +13,14 @@ flat in vec3 Color;
 flat in vec2 OtherUp;
 flat in vec2 OtherDown;
 flat in vec2 Other;
-//flat in int Flags;
+
+//Out
+out vec4 FragColor;
+
 
 //uniform
 uniform bool UHasWire;
+uniform sampler2D UPath;
 
 float sdBox( in vec2 p, in vec2 a, in vec2 b )
 {
@@ -56,7 +58,7 @@ void main(){
     vec4 OldColor = vec4(Color,alpha1);
 
 //    float alpha = length(PosInWorld-PosOfPin);
-    float horizontal = float(A.y == B.y);
+//    float horizontal = float(A.y == B.y);
     float alpha = 1.0-4.5*sdBox(PosInWorld,A,B)+1.0;
     
     //alpha += 1.0-4.5*min(length(PosInWorld-OtherUp),length(PosInWorld-OtherDown));
@@ -64,7 +66,7 @@ void main(){
     if(alpha > 1.0 && alpha1 != 1.0){
 //        FragColor = vec4(1.0,0.0,1.0,1.0);
         if(UHasWire){
-            FragColor = vec4(0.0);
+            FragColor = vec4(texture(UPath,ScreenPos).rgb,1.0);
             return;
         }
         FragColor = vec4(0.05,0.05,0.05,1.0);

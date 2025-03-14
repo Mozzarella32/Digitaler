@@ -63,7 +63,10 @@ void Renderer::UpdateViewProjectionMatrix() {
 			ShaderManager::IntersectionPath,
 			ShaderManager::SevenSeg,
 			ShaderManager::SixteenSeg,
-			ShaderManager::Mux
+			ShaderManager::Mux,
+			ShaderManager::And,
+			ShaderManager::Or,
+			ShaderManager::XOr,
 	}) {
 		const auto& Shader = ShaderManager::GetShader(shaderName);
 		Shader->bind();
@@ -443,7 +446,23 @@ void Renderer::Render() {
 		//GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	}
 
-	//FBOPath.unbind();
+	//FBOPath.bind(FrameBufferObject::Draw);
+
+	//FBOBackground.bind(FrameBufferObject::Read);
+	FBOPath.bind(FrameBufferObject::Draw);
+
+	GLCALL(glBlitFramebuffer(
+		0, 0,
+		CanvasSize.x(), CanvasSize.y(),
+		0, 0,
+		CanvasSize.x(), CanvasSize.y(),
+		GL_COLOR_BUFFER_BIT, GL_NEAREST
+	));
+
+	//FBOBackground.unbind();
+
+
+	FBOPath.unbind();
 
 	//LinesVAO->bind();
 
@@ -500,9 +519,51 @@ void Renderer::Render() {
 	GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
 	GLCALL(glStencilMask(0x00));
 
+	const auto& AndShader = ShaderManager::GetShader(ShaderManager::And);
+
+	AndShader->bind();
+
+	std::vector<PointIOrientationRGBVertex> AndVerts;
+
+	AndVerts.emplace_back(PointType{ -5,0 }, MyDirektion::Up, ColourType{ 1.0,1.0,1.0,1.0 });
+	AndVerts.emplace_back(PointType{ -11,0 }, MyDirektion::Right, ColourType{ 1.0,1.0,1.0,1.0 });
+	AndVerts.emplace_back(PointType{ -17,0 }, MyDirektion::Left, ColourType{ 1.0,1.0,1.0,1.0 });
+	AndVerts.emplace_back(PointType{ -23,0 }, MyDirektion::Down, ColourType{1.0,1.0,1.0,1.0});
+
+	//const auto& Ands = b.GetAndVerts();
+
+	AndVAO.bind();
+	AndVAO.ReplaceVertexBuffer(AndVerts, 1);
+	AndVAO.DrawAs(GL_TRIANGLE_STRIP);
+	AndVAO.unbind();
+
+	AndShader->unbind();
+
+	const auto& OrShader = ShaderManager::GetShader(ShaderManager::Or);
+
+	OrShader->bind();
+
+	std::vector<PointIOrientationRGBVertex> OrVerts;
+
+	OrVerts.emplace_back(PointType{ -5,-10 }, MyDirektion::Up, ColourType{ 1.0,1.0,1.0,1.0 });
+	OrVerts.emplace_back(PointType{ -11,-10 }, MyDirektion::Right, ColourType{ 1.0,1.0,1.0,1.0 });
+	OrVerts.emplace_back(PointType{ -17,-10 }, MyDirektion::Left, ColourType{ 1.0,1.0,1.0,1.0 });
+	OrVerts.emplace_back(PointType{ -23,-10 }, MyDirektion::Down, ColourType{ 1.0,1.0,1.0,1.0 });
+
+	//const auto& Ors = b.GetOrVerts();
+
+	OrVAO.bind();
+	OrVAO.ReplaceVertexBuffer(OrVerts, 1);
+	OrVAO.DrawAs(GL_TRIANGLE_STRIP);
+	OrVAO.unbind();
+
+	OrShader->unbind();
+
 	const auto& PinShader = ShaderManager::GetShader(ShaderManager::Pin);
 
 	PinShader->bind();
+
+	FBOPathColorTexture.bind(PinShader.get(), "UPath", "", 0);
 
 	/*std::vector<PointIOrientationRGBVertex> PinVerts;
 
@@ -534,10 +595,15 @@ void Renderer::Render() {
 
 	RoundPinShader->bind(); 
 
+	FBOPathColorTexture.bind(RoundPinShader.get(), "UPath", "", 0);
+
 	std::vector<PointIRGBVertex> RoundPinVerts;
 
-	RoundPinVerts.emplace_back(0,-1,1.0,0.0,0.0);
-	RoundPinVerts.emplace_back(3, -1, 1.0, 0.0, 0.0);
+	//RoundPinVerts.emplace_back(0,-1,1.0,0.0,0.0);
+	//RoundPinVerts.emplace_back(3, -1, 1.0, 0.0, 0.0);
+	RoundPinVerts.emplace_back(-3, -3, 1.0, 0.0, 0.0);
+	RoundPinVerts.emplace_back(-5, -3, 1.0, 0.0, 0.0);
+	RoundPinVerts.emplace_back(-4, 1, 0.0, 1.0, 0.0);
 
 	RoundPinVAO.bind();
 	RoundPinVAO.ReplaceVertexBuffer(RoundPinVerts, 1);
@@ -554,6 +620,8 @@ void Renderer::Render() {
 	GLCALL(glStencilMask(0x00));
 
 	RoundPinVAO.unbind();
+
+	FBOPathColorTexture.unbind();
 
 	RoundPinShader->unbind();
 
@@ -639,15 +707,6 @@ void Renderer::Render() {
 	const auto& SevenSegShader = ShaderManager::GetShader(ShaderManager::SevenSeg);
 
 	SevenSegShader->bind();
-
-	/*std::vector<SegmentDisplayVertex> SevenSegVerts;
-
-	SevenSegVerts.emplace_back(-1, 1, 2, 0, 0.5, 1);
-	SevenSegVerts.emplace_back(-1, 2, 2, 0, 0.5, 1);
-	SevenSegVerts.emplace_back(1, -1, 3, 0, 0.5, 1);
-	SevenSegVerts.emplace_back(3, 0, 0, 0, 0.5, 1);
-	SevenSegVerts.emplace_back(3, 2, 0, 0, 0.5, 1);
-	SevenSegVerts.emplace_back(1, 4, 1, 0, 0.5, 1);*/
 
 	const auto& SevenSegs = b.GetSevenSegVerts();
 
@@ -750,6 +809,9 @@ Renderer::Renderer(MyApp* App, MyFrame* Frame)
 	MuxVAO(CreateMuxVAO()),
 	PinVAO(CreatePointIOrientationRGBVertexVAO()),
 	RoundPinVAO(CreatePointIRGBVertex()),
+	AndVAO(CreatePointIOrientationRGBVertexVAO()),
+	OrVAO(CreatePointIOrientationRGBVertexVAO()),
+	XOrVAO(CreatePointIOrientationRGBVertexVAO()),
 	EdgesVAO(CreateTwoPointIVertexVAO()),
 	EdgesMarkedVAO(CreateTwoPointIVertexVAO()),
 	EdgesUnmarkedVAO(CreateTwoPointIVertexVAO()),
