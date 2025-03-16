@@ -80,7 +80,7 @@ float sdBox( in vec2 p, in vec2 a, in vec2 b )
 //
 //
 //
-//float dot2( vec2 v ) { return dot(v,v); }
+float dot2( vec2 v ) { return dot(v,v); }
 //float cro( vec2 a, vec2 b ) { return a.x*b.y-a.y*b.x; }
 //float cos_acos_3( float x ) { x=sqrt(0.5+0.5*x); return x*(x*(x*(x*-0.008972+0.039071)-0.107074)+0.576975)+0.5; } // https://www.shadertoy.com/view/WltSD7
 //
@@ -156,6 +156,44 @@ float sdBox( in vec2 p, in vec2 a, in vec2 b )
 //}
 //
 
+float sdBezier( in vec2 pos, in vec2 A, in vec2 B, in vec2 C )
+{    
+    vec2 a = B - A;
+    vec2 b = A - 2.0*B + C;
+    vec2 c = a * 2.0;
+    vec2 d = A - pos;
+    float kk = 1.0/dot(b,b);
+    float kx = kk * dot(a,b);
+    float ky = kk * (2.0*dot(a,a)+dot(d,b)) / 3.0;
+    float kz = kk * dot(d,a);      
+    float res = 0.0;
+    float p = ky - kx*kx;
+    float p3 = p*p*p;
+    float q = kx*(2.0*kx*kx-3.0*ky) + kz;
+    float h = q*q + 4.0*p3;
+    if( h >= 0.0) 
+    { 
+        h = sqrt(h);
+        vec2 x = (vec2(h,-h)-q)/2.0;
+        vec2 uv = sign(x)*pow(abs(x), vec2(1.0/3.0));
+        float t = clamp( uv.x+uv.y-kx, 0.0, 1.0 );
+        res = dot2(d + (c + b*t)*t);
+    }
+    else
+    {
+        float z = sqrt(-p);
+        float v = acos( q/(p*z*2.0) ) / 3.0;
+        float m = cos(v);
+        float n = sin(v)*1.732050808;
+        vec3  t = clamp(vec3(m+m,-n-m,n-m)*z-kx,0.0,1.0);
+        res = min( dot2(d+(c+b*t.x)*t.x),
+                   dot2(d+(c+b*t.y)*t.y) );
+        // the third root cannot be the closest
+        // res = min(res,dot2(d+(c+b*t.z)*t.z));
+    }
+    return sqrt( res );
+}
+
 void main(){
 
     float alpha = max(max(1.0-2.0*length(PosInWorld-Corner1),
@@ -171,12 +209,12 @@ void main(){
 //
 
 //    vec2 q;
-//    float d  = sdBezier(PosInWorld,Corner1,FarPoint,Corner2,q);
-//    float b2  = sdBezier(PosInWorld,Corner1,NearPoint,Corner2,q);
+    float d  = sdBezier(PosInWorld,Corner1,FarPoint,Corner2);
+//    float d  = sdBezier(PosInWorld,Corner1,NearPoint,Corner2);
 //
 //    d = b2*d;
 
-    float d = alpha;
+//    float d = alpha;
 
 //    alpha = b1;
 

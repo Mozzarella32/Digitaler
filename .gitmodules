@@ -1,12 +1,9 @@
 [submodule "submodules/Instrumentor"]
 	path = submodules/Instrumentor
-	url = git@github.com:Mozzarella32/Instrumentor.git
-[submodule "Instrumentor"]
-	path = Instrumentor
-	url = git@github.com:Mozzarella32/Instrumentor.git
+	url = https://github.com/Mozzarella32/Instrumentor.git
 [submodule "submodules/LinearAlgebra"]
 	path = submodules/LinearAlgebra
-	url = git@github.com:Mozzarella32/LinearAlgebra.git
+	url = https://github.com/Mozzarella32/LinearAlgebra.git
 [submodule "submodules/Visitor"]
 	path = submodules/Visitor
-	url = git@github.com:Mozzarella32/Visitor.git
+	url = https://github.com/Mozzarella32/Visitor.git
