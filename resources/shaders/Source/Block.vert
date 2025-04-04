@@ -6,16 +6,20 @@
 layout(location = 0) in int InIndex;
 
 //Per Instance
-layout(location = 1) in ivec2 InstanceInFirst;
-layout(location = 2) in ivec2 InstanceInSecond;
-layout(location = 3) in vec4 InstanceInColor;
+layout(location = 1) in uint InstanceInId;
+layout(location = 2) in ivec2 InstanceInFirst;
+layout(location = 3) in ivec2 InstanceInSecond;
+layout(location = 4) in vec4 InstanceInColor;
+layout(location = 5) in vec3 InstanceInHighlightColor;
 
 //Out
 out vec2 PosInWorld;
 out vec2 ScreenPos;
 flat out vec4 Color;
+flat out vec3 HighlightColor;
 flat out vec2 A;
 flat out vec2 B;
+flat out uint id;
 
 //Uniforms
 uniform vec2 UOffset;
@@ -41,6 +45,10 @@ void main() {
     ScreenPos = (Pos+UOffset)/UZoom;
 
     Color = InstanceInColor;
+
+    HighlightColor = InstanceInHighlightColor;
+
+    id = InstanceInId;
 
     gl_Position = vec4((Pos+UOffset)/UZoom, 0.0, 1.0);
 }

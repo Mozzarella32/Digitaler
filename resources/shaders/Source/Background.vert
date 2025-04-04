@@ -1,4 +1,4 @@
-//Hex.vert
+//Background.vert
 
 #version 330 core
 

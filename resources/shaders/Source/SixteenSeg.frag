@@ -42,6 +42,9 @@ flat in float Rotate;
 //Out
 out vec4 FragColor;
 
+//Uniforms
+uniform vec3 USixteenSegOffColor= vec3(0.2,0.2,0.2);
+
 float sdSegment( in vec2 p, in vec2 a, in vec2 b )
 {
     vec2 pa = p-a, ba = b-a;
@@ -69,8 +72,6 @@ float sdParallelogramNonRot( in vec2 p, float wi, float he, float sk )
     
     return sqrt( dot(q,q)+e2-2.0*v );
 }
-
-
 
 float sdParallelogramRot( in vec2 p, float wi, float he, float sk )
 {
@@ -103,14 +104,6 @@ float sdParallelogram( in vec2 p, float wi, float he, float sk ){
 
 void main(){
 
-//    float A = 1.0-4.0*sdSegment(PosInWorld,AL,AR);
-//    float B = 1.0-4.0*sdSegment(PosInWorld,BU,BD);
-//    float C = 1.0-4.0*sdSegment(PosInWorld,CU,CD);
-//    float D = 1.0-4.0*sdSegment(PosInWorld,DL,DR);
-//    float E = 1.0-4.0*sdSegment(PosInWorld,EU,ED);
-//    float F = 1.0-4.0*sdSegment(PosInWorld,FU,FD);
-//    float G = 1.0-4.0*sdSegment(PosInWorld,GL,GR);
-
     float A = 1.0 - 4.0 * sdSegment(PosInWorld,AL,AR);
     float B = 1.0 - 4.0 * sdSegment(PosInWorld,BL,BR);
     float C = 1.0 - 4.0 * sdSegment(PosInWorld,CU,CD);
@@ -122,32 +115,12 @@ void main(){
     float I = 1.0 - 4.0 * sdSegment(PosInWorld,IL,IR);
     float J = 1.0 - 4.0 * sdSegment(PosInWorld,JL,JR);
     float K = 0.0 - 5.0 * sdParallelogram(K-PosInWorld,0.17,0.645,-0.08);
-//    float K = 1.0-2.0*length(K-PosInWorld);
     float L = 1.0 - 4.0 * sdSegment(PosInWorld,LU,LD);
     float N = 0.0 - 5.0 * sdParallelogram(N-PosInWorld,0.17,0.645,0.08);
     float M = 0.0 - 5.0 * sdParallelogram(M-PosInWorld,0.17,0.645,0.08);
     float O = 1.0 - 4.0 * sdSegment(PosInWorld,OU,OD);
     float P = 0.0 - 5.0 * sdParallelogram(P-PosInWorld,0.17,0.645,-0.08);
     float sdP = 1.0-4.0*length(Point-PosInWorldUnshifted);
-
-//    float On = 
-//        max(max(max(max(max(A * float((Flags & 0x00001) != 0),
-//        B * float((Flags & 0x00002) != 0)),
-//        max(C * float((Flags & 0x00004) != 0),
-//        D * float((Flags & 0x00008) != 0))),
-//        max(max(E * float((Flags & 0x00010) != 0),
-//        F * float((Flags & 0x00020) != 0)),
-//        max(G * float((Flags & 0x00040) != 0),
-//        H * float((Flags & 0x00080) != 0)))),
-//        max(max(max(I * float((Flags & 0x00100) != 0),
-//        J * float((Flags & 0x00200) != 0)),
-//        max(K * float((Flags & 0x00400) != 0),
-//        L * float((Flags & 0x00800) != 0))),
-//        max(max(M * float((Flags & 0x01000) != 0),
-//        N * float((Flags & 0x02000) != 0)),
-//        max(O * float((Flags & 0x00400) != 0),
-//        P * float((Flags & 0x08000) != 0)))),
-//        sdP * float((Flags & 0x10000) != 0));
 
     float On = max(
         max(
@@ -202,61 +175,11 @@ void main(){
                     P * float((Flags & 0x08000) == 0))))),
     sdP * float((Flags & 0x10000) == 0));
 
-
-//    float On = 
-//       A*float((Flags & 0x1) != 0),
-//       B*float((Flags & 0x2) != 0),
-//       C*float((Flags & 0x4) != 0),
-//       D*float((Flags & 0x8) != 0),
-//       E*float((Flags & 0x10) != 0),
-//       F*float((Flags & 0x20) != 0),
-//       G*float((Flags & 0x40) != 0),
-//       Point*float((Flags & 0x80) != 0);
-//
-//    float Off = 
-//       A*float((Flags & 0x1) == 0),
-//       B*float((Flags & 0x2) == 0),
-//       C*float((Flags & 0x4) == 0),
-//       D*float((Flags & 0x8) == 0),
-//       E*float((Flags & 0x10) == 0),
-//       F*float((Flags & 0x20) == 0),
-//       G*float((Flags & 0x40) == 0),
-//       Point*float((Flags & 0x80) == 0);
-
     if(On > Off){
-        //FragColor = vec4(1.0,1.0,0.0,1.0);
-        FragColor = vec4(1.0,0.0,1.0,2.5*On-0.5);
+        FragColor = vec4(1.0,1.0,0.0,1.0);
+        FragColor = vec4(Color,2.5*On-0.5);
         return;
     }
-    FragColor = vec4(0.2,0.2,0.2,step(-Off,-0.4));
-
-   
-
-
-//       float alpha2 = 
-//       max(max(max(max(1.0-5.0*length(PosInWorld-AL),
-//       1.0-5.0*length(PosInWorld-AR)),
-//       max(1.0-5.0*length(PosInWorld-BU),
-//       1.0-5.0*length(PosInWorld-BD))),
-//       max(max(1.0-5.0*length(PosInWorld-CU),
-//       1.0-5.0*length(PosInWorld-CD)),
-//       max(1.0-5.0*length(PosInWorld-DL),
-//       1.0-5.0*length(PosInWorld-DR)))),
-//       max(max(max(1.0-5.0*length(PosInWorld-EU),
-//       1.0-5.0*length(PosInWorld-ED)),
-//       max(1.0-5.0*length(PosInWorld-FU),
-//       1.0-5.0*length(PosInWorld-FD))),
-//       max(1.0-5.0*length(PosInWorld-GL),
-//       1.0-5.0*length(PosInWorld-GR))));
-
-
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-5*length(PosInWorld - AL),0.1));
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-4.0*sdSegment(PosInWorld,AL,AR),0.1));
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-4.0*sdSegment(PosInWorld,BU,BD),0.1));
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-4.0*sdSegment(PosInWorld,CU,CD),0.1));
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-4.0*sdSegment(PosInWorld,DL,DR),0.1));
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-4.0*sdSegment(PosInWorld,EU,ED),0.1));
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-4.0*sdSegment(PosInWorld,FU,FD),0.1));
-//   FragColor = vec4(1.0,0.0,1.0,max(1.0-4.0*sdSegment(PosInWorld,GL,GR),0.1));
-   //FragColor = vec4(1.0,1.0,1.0,1.0);
+    FragColor = vec4(0,0,1,1);
+    FragColor = vec4(USixteenSegOffColor,step(-Off,-0.4));
 }

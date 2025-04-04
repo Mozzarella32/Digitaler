@@ -46,7 +46,12 @@ public:
 #endif
 	std::unordered_map<Shaders, std::unique_ptr<Shader>> Map;
 
+
+private:
+	std::map<std::string, std::vector<std::pair<Shaders, GLenum>>> Uniforms;
 public:
+
+	static const std::vector<std::pair<Shaders, GLenum>>& GetShadersWithUniform(const std::string& uniform);
 
 	static const std::unique_ptr<Shader>& GetShader(const Shaders& shader);
 

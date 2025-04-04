@@ -6,75 +6,78 @@
 layout(location = 0) in int InIndex;
 
 //Per Instance
-layout(location = 1) in ivec2 InstancePos;
-layout(location = 2) in int InstanceOrientation;
-layout(location = 3) in vec3 InstanceColor;
+layout(location = 1) in uint InstanceInId;
+layout(location = 2) in ivec2 InstanceInPos;
+layout(location = 3) in int InstanceInOrientation;
+layout(location = 4) in vec3 InstanceInHighlightColor;
 
 //Out
 out vec2 PosInWorld;
-//out vec2 ScreenPos;
-//flat out vec2 A;
-//flat out vec2 B;
-//flat out vec2 SelectA;
-//flat out vec2 SelectB;
-flat out vec3 Color;
-//flat out vec2 Pos;
-flat out vec2 Corner1;
-flat out vec2 Corner2;
-flat out vec2 FarPoint;
-flat out vec2 NearPoint;
+flat out vec2 Base1;
+flat out vec2 Base2;
+flat out vec2 BaseFar;
+flat out vec2 ControllNear;
+flat out vec2 Controll1;
+flat out vec2 Controll2;
+flat out vec2 BaseTriangle;
+flat out int Orientation;
+flat out vec3 HighlightColor;
+flat out uint id;
 
 //Uniforms
 uniform vec2 UOffset;
 uniform vec2 UZoom;
-// lx dy rx uy
-float Offset[4*4] = {
-    2.0,2.5,-2.0,-2.5,
-    2.5,-2.0,-2.5,2.0,
-    -2.0,-2.5,2.0,2.5,
-    -2.5,2.0,2.5,-2.0,
+
+// d r u t
+float Size[4] = {
+	-3.0,2.0,2.5,-2.0,
 };
 
-// x,y,-x,-y
+vec2 Offset = vec2(1.0,-1.0);//Because center and 2by2
+
 float Directions[2*4] = {
-    1.0,0.0,
-    0.0,1.0,
-    -1.0,0.0,
-    0.0,-1.0,
+	0,1,
+	1,0,
+	0,-1,
+	-1,0
 };
 
-float PosOffset[2*4] = {
-    1.0,-1.0,
-    1.0,-1.0,
-    1.0,-1.0,
-    2.0,-1.0,
+int IndexTable[2*4] = {
+	0,1,
+	0,3,
+	2,1,
+	2,3,
 };
 
 void main() {
-vec2 CorrectedPos = InstancePos + vec2(PosOffset[InstanceOrientation*2+0],PosOffset[InstanceOrientation*2+1]);
+	vec2 CorrectedPos = InstanceInPos + Offset;
 
- vec2 Pos = 
-      int(InIndex == 0)*vec2(CorrectedPos.x+Offset[InstanceOrientation*4+0],CorrectedPos.y+Offset[InstanceOrientation*4+1])
-    + int(InIndex == 1)*vec2(CorrectedPos.x+Offset[InstanceOrientation*4+0],CorrectedPos.y+Offset[InstanceOrientation*4+3])
-    + int(InIndex == 2)*vec2(CorrectedPos.x+Offset[InstanceOrientation*4+2],CorrectedPos.y+Offset[InstanceOrientation*4+1])
-    + int(InIndex == 3)*vec2(CorrectedPos.x+Offset[InstanceOrientation*4+2],CorrectedPos.y+Offset[InstanceOrientation*4+3]);
+	vec2 Right = vec2(Directions[(InstanceInOrientation+1)%4*2+0],Directions[(InstanceInOrientation+1)%4*2+1]);
+	vec2 Up = vec2(Directions[(InstanceInOrientation+0)%4*2+0],Directions[(InstanceInOrientation+0)%4*2+1]);
 
-    vec2 Right = vec2(Directions[(InstanceOrientation+0)%4*2+0],Directions[(InstanceOrientation+0)%4*2+1]);
-    vec2 Up = vec2(Directions[(InstanceOrientation+1)%4*2+0],Directions[(InstanceOrientation+1)%4*2+1]);
+	ivec2 Index = ivec2(IndexTable[InIndex*2],IndexTable[InIndex*2+1]);
 
-    PosInWorld = Pos;
+	vec2 Pos = CorrectedPos + Size[Index.x] * Up + Size[Index.y] * Right;
 
-    Corner1 = CorrectedPos - 2*Up - 1.5*Right;
-    Corner2 = CorrectedPos - 2*Up + 1.5*Right;
+	PosInWorld = Pos;
 
-//    Midpoint = CorrectedPos+0.5*Up;
-    FarPoint = CorrectedPos + 6*Up;
-    NearPoint = CorrectedPos - 1.5*Up;
+	BaseTriangle = CorrectedPos + 1.6*Up;
 
-//    ScreenPos = (Pos+UOffset)/UZoom;
+	Base1 = CorrectedPos - 2*Up - 1.5*Right;
+	Base2 = CorrectedPos - 2*Up + 1.5*Right;
 
-    Color = InstanceColor;
+	BaseFar = CorrectedPos + 1.9*Up;
+	ControllNear = CorrectedPos - 1.5*Up;
 
-    gl_Position = vec4((Pos+UOffset)/UZoom, 0.0, 1.0);
+	Controll1 = CorrectedPos + 1.5*Up - 1.3*Right;
+	Controll2 = CorrectedPos + 1.5*Up + 1.3*Right;
+
+	Orientation = InstanceInOrientation;
+
+	HighlightColor = InstanceInHighlightColor;
+
+	id = InstanceInId;
+
+	gl_Position = vec4((Pos+UOffset)/UZoom, 0.0, 1.0);
 }
 

@@ -46,6 +46,21 @@ public:
 
 	bool TryAbsorb(VisualPath& Other);
 
+	void RotateCW(const PointType& Pos) {
+		IsDirty = true;
+		Data.RotateAroundCW(Pos);
+	}
+
+	void RotateCCW(const PointType& Pos) {
+		IsDirty = true;
+		Data.RotateAroundCCW(Pos);
+	}
+
+	void RotateHW(const PointType& Pos) {
+		IsDirty = true;
+		Data.RotateAroundHW(Pos);
+	}
+
 	//Returnes the Next Free
 	PathIndex Init(VisualPathData&& pd);
 

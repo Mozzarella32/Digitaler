@@ -51,6 +51,13 @@ public:
 			&& Point.y() >= Position.y() && Point.y() <= Position.y() + Size.y();
 	}
 
+	bool IsContainedIn(const MyRect<T>& other) const {
+		return (Position.x() >= other.Position.x()) &&
+			(Position.y() >= other.Position.y()) &&
+			(Position.x() + Size.x() <= other.Position.x() + other.Size.x()) &&
+			(Position.y() + Size.y() <= other.Position.y() + other.Size.y());
+	}
+
 	bool Intersectes(const MyRect& other) const {
 		if (Size == InvalidSize || other.Size == InvalidSize)return false;
 		return Position.x() <= other.Position.x() + other.Size.x() && Position.x() + Size.x() >= other.Position.x()

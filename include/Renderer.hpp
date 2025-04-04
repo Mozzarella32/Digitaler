@@ -26,9 +26,11 @@ public:
 	Eigen::Vector2f CanvasSize;
 	Eigen::Matrix3f ViewProjectionMatrix;
 
-	MyRectI BoundingBox;
+	MyRectF BoundingBox;
 
 	bool Dirty = true;
+	bool IdMapDirty = true;
+	bool UIDRun = true;
 private:
 
 	//Order is important
@@ -41,12 +43,25 @@ private:
 	Texture FBOPathColorTexture;
 	FrameBufferObject FBOPath;
 
-	VertexArrayObject EdgesVAO;
-	VertexArrayObject EdgesMarkedVAO;
+	Texture FBOIDTexture;
+	FrameBufferObject FBOID;
 
-	VertexArrayObject EdgesUnmarkedVAO;
-	VertexArrayObject SpecialPointsVAO;
-	VertexArrayObject VertsVAO;
+	std::array<GLenum, 1> DrawBuffer0 = { GL_COLOR_ATTACHMENT0 };
+	std::array<GLenum, 2> DrawBuffer1 = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+
+	struct PathVAOs {
+		VertexArrayObject EdgesVAO;
+		VertexArrayObject EdgesMarkedVAO;
+
+		VertexArrayObject EdgesUnmarkedVAO;
+		VertexArrayObject SpecialPointsVAO;
+		VertexArrayObject VertsVAO;
+	};
+
+	PathVAOs VAOsPath;
+	PathVAOs VAOsPathPreview;
+
+	PathVAOs& GetPathVAOs(bool Preview);
 
 	VertexArrayObject SevenSegVAO;
 	VertexArrayObject SixteenSegVAO;
@@ -62,31 +77,50 @@ private:
 	VertexArrayObject AndVAO;
 	VertexArrayObject OrVAO;
 	VertexArrayObject XOrVAO;
+	//VertexArrayObject NotTriangleVAO;
+	//VertexArrayObject NDotVAO;
+	VertexArrayObject AreaSelectVAO;
+
+	BufferedVertexVec<PointFRGBVertex> AreaSelectVerts;
 
 	PointType MouseIndex;
 
-	VertexArrayObject CreateTwoPointIVertexVAO();
+	static VertexArrayObject CreateTwoPointIVAO();
 
-	VertexArrayObject CreatePointIVertexVAO();
+	static VertexArrayObject CreatePointIVAO();
 
-	VertexArrayObject CreateSevenSegVAO();
-	VertexArrayObject CreateSixteenSegVAO();
+	static VertexArrayObject CreateSevenSegVAO();
+	static VertexArrayObject CreateSixteenSegVAO();
 
-	VertexArrayObject CreateMuxVAO();
+	static VertexArrayObject CreateMuxVAO();
 
 #ifdef RenderCollisionGrid
-	VertexArrayObject CreateBlockRGBAVAO();
+	static VertexArrayObject CreateBlockRGBAVAO();
 #endif
-	VertexArrayObject CreatePointIOrientationRGBVertexVAO();
+	static VertexArrayObject CreatePointIOrientationRGBVAO();
+	static VertexArrayObject CreatePointIOrientationVAO();
 
-	VertexArrayObject CreatePointIRGBVertex();
+	static VertexArrayObject CreatePointIRGBIDVAO();
+	static VertexArrayObject CreatePointFRGBVAO();
+	static VertexArrayObject CreateTextVAO();
+
+	VertexArrayObject StaticTextVAO;
+	VertexArrayObject DynamicTextVAO;
+	//Must be befor CharMap
+	Texture TextAtlas;
 
 public:
 	unsigned int FrameCount = 0;
 
+	std::string title;
+
 	void Render();
 
-	void UpdateViewProjectionMatrix();
+private:
+	void RenderIDMap();
+
+public:
+	void UpdateViewProjectionMatrix(bool OnlyForUniforms = false);
 
 	Eigen::Vector2i CoordToNearestPoint(Eigen::Vector2f Pos);
 
@@ -95,8 +129,44 @@ public:
 	void CheckZoomDots();
 
 	Renderer(MyApp* App, MyFrame* Frame);
+	~Renderer();
 
 	void UpdateSize();
 
+	BufferedVertexVec<PointFRGBVertex>& GetAreaSelectVerts();
+
+private:
+
+public:
+
+	unsigned int GetHighlited(const Eigen::Vector2f& MousePos);
+
 	void UpdateMouseIndex(const PointType& MouseIndex);
+
+private:
+	std::unordered_map<CompressedBlockDataIndex, std::array<MyRectF, 4>> BlockBoundingBoxes;
+
+	using BBUpdateFunc = std::function<void(void)>;
+	std::mutex BBUpdateFuncsMutex;
+	std::queue<BBUpdateFunc> BBUpdateFuncs;
+
+	bool Terminating = false;
+	std::thread BBUpdater;
+	std::mutex BBUpdaterCVMutex;
+	std::condition_variable BBUpdaterCV;
+
+	void BBUpdaterWork();
+
+public:
+	const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbdi, bool TheOneIWant = false);
+
+private:
+	double GoHomeZoom = 0.01;
+	Eigen::Vector2f GoHomeOffset = { 0,0 };
+public:
+	int GoHomeFrame = 0;
+	void StartGoHome();
+
+	//Returns if finished
+	bool StepGoHome();
 };

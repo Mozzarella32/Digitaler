@@ -108,73 +108,102 @@ MessageCallback(GLenum source,
 	o << std::endl;
 }
 
+/*
+;
+		cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
+*/
+
 bool MyApp::OnInit() {
+	PROFILE_FUNKTION;
 #ifdef _WIN32
 	SetProcessDPIAware();
 #endif
 	//wxSystemOptions::SetOption(_T("msw.remap"), 0);
 	srand((unsigned int)time(NULL));
 
+	{
+		PROFILE_SCOPE("Set WD");
 	wxFileName exePath(wxStandardPaths::Get().GetExecutablePath());
 	wxFileName exeDir = exePath.GetPath();
 	wxSetWorkingDirectory(exeDir.GetFullPath());
+	}
 
-	wxInitAllImageHandlers();
+	{
+		PROFILE_SCOPE("Init Image Handlers");
+		wxInitAllImageHandlers();
+	}
 
-	//Init Context - for wxGlCanvas
-	Initlisier = new GLEWFrameIndependentInitiliser([=]() {OnOGLInit(); });
-
+	{
+		PROFILE_SCOPE("Request Context");
+		cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
+		//Init Context - for wxGlCanvas
+		Initlisier = new GLEWFrameIndependentInitiliser(cxtAttrs, [=]() {OnOGLInit(); });
+	}
 	return true;
 }
 
 void MyApp::OnOGLInit() {
+	PROFILE_FUNKTION;
+	{
+		PROFILE_SCOPE("Retrive Context");
 	GlContext.reset(Initlisier->RetriveContextAndClose());
+	}
 
-	//Create ContextBinder
-	ContextBinder = new GLContextBinder();
-	ContextBinder->BindContext(GlContext.get());
+	{
+		PROFILE_SCOPE("Create Context Binder");
+		//Create ContextBinder
+		ContextBinder = new GLContextBinder();
+		ContextBinder->BindContext(GlContext.get());
+	}
 
 	ShaderManager::Initilise();
 
-	//Create Static VAO
-	HoleScreenVAO = std::make_unique<VertexArrayObject>(
-		std::vector<VertexBufferObjectDescriptor>{
-			{
-				GLenum(GL_STATIC_DRAW), CoordVertex()
-			}
-	});
-
-	HoleScreenVAO->ReplaceVertexBuffer(
-		std::vector<CoordVertex>{
-			{ -1.0, -1.0 },
-			{ -1.0,1.0 },
-			{ 1.0,-1.0 },
-			{ 1.0,1.0 },
-	}, 0);
-
-
-	//Init Opengl
-#ifdef _DEBUG
 	{
-		std::ofstream o("Error.log");
+		PROFILE_SCOPE("Create HoleScreenVAO");
+		//Create Static VAO
+		HoleScreenVAO = std::make_unique<VertexArrayObject>(
+			std::vector<VertexBufferObjectDescriptor>{
+				{
+					GLenum(GL_STATIC_DRAW), CoordVertex()
+				}
+		});
+
+		HoleScreenVAO->ReplaceVertexBuffer(
+			std::vector<CoordVertex>{
+				{ -1.0, -1.0 },
+				{ -1.0,1.0 },
+				{ 1.0,-1.0 },
+				{ 1.0,1.0 },
+		}, 0);
 	}
 
-	GLCALL(glEnable(GL_DEBUG_OUTPUT));
-	GLCALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-	GLCALL(glDebugMessageCallback(MessageCallback, 0));
+	{
+		PROFILE_SCOPE("Setting up Opengl");
+		//Init Opengl
+#ifdef _DEBUG
+		{
+			std::ofstream o("Error.log");
+		}
+
+		GLCALL(glEnable(GL_DEBUG_OUTPUT));
+		GLCALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+		GLCALL(glDebugMessageCallback(MessageCallback, 0));
 #endif
 
-	//wxImage I("C:\\Users\\valen\\Desktop\\Atlas-From-wxwidgets.png",wxBITMAP_TYPE_PNG);
+		//wxImage I("C:\\Users\\valen\\Desktop\\Atlas-From-wxwidgets.png",wxBITMAP_TYPE_PNG);
 
-	GLCALL(glEnable(GL_BLEND));
-	GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		GLCALL(glEnable(GL_BLEND));
+		GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 
-	GLCALL(glEnable(GL_STENCIL_TEST));
-	GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-	GLCALL(glStencilMask(0x00));
-
-	new MyFrame(this);
+		GLCALL(glEnable(GL_STENCIL_TEST));
+		GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
+		GLCALL(glStencilMask(0x00));
+	}
+	{
+		PROFILE_SCOPE("Creating Frame");
+		new MyFrame(this);
+	}
 }
 
 //

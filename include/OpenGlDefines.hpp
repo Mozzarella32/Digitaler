@@ -46,6 +46,8 @@ struct TwoPointIVertex {
 	{
 	}
 
+	TwoPointIVertex() {};
+
 	bool operator ==(const TwoPointIVertex& Other) const = default;
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
@@ -69,7 +71,9 @@ struct TwoPointIVertex {
 };
 
 
-struct TwoPointIRGBAVertex{
+struct TwoPointIRGBAIDVertex {
+
+	unsigned int id;
 
 	int x1;
 	int y1;
@@ -82,6 +86,9 @@ struct TwoPointIRGBAVertex{
 	float b;
 	float a;
 
+	float rHighlight;
+	float gHighlight;
+	float bHighlight;
 
 	//int flags = 0;//flags
 
@@ -94,22 +101,25 @@ struct TwoPointIRGBAVertex{
 
 	//int marked = false;
 
-	TwoPointIRGBAVertex(int x1, int y1, int x2, int y2, float r, float g, float b, float a/*,int flags= 0*/)
-		:
-		x1(std::min(x1, x2)),
-		y1(std::min(y1, y2)),
-		x2(std::max(x1, x2)),
-		y2(std::max(y1, y2)),
-		r(r),
-		g(g),
-		b(b),
-		a(a)
-		//flags(flags) 
-	{
-	}
+	TwoPointIRGBAIDVertex() {};
 
-	TwoPointIRGBAVertex(const PointType& p1, const PointType& p2, const ColourType& c/*, const int& flags = 0*/)
+	//TwoPointIRGBAVertex(int x1, int y1, int x2, int y2, float r, float g, float b, float a/*,int flags= 0*/)
+	//	:
+	//	x1(std::min(x1, x2)),
+	//	y1(std::min(y1, y2)),
+	//	x2(std::max(x1, x2)),
+	//	y2(std::max(y1, y2)),
+	//	r(r),
+	//	g(g),
+	//	b(b),
+	//	a(a)
+	//	//flags(flags) 
+	//{
+	//}
+
+	TwoPointIRGBAIDVertex(unsigned int id, const PointType& p1, const PointType& p2, const ColourType& c, const ColourType& Highlight/*, const int& flags = 0*/)
 		:
+		id(id),
 		x1(std::min(p1.x(), p2.x())),
 		y1(std::min(p1.y(), p2.y())),
 		x2(std::max(p1.x(), p2.x())),
@@ -117,22 +127,31 @@ struct TwoPointIRGBAVertex{
 		r(c.x()),
 		g(c.y()),
 		b(c.z()),
-		a(c.w())
+		a(c.w()),
+		rHighlight(Highlight.x()),
+		gHighlight(Highlight.y()),
+		bHighlight(Highlight.z())
 		//flags(flags)
 	{
 	}
 
-	bool operator ==(const TwoPointIRGBAVertex& Other) const = default;
+	bool operator ==(const TwoPointIRGBAIDVertex& Other) const = default;
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBAVertex), (void*)offsetof(TwoPointIRGBAVertex, x1)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_UNSIGNED_INT, sizeof(TwoPointIRGBAIDVertex), (void*)offsetof(TwoPointIRGBAIDVertex, id)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBAVertex), (void*)offsetof(TwoPointIRGBAVertex, x2)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBAIDVertex), (void*)offsetof(TwoPointIRGBAIDVertex, x1)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBAVertex), (void*)offsetof(TwoPointIRGBAVertex, r)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBAIDVertex), (void*)offsetof(TwoPointIRGBAIDVertex, x2)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBAIDVertex), (void*)offsetof(TwoPointIRGBAIDVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBAIDVertex), (void*)offsetof(TwoPointIRGBAIDVertex, rHighlight)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		/*GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(RectColourVertex), (void*)offsetof(RectColourVertex, flags)));
@@ -164,7 +183,9 @@ namespace std {
 
 
 
-struct PointIRGBVertex{
+struct PointIRGBIDVertex {
+
+	unsigned int id;
 
 	int x;
 	int y;
@@ -173,7 +194,9 @@ struct PointIRGBVertex{
 	float g;
 	float b;
 
-	PointIRGBVertex(int x, int y, float r, float g, float b)
+	PointIRGBIDVertex() {};
+
+	/*PointIRGBIDVertex(int x, int y, float r, float g, float b)
 		:
 		x(x),
 		y(y),
@@ -181,10 +204,11 @@ struct PointIRGBVertex{
 		g(g),
 		b(b)
 	{
-	}
+	}*/
 
-	PointIRGBVertex(const PointType& p, const ColourType& c)
+	PointIRGBIDVertex( unsigned int id, const PointType& p, const ColourType& c)
 		:
+		id(id),
 		x(p.x()),
 		y(p.y()),
 		r(c.x()),
@@ -193,14 +217,78 @@ struct PointIRGBVertex{
 	{
 	}
 
-	bool operator ==(const PointIRGBVertex& Other) const = default;
+	bool operator ==(const PointIRGBIDVertex& Other) const = default;
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIRGBVertex), (void*)offsetof(PointIRGBVertex, x)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_UNSIGNED_INT, sizeof(PointIRGBIDVertex), (void*)offsetof(PointIRGBIDVertex, id)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor)); 
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIRGBIDVertex), (void*)offsetof(PointIRGBIDVertex, x)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIRGBVertex), (void*)offsetof(PointIRGBVertex, r)));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIRGBIDVertex), (void*)offsetof(PointIRGBIDVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		/*GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(RectColourVertex), (void*)offsetof(RectColourVertex, flags)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));*/
+		//GLCALL(glEnableVertexAttribArray(Position));
+		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(RectColourVertex), (void*)offsetof(RectColourVertex, colour)));
+		//GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		//GLCALL(glEnableVertexAttribArray(Position));
+		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(RectColourVertex), (void*)offsetof(RectColourVertex, marked)));
+		//GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+	}
+};
+
+
+struct PointFRGBVertex {
+
+	float x1;
+	float y1;
+
+	float x2;
+	float y2;
+
+	float r;
+	float g;
+	float b;
+
+	PointFRGBVertex() {};
+
+	/*PointFRGBVertex(int x, int y, float r, float g, float b)
+		:
+		x(x),
+		y(y),
+		r(r),
+		g(g),
+		b(b)
+	{
+	}*/
+
+	PointFRGBVertex(const Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& c)
+		:
+		x1(std::min(p1.x(), p2.x())),
+		y1(std::min(p1.y(), p2.y())),
+		x2(std::max(p1.x(), p2.x())),
+		y2(std::max(p1.y(), p2.y())),
+		r(c.x()),
+		g(c.y()),
+		b(c.z())
+	{
+	}
+
+	bool operator ==(const PointFRGBVertex& Other) const = default;
+
+	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 2, GL_FLOAT,GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, x1)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 2, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, x2)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, r)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		/*GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(RectColourVertex), (void*)offsetof(RectColourVertex, flags)));
@@ -218,6 +306,8 @@ struct PointIVertex {
 
 	int x1;
 	int y1;
+
+	PointIVertex() {}
 
 	PointIVertex(int x1, int y1)
 		:
@@ -256,7 +346,64 @@ namespace std {
 	};
 }
 
-struct PointIOrientationRGBVertex{
+
+struct PointIOrientationRGBIDVertex {
+
+	unsigned int id;
+
+	int x;
+	int y;
+
+	int Transform;
+
+	float r;
+	float g;
+	float b;
+
+	PointIOrientationRGBIDVertex() {}
+
+	//PointIOrientationRGBIDVertex(int x, int y, int Orientation)
+	//	:
+	//	x(x),
+	//	y(y),
+	//	Orientation(Orientation)
+	//	//flags(flags) 
+	//{
+	//}
+
+	PointIOrientationRGBIDVertex(unsigned int id, const BlockMetadata& meta, const ColourType& c)
+		:
+		id(id),
+		x(meta.Pos.x()),
+		y(meta.Pos.y()),
+		Transform(meta.Transform()),
+		r(c.x()),
+		g(c.y()),
+		b(c.z())
+	{
+	}
+
+	bool operator ==(const PointIOrientationRGBIDVertex& Other) const = default;
+
+	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_UNSIGNED_INT, sizeof(PointIOrientationRGBIDVertex), (void*)offsetof(PointIOrientationRGBIDVertex, id)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIOrientationRGBIDVertex), (void*)offsetof(PointIOrientationRGBIDVertex, x)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(PointIOrientationRGBIDVertex), (void*)offsetof(PointIOrientationRGBIDVertex, Transform)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIOrientationRGBIDVertex), (void*)offsetof(PointIOrientationRGBIDVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+	}
+};
+
+struct PointIOrientationRGBRHGHBHIDVertex {
+
+	int id;
 
 	int x;
 	int y;
@@ -267,56 +414,72 @@ struct PointIOrientationRGBVertex{
 	float g;
 	float b;
 
-	PointIOrientationRGBVertex(int x, int y, int Orientation, float r, float g, float b)
-		:
-		x(x),
-		y(y),
-		Orientation(Orientation),
-		r(r),
-		g(g),
-		b(b)
-		//flags(flags) 
-	{
-	}
+	float rHighlight;
+	float gHighlight;
+	float bHighlight;
 
-	PointIOrientationRGBVertex(const PointType& p, const MyDirektion::Direktion& d, const ColourType& c/*, const int& flags = 0*/)
+	PointIOrientationRGBRHGHBHIDVertex() {}
+
+	//PointIOrientationRGBRHGHBHIDVertex(int x, int y, int Orientation, float r, float g, float b)
+	//	:
+	//	x(x),
+	//	y(y),
+	//	Orientation(Orientation),
+	//	r(r),
+	//	g(g),
+	//	b(b)
+	//	//flags(flags) 
+	//{
+	//}
+
+	PointIOrientationRGBRHGHBHIDVertex(unsigned int id, const PointType& p, const MyDirection::Direction& d, const ColourType& c, const ColourType& Highlight)
 		:
+		id(id),
 		x(p.x()),
 		y(p.y()),
 		Orientation([d]() {
-		switch (MyDirektion::RotateCW(d)) {
-		case MyDirektion::Right: return 0;
-		case MyDirektion::Up: return 1;
-		case MyDirektion::Left: return 2;
-		case MyDirektion::Down: return 3;
-		case MyDirektion::UpLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::UpRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::Neutral:assert(false && "Invalid Direktion for Pin");
-		default: assert(false && "Invalid Direktion for Pin");
+		switch (d) {
+		case MyDirection::Up: return 0;
+		case MyDirection::Right: return 1;
+		case MyDirection::Down: return 2;
+		case MyDirection::Left: return 3;
+		case MyDirection::UpLeft:assert(false && "Invalid Direction for Pin");
+		case MyDirection::UpRight:assert(false && "Invalid Direction for Pin");
+		case MyDirection::DownLeft:assert(false && "Invalid Direction for Pin");
+		case MyDirection::DownRight:assert(false && "Invalid Direction for Pin");
+		case MyDirection::Neutral:assert(false && "Invalid Direction for Pin");
+		default: assert(false && "Invalid Direction for Pin");
 		}
-		assert(false && "Invalid Direktion for Pin");
+		assert(false && "Invalid Direction for Pin");
 		return 0;
 			}()),
 		r(c.x()),
 		g(c.y()),
-		b(c.z())
+		b(c.z()),
+		rHighlight(Highlight.x()),
+		gHighlight(Highlight.y()),
+		bHighlight(Highlight.z())
 		//flags(flags)
 	{
 	}
 
-	bool operator ==(const PointIOrientationRGBVertex& Other) const = default;
+	bool operator ==(const PointIOrientationRGBRHGHBHIDVertex& Other) const = default;
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIOrientationRGBVertex), (void*)offsetof(PointIOrientationRGBVertex, x)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_UNSIGNED_INT, sizeof(PointIOrientationRGBRHGHBHIDVertex), (void*)offsetof(PointIOrientationRGBRHGHBHIDVertex, id)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(PointIOrientationRGBVertex), (void*)offsetof(PointIOrientationRGBVertex, Orientation)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIOrientationRGBRHGHBHIDVertex), (void*)offsetof(PointIOrientationRGBRHGHBHIDVertex, x)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIOrientationRGBVertex), (void*)offsetof(PointIOrientationRGBVertex, r)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(PointIOrientationRGBRHGHBHIDVertex), (void*)offsetof(PointIOrientationRGBRHGHBHIDVertex, Orientation)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIOrientationRGBRHGHBHIDVertex), (void*)offsetof(PointIOrientationRGBRHGHBHIDVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIOrientationRGBRHGHBHIDVertex), (void*)offsetof(PointIOrientationRGBRHGHBHIDVertex, rHighlight)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
 };
@@ -327,7 +490,7 @@ struct SevenSegVertex {
 	int x;
 	int y;
 
-	int Orientation;
+	int Transform;
 
 	int flags;
 
@@ -354,41 +517,28 @@ struct SevenSegVertex {
 		0b1110001,//F
 	};
 
-	SevenSegVertex(int x, int y, int Orientation, int flags, float r, float g, float b)
-		:
-		x(x),
-		y(y),
-		Orientation(Orientation),
-		flags(flags),
-		r(r),
-		g(g),
-		b(b)
-		//flags(flags) 
-	{
-	}
+	SevenSegVertex() {}
+
+	//SevenSegVertex(int x, int y, int Orientation, int flags, float r, float g, float b)
+	//	:
+	//	x(x),
+	//	y(y),
+	//	Orientation(Orientation),
+	//	flags(flags),
+	//	r(r),
+	//	g(g),
+	//	b(b)
+	//	//flags(flags) 
+	//{
+	//}
 
 
 	//Number must be between 0 and F(15)
-	SevenSegVertex(const PointType& p, const MyDirektion::Direktion& d, int number, const ColourType& c/*, const int& flags = 0*/)
+	SevenSegVertex(const BlockMetadata& meta, int number, const ColourType& c/*, const int& flags = 0*/)
 		:
-		x(p.x()),
-		y(p.y()),
-		Orientation([d]() {
-		switch (MyDirektion::RotateCW(d)) {
-		case MyDirektion::Right: return 0;
-		case MyDirektion::Up: return 1;
-		case MyDirektion::Left: return 2;
-		case MyDirektion::Down: return 3;
-		case MyDirektion::UpLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::UpRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::Neutral:assert(false && "Invalid Direktion for Pin");
-		default: assert(false && "Invalid Direktion for Pin");
-		}
-		assert(false && "Invalid Direktion for Pin");
-		return 0;
-			}()),
+		x(meta.Pos.x()),
+		y(meta.Pos.y()),
+		Transform(meta.Transform()),
 		flags([number]() {
 		assert(number >= 0 && number <= 15);
 		return NumberTo7Flags[number];
@@ -407,7 +557,7 @@ struct SevenSegVertex {
 		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(SevenSegVertex), (void*)offsetof(SevenSegVertex, x)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(SevenSegVertex), (void*)offsetof(SevenSegVertex, Orientation)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(SevenSegVertex), (void*)offsetof(SevenSegVertex, Transform)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(SevenSegVertex), (void*)offsetof(SevenSegVertex, flags)));
@@ -423,7 +573,7 @@ struct SixteenSegVertex {
 	int x;
 	int y;
 
-	int Orientation;
+	int Transform;
 
 	int flags;
 
@@ -432,7 +582,7 @@ struct SixteenSegVertex {
 	float b;
 
 	static constexpr const std::array<int, 128> NumberTo16Flags = {
-	    0b0,//0
+		0b0,//0
 		0b0,//1
 		0b0,//2
 		0b0,//3
@@ -562,47 +712,33 @@ struct SixteenSegVertex {
 		0b0,//127
 	};
 
+	SixteenSegVertex() {}
 
 	// a b 
 	//hklmc
 	// i j 
 	//gnopd
 	// f e
-	SixteenSegVertex(int x, int y, int Orientation, int flags, float r, float g, float b)
-		:
-		x(x),
-		y(y),
-		Orientation(Orientation),
-		flags(flags),
-		r(r),
-		g(g),
-		b(b)
-		//flags(flags) 
-	{
-	}
+	//SixteenSegVertex(int x, int y, int Orientation, int flags, float r, float g, float b)
+	//	:
+	//	x(x),
+	//	y(y),
+	//	Orientation(Orientation),
+	//	flags(flags),
+	//	r(r),
+	//	g(g),
+	//	b(b)
+	//	//flags(flags) 
+	//{
+	//}
 
 	//Out of data comment:
 	//Number must be between 0 and F(15)
-	SixteenSegVertex(const PointType& p, const MyDirektion::Direktion& d, int number, const ColourType& c/*, const int& flags = 0*/)
+	SixteenSegVertex(const BlockMetadata& meta, int number, const ColourType& c/*, const int& flags = 0*/)
 		:
-		x(p.x()),
-		y(p.y()),
-		Orientation([d]() {
-		switch (MyDirektion::RotateCW(d)) {
-		case MyDirektion::Right: return 0;
-		case MyDirektion::Up: return 1;
-		case MyDirektion::Left: return 2;
-		case MyDirektion::Down: return 3;
-		case MyDirektion::UpLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::UpRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::Neutral:assert(false && "Invalid Direktion for Pin");
-		default: assert(false && "Invalid Direktion for Pin");
-		}
-		assert(false && "Invalid Direktion for Pin");
-		return 0;
-			}()),
+		x(meta.Pos.x()),
+		y(meta.Pos.y()),
+		Transform(meta.Transform()),
 		flags([number]() {
 		assert(number >= 0 && number < 128);
 		return NumberTo16Flags[number];
@@ -622,7 +758,7 @@ struct SixteenSegVertex {
 		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(SixteenSegVertex), (void*)offsetof(SixteenSegVertex, x)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(SixteenSegVertex), (void*)offsetof(SixteenSegVertex, Orientation)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(SixteenSegVertex), (void*)offsetof(SixteenSegVertex, Transform)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(SixteenSegVertex), (void*)offsetof(SixteenSegVertex, flags)));
@@ -633,12 +769,14 @@ struct SixteenSegVertex {
 	}
 };
 
-struct MuxVertex {
+struct MuxIDVertex {
+
+	unsigned int id;
 
 	int x;
 	int y;
 
-	int Orientation;
+	int Transform;
 
 	int size;
 	int selected;
@@ -647,42 +785,30 @@ struct MuxVertex {
 	float g;
 	float b;
 
-	MuxVertex(int x, int y, int Orientation, int size, int selected, float r, float g, float b)
-		:
-		x(x),
-		y(y),
-		Orientation(Orientation),
-		size(size),
-		selected(selected),
-		r(r),
-		g(g),
-		b(b)
-		//flags(flags) 
-	{
-	}
+	MuxIDVertex() {}
+
+	//MuxIDVertex(int x, int y, int Orientation, int size, int selected, float r, float g, float b)
+	//	:
+	//	x(x),
+	//	y(y),
+	//	Orientation(Orientation),
+	//	size(size),
+	//	selected(selected),
+	//	r(r),
+	//	g(g),
+	//	b(b)
+	//	//flags(flags) 
+	//{
+	//}
 
 
 	//Number must be between 0 and F(15)
-	MuxVertex (const PointType& p, const MyDirektion::Direktion& d,int size, int selceted, const ColourType& c/*, const int& flags = 0*/)
+	MuxIDVertex(unsigned int id, const BlockMetadata& meta, int size, int selceted, const ColourType& c/*, const int& flags = 0*/)
 		:
-		x(p.x()),
-		y(p.y()),
-		Orientation([d]() {
-		switch (MyDirektion::RotateCW(d)) {
-		case MyDirektion::Right: return 0;
-		case MyDirektion::Up: return 1;
-		case MyDirektion::Left: return 2;
-		case MyDirektion::Down: return 3;
-		case MyDirektion::UpLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::UpRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownLeft:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::DownRight:assert(false && "Invalid Direktion for Pin");
-		case MyDirektion::Neutral:assert(false && "Invalid Direktion for Pin");
-		default: assert(false && "Invalid Direktion for Pin");
-		}
-		assert(false && "Invalid Direktion for Pin");
-		return 0;
-			}()),
+		id(id),
+		x(meta.Pos.x()),
+		y(meta.Pos.y()),
+		Transform(meta.Transform()),
 		size(size),
 		selected(selected),
 		r(c.x()),
@@ -692,25 +818,128 @@ struct MuxVertex {
 	{
 	}
 
-	bool operator ==(const MuxVertex & Other) const = default;
+	bool operator ==(const MuxIDVertex& Other) const = default;
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(MuxVertex ), (void*)offsetof(MuxVertex , x)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_UNSIGNED_INT, sizeof(MuxIDVertex), (void*)offsetof(MuxIDVertex, id)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(MuxVertex ), (void*)offsetof(MuxVertex , Orientation)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(MuxIDVertex), (void*)offsetof(MuxIDVertex, x)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(MuxVertex ), (void*)offsetof(MuxVertex , size)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(MuxIDVertex), (void*)offsetof(MuxIDVertex, Transform)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(MuxVertex), (void*)offsetof(MuxVertex, selected)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(MuxIDVertex), (void*)offsetof(MuxIDVertex, size)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(MuxVertex ), (void*)offsetof(MuxVertex , r)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(MuxIDVertex), (void*)offsetof(MuxIDVertex, selected)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(MuxIDVertex), (void*)offsetof(MuxIDVertex, r)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
+};
+
+struct TextVertex {
+	/*float x;
+	float y;
+
+	float u;
+	float v;*/
+
+	//l t r b
+
+	float x;
+	float y;
+
+	float PosOffLeft;
+	float PosOffTop;
+	float PosOffRight;
+	float PosOffBottom;
+
+	float UVOffLeft;
+	float UVOffTop;
+	float UVOffRight;
+	float UVOffBottom;
+
+	int Orientation;
+
+	float ColorR;
+	float ColorG;
+	float ColorB;
+	float ColorA;
+
+	float BackgroundR;
+	float BackgroundG;
+	float BackgroundB;
+	float BackgroundA;
+
+	bool operator ==(const TextVertex& Other) const = default;
+
+	TextVertex() {}
+
+	TextVertex(const Point<float>& Pos, const float* PosOff, const float* UVOff, const float& Scale, const MyDirection::Direction& d, const ColourType& Foregrorund, const ColourType& Background)
+		:
+		x(Pos.x),
+		y(Pos.y),
+		PosOffLeft(PosOff[0]*Scale),
+		PosOffTop(PosOff[1] * Scale),
+		PosOffRight(PosOff[2] * Scale),
+		PosOffBottom(PosOff[3] * Scale),
+		UVOffLeft(UVOff[0]),
+		UVOffTop(UVOff[1]),
+		UVOffRight(UVOff[2]),
+		UVOffBottom(UVOff[3]),
+		Orientation([d]() {
+		switch (d) {
+		case MyDirection::Up: return 0;
+		case MyDirection::Right: return 1;
+		case MyDirection::Down: return 2;
+		case MyDirection::Left: return 3;
+		case MyDirection::UpLeft:assert(false && "Invalid Direction for Pin");
+		case MyDirection::UpRight:assert(false && "Invalid Direction for Pin");
+		case MyDirection::DownLeft:assert(false && "Invalid Direction for Pin");
+		case MyDirection::DownRight:assert(false && "Invalid Direction for Pin");
+		case MyDirection::Neutral:assert(false && "Invalid Direction for Pin");
+		default: assert(false && "Invalid Direction for Pin");
+		}
+		assert(false && "Invalid Direction for Pin");
+		return 0;
+			}()),
+		ColorR(Foregrorund.x()),
+		ColorG(Foregrorund.y()),
+		ColorB(Foregrorund.z()),
+		ColorA(Foregrorund.w()),
+		BackgroundR(Background.x()),
+		BackgroundG(Background.y()),
+		BackgroundB(Background.z()),
+		BackgroundA(Background.w())
+	{
+	}
+
+	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TextVertex), (void*)offsetof(TextVertex, x)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, PosOffLeft)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, UVOffLeft)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TextVertex), (void*)offsetof(TextVertex, Orientation)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, ColorR)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, BackgroundR)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+	}
+
 };
 
 struct IndexVertex {
@@ -723,5 +952,57 @@ struct IndexVertex {
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(IndexVertex), (void*)offsetof(IndexVertex, index)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+	}
+};
+
+
+template<class VertexType>
+struct BufferedVertexVec {
+private:
+	std::vector<VertexType> Vertices;
+public:
+	bool Dirty = true;
+
+	void ReplaceBuffer(VertexArrayObject& VAO, size_t BufferIndex, bool ClearDirty = true) {
+		//if (!Dirty)return;
+		VAO.ReplaceVertexBuffer(Vertices, BufferIndex);
+		if (ClearDirty)Dirty = false;
+	}
+
+	void Clear() {
+		Dirty = true;
+		Vertices.clear();
+	}
+
+
+	void Append(const VertexType& Vertex) {
+		Dirty = true;
+		Vertices.push_back(Vertex);
+	}
+
+	template<typename ...Args>
+	void Emplace(Args&&... args) {
+		Dirty = true;
+		Vertices.emplace_back(std::forward<Args>(args)...);
+	}
+
+	void Append(const std::vector<VertexType>& Vertex) {
+		Dirty = true;
+		Vertices.insert(Vertices.end(), Vertex.begin(), Vertex.end());
+	}
+
+	template<typename ...Args>
+	void AppendOther(Args&&... Other) {
+		Dirty = true;
+		Vertices.reserve(Vertices.size() + (Other.Vertices.size() + ...));
+		(Append(Other.Vertices), ...);
+	}
+
+	bool Empty() const {
+		return Vertices.empty();
+	}
+
+	size_t Size() const {
+		return Vertices.size();
 	}
 };

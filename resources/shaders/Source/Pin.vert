@@ -6,9 +6,11 @@
 layout(location = 0) in int InIndex;
 
 //Per Instance
-layout(location = 1) in ivec2 InstanceInPos;
-layout(location = 2) in int InstanceOrientation;
-layout(location = 3) in vec3 InstanceInColor;
+layout(location = 1) in uint InstanceInId;
+layout(location = 2) in ivec2 InstanceInPos;
+layout(location = 3) in int InstanceInOrientation;
+layout(location = 4) in vec3 InstanceInColor;
+layout(location = 5) in vec3 InstanceInHighlightColor;
 
 //Out
 out vec2 PosInWorld;
@@ -18,63 +20,68 @@ flat out vec3 Color;
 flat out vec2 PosOfPin;
 flat out vec2 A;
 flat out vec2 B;
-flat out vec2 OtherUp;
-flat out vec2 OtherDown;
-flat out vec2 Other;
+flat out vec3 HighlightColor;
+flat out uint id;
 
 //Uniforms
 uniform vec2 UOffset;
 uniform vec2 UZoom;
-// lx dy rx uy
-float Offset[4*4] = {
-    0.5,-0.6,-0.5,0.5,
-    -0.5,-0.5,0.6,0.5,
-    -0.5,0.6,0.5,-0.5,
-    0.5,0.5,-0.6,-0.5,
+
+// d r u t
+float Size[4] = {
+	-0.6,0.5,0.5,-0.5,
 };
 
-float OtherOffset[2*4] = {
-    0.0,-1.0,
-    1.0,0.0,
-    0.0,1.0,
-   -1.0,0.0,
+float Directions[2*4] = {
+	0,1,
+	1,0,
+	0,-1,
+	-1,0
 };
 
+int IndexTable[2*4] = {
+	0,1,
+	0,3,
+	2,1,
+	2,3,
+};
+//
+//float OtherOffset[2*4] = {
+//    0.0,-1.0,
+//   -1.0,0.0,
+//    0.0,1.0,
+//    1.0,0.0,
+//};
 
 void main() {
- vec2 Pos = 
-      int(InIndex == 0)*vec2(InstanceInPos.x+Offset[InstanceOrientation*4+0],InstanceInPos.y+Offset[InstanceOrientation*4+1])
-    + int(InIndex == 1)*vec2(InstanceInPos.x+Offset[InstanceOrientation*4+0],InstanceInPos.y+Offset[InstanceOrientation*4+3])
-    + int(InIndex == 2)*vec2(InstanceInPos.x+Offset[InstanceOrientation*4+2],InstanceInPos.y+Offset[InstanceOrientation*4+1])
-    + int(InIndex == 3)*vec2(InstanceInPos.x+Offset[InstanceOrientation*4+2],InstanceInPos.y+Offset[InstanceOrientation*4+3]);
+	vec2 CorrectedPos = InstanceInPos;
 
-    PosInWorld = Pos;
+	vec2 Right = vec2(Directions[(InstanceInOrientation+1)%4*2+0],Directions[(InstanceInOrientation+1)%4*2+1]);
+	vec2 Up = vec2(Directions[(InstanceInOrientation+0)%4*2+0],Directions[(InstanceInOrientation+0)%4*2+1]);
 
-//
-//    ScreenPos = int(InIndex == 0)*vec2(InstanceInFirst.xy - vec2(0.5))
-//    + int(InIndex == 1 || InIndex == 3)*vec2(InstanceInFirst.x-0.5,InstanceInSecond.y+0.5)
-//    + int(InIndex == 2 || InIndex == 4)*vec2(InstanceInSecond.x+0.5,InstanceInFirst.y-0.5)
-//    + int(InIndex == 5)*vec2(InstanceInSecond.xy+vec2(0.5));
-//
+	ivec2 Index = ivec2(IndexTable[InIndex*2],IndexTable[InIndex*2+1]);
 
-    PosOfPin = InstanceInPos;
+	vec2 Pos = CorrectedPos + Size[Index.x] * Up + Size[Index.y] * Right;
 
-    Other = InstanceInPos + 0.6*vec2(OtherOffset[InstanceOrientation*2+0],OtherOffset[InstanceOrientation*2+1]);
+	PosInWorld = Pos;
 
-    vec2 OtherLess = InstanceInPos + 0.4*vec2(OtherOffset[InstanceOrientation*2+0],OtherOffset[InstanceOrientation*2+1]);
+	PosOfPin = InstanceInPos;
 
-    OtherUp = OtherLess + 0.5*vec2(OtherOffset[(InstanceOrientation+1)%4*2+0],OtherOffset[(InstanceOrientation+1)%4*2+1]);
-    OtherDown = OtherLess + 0.5*vec2(OtherOffset[(InstanceOrientation-1)%4*2+0],OtherOffset[(InstanceOrientation-1)%4*2+1]);
+	vec2 Other = InstanceInPos - 0.6*Up;
 
-    A = vec2(min(InstanceInPos.x,Other.x),min(InstanceInPos.y,Other.y));
-    B = vec2(max(InstanceInPos.x,Other.x),max(InstanceInPos.y,Other.y));
+	A = vec2(min(InstanceInPos.x,Other.x),min(InstanceInPos.y,Other.y));
+	B = vec2(max(InstanceInPos.x,Other.x),max(InstanceInPos.y,Other.y));
 
-   vec2 PosOnScreen = (Pos+UOffset)/UZoom;
+	Color = InstanceInColor;
 
-    ScreenPos = (PosOnScreen+1.0) / 2.0;
+	HighlightColor = InstanceInHighlightColor;
 
-    Color = InstanceInColor;
+	id = InstanceInId;
+	
+	vec2 PosOnScreen = (Pos+UOffset)/UZoom;
 
-    gl_Position = vec4((Pos+UOffset)/UZoom, 0.0, 1.0);
+	ScreenPos = (PosOnScreen+1.0) / 2.0;
+
+	gl_Position = vec4(PosOnScreen, 0.0, 1.0);
 }
 

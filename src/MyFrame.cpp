@@ -22,6 +22,7 @@ MyFrame::MyFrame(MyApp* App)
 	LoopTimer(this, [this]() {Loop(); })
 
 {
+	PROFILE_FUNKTION;
 	Bind(wxEVT_CLOSE_WINDOW, [App](wxCloseEvent& evt) {
 		App->ExitMainLoop();
 		});
@@ -251,19 +252,14 @@ MyFrame::MyFrame(MyApp* App)
 
 	Canvas = new wxGLCanvas(this);
 
-	App->ContextBinder->BindContext(App->GlContext.get());
-
-	IO = std::make_unique<IOHandler>(this);
-	renderer = std::make_unique<Renderer>(App, this);
-	//CurrentBlock = std::make_unique<VisualBlockInterior>(0);
-	BlockManager = std::make_unique<DataResourceManager>();
-
 	Canvas->Bind(wxEVT_SIZE, [this](wxSizeEvent& evt) {
 		evt.Skip();
+		if (!Initilized) return;
 		IO->OnCanvasSizeChange();
 		});
 	Canvas->Bind(wxEVT_MOUSEWHEEL, [this](wxMouseEvent& evt) {
 		evt.Skip();
+		if (!Initilized) return;
 		IO->OnMouseWheel(evt.GetPosition(), evt.GetWheelRotation());
 		});
 	/*Canvas->Bind(wxEVT_GESTURE_ZOOM, [this](wxZoomGestureEvent& evt) {
@@ -272,31 +268,48 @@ MyFrame::MyFrame(MyApp* App)
 		});*/
 	Canvas->Bind(wxEVT_MOTION, [this](wxMouseEvent& evt) {
 		evt.Skip();
+		if (!Initilized) return;
 		IO->OnMouseMove(evt.GetPosition());
 		});
 	Canvas->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& evt) {
 		evt.Skip();
+		if (!Initilized) return;
 		IO->OnMouseDown(evt.GetPosition());
+		});
+	Canvas->Bind(wxEVT_LEFT_DCLICK, [this](wxMouseEvent& evt) {
+		evt.Skip();
+		if (!Initilized) return;
+		IO->OnDClick(evt.GetPosition());
 		});
 	Canvas->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& evt) {
 		evt.Skip();
+		if (!Initilized) return;
 		IO->OnMouseUp(evt.GetPosition());
+		});
+	Canvas->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent& evt) {
+		evt.Skip();
+		if (!Initilized) return;
+		IO->OnRightMouseDown(evt.GetPosition());
 		});
 	Canvas->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent& evt) {
 		evt.Skip();
+		if (!Initilized) return;
 		IO->StoppDragg();
 		});
 	App->Bind(wxEVT_KEY_DOWN, [this](wxKeyEvent& evt) {
 		evt.Skip();
-		IO->OnKeyDown(evt.ShiftDown(), evt.GetKeyCode());
+		if (!Initilized) return;
+		IO->OnKeyDown(evt);
 		});
 	App->Bind(wxEVT_KEY_UP, [this](wxKeyEvent& evt) {
 		evt.Skip();
-		IO->OnKeyUp(evt.ShiftDown(), evt.GetKeyCode());
+		if (!Initilized) return;
+		IO->OnKeyUp(evt);
 		});
 	App->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& evt) {
 		evt.Skip();
-		IO->OnChar(evt.GetKeyCode());
+		if (!Initilized) return;
+		IO->OnChar(evt);
 		});
 
 	Sizer->Add(Canvas, 1, wxEXPAND);
@@ -307,7 +320,7 @@ MyFrame::MyFrame(MyApp* App)
 	//CenterOnScreen(wxBOTH);
 
 	LoopTimer.SetSamples(60 * 10);
-	LoopTimer.SetFPS(10);
+	LoopTimer.SetFPS(60);
 
 	LoopTimer.Start();
 
@@ -317,9 +330,22 @@ MyFrame::MyFrame(MyApp* App)
 
 	Maximize();
 
+	PROFILE_SESSION_START("Hi", std::filesystem::path(wxGetHomeDir().ToStdString()) / "Profiled.json");
 
-	PROFILE_SESSION_START("Hi", std::filesystem::path(wxGetHomeDir().ToStdString()) / "/Profiled.json");
+	CallAfter([this]() {
+		PROFILE_SCOPE("Initilizing");
 
+		this->App->ContextBinder->BindContext(this->App->GlContext.get());
+		IO = std::make_unique<IOHandler>(this);
+		{
+			PROFILE_SCOPE("Creating Renderer");
+			renderer = std::make_unique<Renderer>(this->App, this);
+		}
+		//CurrentBlock = std::make_unique<VisualBlockInterior>(0);
+		BlockManager = std::make_unique<DataResourceManager>(renderer.get());
+		IO->OnCanvasSizeChange();
+		Initilized = true;
+		});
 }
 
 MyFrame::~MyFrame() {
@@ -329,6 +355,11 @@ MyFrame::~MyFrame() {
 
 void MyFrame::Loop() {
 	PROFILE_FUNKTION;
+
+	if (!Initilized) {
+		SetTitle("Initilizing");
+		return;
+	}
 
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -353,7 +384,7 @@ void MyFrame::Loop() {
 	}
 #endif
 	//renderer->Dirty = true;
-	renderer->Render();
+	SetTitle(renderer->title + " " + IO->GetStateString());
 	//SetTitle("HI");
 
 	//SetTitle(std::to_string(IO->Zoom));
@@ -412,7 +443,7 @@ void MyFrame::Loop() {
 #endif
 	//s << " FPS:" << std::setw(10) << 1000.0 / dur.count() << " Frametime: " << std::setw(10) << dur.count() / 1000.0 << "ms" << " FPS: " << std::setw(10) << std::setprecision(4) << Info.FPS
 		//<< " Sleep: " << std::setw(10) << std::chrono::duration_cast<std::chrono::microseconds>(Info.Sleep).count() / 1000.0 << "ms";
-	
+
 	s << IO->GetStateString();
-	SetTitle(s.str());
+	//SetTitle(s.str());
 }

@@ -63,7 +63,27 @@ using ColourType = Eigen::Vector4f;
 
 struct BlockMetadata {
 	PointType Pos;
-	MyDirektion::Direktion Rotation;
+	MyDirection::Direction Rotation;
+	bool xflip : 1 = 0;
+	bool yflip : 1 = 0;
+	int Transform() const {
+		int Transform = 0;
+		switch (Rotation) {
+		case MyDirection::Up: Transform = 0; break;
+		case MyDirection::Right: Transform = 1; break;
+		case MyDirection::Down: Transform = 2; break;
+		case MyDirection::Left: Transform = 3; break;
+		case MyDirection::UpLeft:assert(false && "Invalid Direction for Pin");
+		case MyDirection::UpRight:assert(false && "Invalid Direction for Pin");
+		case MyDirection::DownLeft:assert(false && "Invalid Direction for Pin");
+		case MyDirection::DownRight:assert(false && "Invalid Direction for Pin");
+		case MyDirection::Neutral:assert(false && "Invalid Direction for Pin");
+		default: assert(false && "Invalid Direction for Pin");
+		}
+		Transform |= xflip << 2;
+		Transform |= yflip << 3;
+		return Transform;
+	}
 };
 
 using CompressedBlockDataIndex = size_t;
@@ -80,15 +100,20 @@ struct CompressedBlockData {
 		//std::string Package;
 		//std::filesystem::path PathInPackage;
 		std::string Name;
+		ColourType ColorRGB;
+		ColourType TextColorRGB;
 		/*
 		Special Names:
-        "Seven Segment Display"
+		"Seven Segment Display"
 
 		*/
 
 		struct Pin {
-			MyDirektion::Direktion rotation;
-			unsigned int offset;
+			static const constexpr unsigned int VariableMultiplicity = (unsigned int)-1;
+
+			MyDirection::Direction Rotation;
+			unsigned int Offset;
+			unsigned int Multiplicity = 1;
 			std::string Name;
 		};
 
@@ -105,7 +130,7 @@ struct CompressedBlockData {
 //	struct Pin {
 //		PointType Pos;//Unique Relative
 //		std::string Name;//Unique
-		//MyDirektion::Direktion Direktion;//ForDisplay
+		//MyDirection::Direction Direction;//ForDisplay
 //	};
 //
 //	PointType Size;
@@ -114,7 +139,7 @@ struct CompressedBlockData {
 //	std::vector<Pin> OutputPin;
 //
 //	//RelativeTo 0,0 wich is the top left corner
-//	std::optional<MyDirektion::Direktion> GetPinDirektion(const PointType& PinPos) {
+//	std::optional<MyDirection::Direction> GetPinDirection(const PointType& PinPos) {
 //		const auto& Corner1 = PointType{0,0};
 //		const auto& Corner2 = Size;
 //
@@ -126,18 +151,18 @@ struct CompressedBlockData {
 //		if (XInside == YInside) return std::nullopt;
 //		if (XInside) {
 //			if (PinPos.y() == Corner1.y() - 1) {
-//				return MyDirektion::Up;
+//				return MyDirection::Up;
 //			}
 //			else if (PinPos.y() == Corner2.y() + 1) {
-//				return MyDirektion::Down;
+//				return MyDirection::Down;
 //			}
 //		}
 //		else {
 //			if (PinPos.x() == Corner1.x() - 1) {
-//				return MyDirektion::Right;
+//				return MyDirection::Right;
 //			}
 //			else if (PinPos.x() == Corner2.x() + 1) {
-//				return MyDirektion::Left;
+//				return MyDirection::Left;
 //			}
 //		}
 //		return std::nullopt;
@@ -166,7 +191,7 @@ struct CompressedBlockData {
 //			}
 //		}
 //
-//		if (!GetPinDirektion(Pin.Pos).has_value()) return false;
+//		if (!GetPinDirection(Pin.Pos).has_value()) return false;
 //
 //
 //		if (IsInput) {
@@ -187,7 +212,7 @@ struct CompressedBlockData {
 //	{
 //		InputPin.reserve(cbd.InputPin.size());
 //		for (const auto& P : cbd.InputPin) {
-//			auto DirOpt = GetPinDirektion(P.Pos);
+//			auto DirOpt = GetPinDirection(P.Pos);
 //			if (!DirOpt.has_value()) {
 //				assert(false);
 //				continue;
@@ -196,7 +221,7 @@ struct CompressedBlockData {
 //		}
 //		OutputPin.reserve(cbd.OutputPin.size());
 //		for (const auto& P : cbd.OutputPin) {
-//			auto DirOpt = GetPinDirektion(P.Pos);
+//			auto DirOpt = GetPinDirection(P.Pos);
 //			if (!DirOpt.has_value()) {
 //				assert(false);
 //				continue;
@@ -483,6 +508,19 @@ public:
 	LineIndex Intercept(const PointType& pos) const;
 
 private:
+
+	void RotateAround(const PointType& pos, double angle);
+
+public:
+
+	//Clockwise
+	void RotateAroundCW(const PointType& pos);
+	//Counter Clockwise
+	void RotateAroundCCW(const PointType& pos);
+	//Halfe Way
+	void RotateAroundHW(const PointType& pos);
+
+private:
 	//Todo set
 	LineIndex LastAddedLine = InvalidLineIndex;
 	void SetLastAdded(const PointIndex& pIndex);
@@ -531,10 +569,11 @@ public:
 
 	CompressedPathData(std::vector<PointType>&& Points,
 		std::vector<Line>&& Lines,
-		::LineIndex&& LastAddedLine) 
-		:Points(std::move(Points)), 
-		Lines(std::move(Lines)), 
-		LastAddedLine(LastAddedLine){}
+		::LineIndex&& LastAddedLine)
+		:Points(std::move(Points)),
+		Lines(std::move(Lines)),
+		LastAddedLine(LastAddedLine) {
+	}
 
 	std::string toHumanReadable() const;
 

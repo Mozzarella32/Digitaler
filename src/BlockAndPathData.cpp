@@ -152,7 +152,7 @@ void VisualPathData::AddLine(const PointIndex& a, const PointIndex& b) {
 	Points[a].AddConnection(b);
 	Points[b].AddConnection(a);
 #ifdef UseCollisionGrid
-	Block->RegisterLine(LineIndex{ a,b }, Points,Id);
+	Block->RegisterLine(LineIndex{ a,b }, Points, Id);
 #endif
 }
 
@@ -217,7 +217,7 @@ LineIndex VisualPathData::LineExists(const PointIndex& a, const PointIndex& b) c
 
 	for (LineIndexInPoint i = 0; i < Points[a].ConnectionCount(); i++) {
 		if (Points[a].Connections[i] == b) {
-			return LineIndex{ a,Points[a].Connections[i]};
+			return LineIndex{ a,Points[a].Connections[i] };
 		}
 	}
 	return InvalidLineIndex;
@@ -482,7 +482,7 @@ PointIndex VisualPathData::AddLine(const PointIndex& aIndex, const PointType& p,
 	//No Intercept but has aIndex has line in that direction
 	for (LineIndexInPoint i = 0; i < 4; i++) {
 		if (Points[aIndex].Connections[i] == InvalidPointIndex || Points[aIndex].Connections[i] == ReservedPointIndex) break;
-		LineIndex aLineIndex{ aIndex,Points[aIndex].Connections[i]};
+		LineIndex aLineIndex{ aIndex,Points[aIndex].Connections[i] };
 		const PointIndex OtherIndex = aLineIndex.B;
 		//a -- o -- p
 		if (PointStrictelyOnLine(Points[aIndex].Pos, p, Points[OtherIndex].Pos)) {
@@ -838,7 +838,7 @@ LineIndex VisualPathData::StreightLineMiddelRemove(const PointIndex& p) {
 	AddLine(a, b);
 	for (LineIndexInPoint i = 0; i < Points[a].ConnectionCount(); i++) {
 		if (Points[a].Connections[i] == b) {
-			return LineIndex{ a,Points[a].Connections[i]};
+			return LineIndex{ a,Points[a].Connections[i] };
 		}
 	}
 	assert(false);
@@ -851,7 +851,7 @@ LineIndex VisualPathData::StreightLineMiddelRemove(const PointIndex& p) {
 }
 
 VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlockInterior* Block)
-: Block(Block), Id(KlassInstanceCounter++)
+	: Block(Block), Id(KlassInstanceCounter++)
 {
 	assert(PointsMakeStreightLine(a, b));
 	assert(a != b);
@@ -861,7 +861,7 @@ VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlo
 
 	AddLine(aIndex, bIndex);
 
-	LastAddedLine = LineIndex{ aIndex,bIndex};
+	LastAddedLine = LineIndex{ aIndex,bIndex };
 }
 
 VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block)
@@ -1057,7 +1057,7 @@ LineIndex VisualPathData::Intercept(const PointType& pos) const {
 	IsValidCaller __vc(this);
 #endif
 	assert(pos != InvalidPoint);
-//#define Optimized
+	//#define Optimized
 #ifdef UseCollisionGrid
 	return Block->GetLineWith(pos, *this);
 #else
@@ -1066,7 +1066,7 @@ LineIndex VisualPathData::Intercept(const PointType& pos) const {
 		if (p.IsFree())continue;
 		for (LineIndexInPoint j = 0; j < 4; j++) {
 			if (p.Connections[j] == InvalidPointIndex || p.Connections[j] == ReservedPointIndex)break;
-			LineIndex l{ i,p.Connections[j]};
+			LineIndex l{ i,p.Connections[j] };
 			if (PointStrictelyOnLine(l, pos))return l;
 		}
 	}
@@ -1075,11 +1075,44 @@ LineIndex VisualPathData::Intercept(const PointType& pos) const {
 	//Todo Makover
 }
 
+void VisualPathData::RotateAround(const PointType& pos, double angle) {
+	auto Rotate = [](float angle) {
+		return Eigen::Matrix2i{
+			{(int)std::round(cos(angle)),-(int)std::round(sin(angle))},
+			{(int)std::round(sin(angle)),(int)std::round(cos(angle))}
+		};
+		};
+
+	auto Rotation = Rotate(angle);
+
+	auto CPD = CompressedPathData(*this);
+	
+	for (PointType& Point : CPD.Points) {
+		PointType Off = Point - pos;
+		Off = Rotation * Off;
+		Point = pos + Off;
+	}
+
+	(*this) = VisualPathData(CPD,Block);
+}
+
+void VisualPathData::RotateAroundCW(const PointType& pos) {
+	RotateAround(pos, -M_PI / 2.0);
+}
+
+void VisualPathData::RotateAroundCCW(const PointType& pos) {
+	RotateAround(pos, M_PI / 2.0);
+}
+
+void VisualPathData::RotateAroundHW(const PointType& pos) {
+	RotateAround(pos, M_PI);
+}
+
 void VisualPathData::SetLastAdded(const PointIndex& pIndex) {
 	const PointNode& p = Points[pIndex];
 	for (LineIndexInPoint i = 0; i < 4; i++) {
 		if (p.Connections[i] != InvalidPointIndex) {
-			LastAddedLine = { pIndex,p.Connections[i]};
+			LastAddedLine = { pIndex,p.Connections[i] };
 		}
 		else {
 			return;

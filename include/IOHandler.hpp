@@ -20,8 +20,9 @@ struct KeyboardData {
 
 	bool E : 1;
 	bool Shift : 1;
+	bool Strng : 1;
 
-	bool F : 1;
+	//bool F : 1;
 
 	Eigen::Vector2f MousePosition;
 };
@@ -39,7 +40,10 @@ public:
 private:
 	//std::unique_ptr<Board> board;
 
-	void UpdateMouseIndex(const wxPoint& Pos);
+	//Returnes if the index changed
+	bool UpdateMouseIndex(const wxPoint& Pos);
+
+	Eigen::Vector2f PixelToScreenCoord(const wxPoint& Pos);
 
 	//bool ClickMenu(wxPoint Mouse);
 
@@ -73,17 +77,23 @@ private:
 	//private:
 private:
 
-	enum State {
+	enum class State {
 		Normal,
 		Dragging,
 		DraggingWhilePlacingLine,
 		PlacingLine,
+		Marking,
+		DraggingWithMarking,
+		DraggingMarked,
+		AreaFirstPoint,
+		DraggingWhileAreaFistPoint,
+		GoHome,
 	};
 
-	State state = Normal;
+	State state = State::Normal;
 	void SetState(const State& state);
 
-
+	State GoHomeSaveState;
 public:
 	std::string GetStateString()const;
 	//BlockData BD;
@@ -95,19 +105,25 @@ public:
 private:
 	bool Click = false;
 	wxPoint DraggingOrigin;
+	Eigen::Vector2f AreaFirstPoint;
+	Eigen::Vector2f AreaSecondPoint;
 public:
 
 	void OnMouseWheel(const wxPoint& wxPos, double Rotation);
 	void OnMouseMove(const wxPoint& wxPos);
 	void OnMouseDown(const wxPoint& wxPos);
 	void OnMouseUp(const wxPoint& wxPos);
+	void OnRightMouseDown(const wxPoint& wxPos);
+	void OnDClick(const wxPoint& wxPos);
 	void StoppDragg();
 
-	void OnKeyDown(bool Shift, const int& KeyCode);
-	void OnKeyUp(bool Shift, const int& KeyCode);
-	void OnChar(const int& KeyCode);
+	void OnKeyDown(wxKeyEvent& evt);
+	void OnKeyUp(wxKeyEvent& evt);
+	void OnChar(wxKeyEvent& evt);
 
 	void OnCanvasSizeChange();
+
+	void OnDelete();
 private:
 	//Helpers for unduplication
 

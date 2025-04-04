@@ -15,6 +15,7 @@ class MyFrame : public wxFrame {
 #endif
 
 public:
+	bool Initilized = false;
 	std::unique_ptr<IOHandler> IO;
 	std::unique_ptr<Renderer> renderer;
 	std::unique_ptr<DataResourceManager> BlockManager;

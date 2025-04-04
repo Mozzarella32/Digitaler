@@ -58,6 +58,7 @@ void ShaderManager::Work() {
 }
 
 void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::path& Vert, const std::filesystem::path& Frag) {
+	PROFILE_FUNKTION;
 	std::filesystem::file_time_type VertTime;
 	std::filesystem::file_time_type FragTime;
 	try {
@@ -92,6 +93,7 @@ void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::p
 #endif
 
 const std::unique_ptr<Shader>& ShaderManager::GetShader(const Shaders& shader) {
+	PROFILE_FUNKTION;
 	auto& This = GetInstance();
 #ifdef HotShaderReload
 	std::unique_lock ul(This.QueueMutex);
@@ -106,10 +108,30 @@ const std::unique_ptr<Shader>& ShaderManager::GetShader(const Shaders& shader) {
 #else
 	return This.Map.at(shader);
 #endif
-	
-	
+}
+
+const std::vector<std::pair<ShaderManager::Shaders, GLenum>>& ShaderManager::GetShadersWithUniform(const std::string& uniform) {
+	PROFILE_FUNKTION;
+	auto& This = GetInstance();
+	auto it = This.Uniforms.find(uniform);
+	if (it != This.Uniforms.end()) {
+		return it->second;
+	}
+	std::vector<std::pair<Shaders, GLenum>> shaders;
+
+	for (int i = 0; i < ShadersSize; i++) {
+		auto& shader = This.Map.at((Shaders)i);
+		size_t Location = shader->GetLocation(uniform);
+		if (Location != -1) {
+			shaders.emplace_back((Shaders)i, Location);
+		}
+	}
+
+	This.Uniforms[uniform] = shaders;
+	return This.Uniforms.at(uniform);
 }
 
 void ShaderManager::Initilise() {
+	PROFILE_FUNKTION;
 	GetInstance();
 }

@@ -5,6 +5,9 @@
 #include "Include.hpp"
 
 #include "Block.hpp"
+
+class Renderer;
+
 //
 class BlockFileAddress {
 	std::string Package;
@@ -36,6 +39,8 @@ class DataResourceManager {
 	/*std::unordered_map<BlockDataID, BlockFileAddress> IdToAddress;
 	std::unordered_map<BlockFileAddress, BlockDataID> AddressToId;*/
 
+	Renderer* renderer;
+
 	std::queue<CompressedBlockDataIndex> FreeBlockIndecies;
 	CompressedBlockDataIndex NextNewBlockIndex = 0;
 
@@ -46,7 +51,10 @@ class DataResourceManager {
 	struct SpecialBlockIndex {
 		CompressedBlockDataIndex SevengSeg;
 		CompressedBlockDataIndex SixteenSeg;
-		CompressedBlockDataIndex Multiplexer;
+		CompressedBlockDataIndex And;
+		CompressedBlockDataIndex Or;
+		CompressedBlockDataIndex XOr;
+		CompressedBlockDataIndex Mux;
 	};
 
 	SpecialBlockIndex SpecialBlocks;
@@ -63,7 +71,7 @@ class DataResourceManager {
 public:
 	std::unique_ptr<VisualBlockInterior> CurrentInterior;
 
-	DataResourceManager();
+	DataResourceManager(Renderer* renderer);
 
 	std::optional<CompressedBlockData> GetCompressedBlockData(const CompressedBlockDataIndex& index) const;
 

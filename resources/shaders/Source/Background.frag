@@ -1,4 +1,4 @@
-//Hex.frag
+//Background.frag
 
 #version 330 core
 
