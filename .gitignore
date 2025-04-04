@@ -38,6 +38,15 @@
 
 build/*
 
+# Visual Studio
+.vs/*
+
+# Visual Studio Code
+.vscode/*
+
+# JetBrains
+.idea/*
+
 Png_Includes.hpp
 Png_X_List.hpp
 PngHeaders
