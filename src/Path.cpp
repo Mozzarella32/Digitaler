@@ -7,9 +7,9 @@ VisualPath::VisualPath(VisualPathData&& Data)
 	:Data(std::move(Data)) {
 }
 
-static const std::vector<TwoPointIVertex> EmptyVerts;
+static const std::vector<TwoPointIRGBVertex> EmptyVerts;
 
-const std::vector<TwoPointIVertex>& VisualPath::ComputeAllAndGetEdges(const MyRectI& BoundingBox) {
+const std::vector<TwoPointIRGBVertex>& VisualPath::ComputeAllAndGetEdges(const MyRectI& BoundingBox) {
 	if (!Data.BoundingBox.Intersectes(BoundingBox)) return EmptyVerts;
 
 	if (CachedBoundingBox != BoundingBox) {
@@ -69,7 +69,17 @@ const std::vector<TwoPointIVertex>& VisualPath::ComputeAllAndGetEdges(const MyRe
 				if (BoundingBox.Contains(B) && other.ConnectionCount() >= 2) {
 					specialPoints.emplace(B);
 				}
-				Edges.emplace_back(A, B);
+
+				MyRectI Mark = MyRectI::FromCorners(
+					PointType{ 0,0 },
+					PointType{ 10,10 }
+				);
+
+				ColourType C = MyRectI::FromCorners(A, B).Intersectes(Mark)
+					? ColourType{ 1.0f,0.0f,0.5f,1.0f }
+				: ColourType(1.0f, 0.5f, 0.0f, 1.0f);
+
+				Edges.emplace_back(A, B,C);
 			}
 		}
 	}
@@ -77,17 +87,17 @@ const std::vector<TwoPointIVertex>& VisualPath::ComputeAllAndGetEdges(const MyRe
 	SpecialPoints = std::vector(specialPoints.begin(), specialPoints.end());
 
 	//Calculate Verts
-	std::unordered_set<TwoPointIVertex> verts;
+	std::unordered_set<TwoPointIRGBVertex> verts;
 	verts.reserve(2 * Edges.size());
 	for (const auto& edge : Edges) {
 		if (BoundingBox.Contains({ edge.x1, edge.y1 })) {
-			verts.emplace(edge.x1, edge.y1, edge.x1, edge.y1);
+			verts.emplace(edge.x1, edge.y1, edge.x1, edge.y1,1.0f,0.0f,1.0f);
 		}
 		if (BoundingBox.Contains({ edge.x2, edge.y2 })) {
-			verts.emplace(edge.x2, edge.y2, edge.x2, edge.y2);
+			verts.emplace(edge.x2, edge.y2, edge.x2, edge.y2,1.0f,0.0f,1.0f);
 		}
 	}
-
+	
 	Verts = std::vector(verts.begin(), verts.end());
 
 	return Edges;
@@ -97,7 +107,7 @@ const std::vector<PointIVertex>& VisualPath::getSpecialPoints() const {
 	return SpecialPoints;
 }
 
-const std::vector<TwoPointIVertex>& VisualPath::getVerts() const {
+const std::vector<TwoPointIRGBVertex>& VisualPath::getVerts() const {
 	return Verts;
 }
 

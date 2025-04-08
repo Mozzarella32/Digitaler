@@ -70,16 +70,25 @@ void main() {
 	int Rotation = InstanceInTransform & 0x3;
 	int xflip = (InstanceInTransform >> 2) & 0x1;
 	int yflip = (InstanceInTransform >> 3) & 0x1;
+
+	int flipflip = int(Rotation == 1 || Rotation == 3); 
+
+	int newxflip = xflip*(1-flipflip) + yflip * flipflip;
+	int newyflip = yflip*(1-flipflip) + xflip * flipflip;
+
+	xflip = newxflip;
+	yflip = newyflip;
+
 	vec2 flipx = vec2(1 - 2 * xflip);
 	vec2 flipy = vec2(1 - 2 * yflip);
 	int BetterRot = Rotation*(1-yflip)+(Rotation+2-4*int(floor((Rotation+2)/4)))*yflip;
-	
-	vec2 CorrectedPos = InstanceInPos + Offset + vec2(Correction[BetterRot*2+0],Correction[BetterRot*2+1]);
 
 	vec2 Right = vec2(Directions[(Rotation+1)%4*2+0],Directions[(Rotation+1)%4*2+1]) * flipx;
 	vec2 Up = vec2(Directions[(Rotation+0)%4*2+0],Directions[(Rotation+0)%4*2+1]) * flipy;
 
 	ivec2 Index = ivec2(IndexTable[InIndex*2],IndexTable[InIndex*2+1]);
+
+	vec2 CorrectedPos = InstanceInPos + Offset + vec2(Correction[BetterRot*2+0],Correction[BetterRot*2+1]);
 
 	vec2 Pos = CorrectedPos + Size[Index.x] * Up + Size[Index.y] * Right;
 

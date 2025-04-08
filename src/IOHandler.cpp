@@ -269,7 +269,7 @@ void IOHandler::OnMouseMove(const wxPoint& wxPos) {
 
 		auto& buff = r.GetAreaSelectVerts();
 		buff.Clear();
-		buff.Emplace(AreaFirstPoint, AreaSecondPoint, ColourType{ 1.0,0.0,1.0,0.1 });
+		buff.Emplace(AreaFirstPoint, AreaSecondPoint, ColourType{ 1.0f,0.0f,1.0f,0.1f });
 
 		b.MarkArea(MyRectF::FromCorners(AreaFirstPoint, AreaSecondPoint));
 
@@ -491,32 +491,38 @@ void IOHandler::OnKeyDown(wxKeyEvent& evt) {
 	case 'E':
 		Keyboarddata.E = true;
 		break;
-	/*case 'F':
-		Keyboarddata.F = true;
-		break;*/
+		/*case 'F':
+			Keyboarddata.F = true;
+			break;*/
 	case 'R':
 	{
-		b.RotateMarked();
+		PointType Around = b.RotateMarked();
 		if (!Keyboarddata.Shift) {
-			b.RotateCW({ 0,0 });
+			b.RotateCW(Around);
 		}
 		else {
-			b.RotateCCW({ 0,0 });
+			b.RotateCCW(Around);
 		}
 		r.Dirty = true;
 		r.Render();
 	}
 	break;
 	case 'V':
-		b.FlipMarkedY();
+	{
+		int Axis = b.FlipMarkedY();
+		b.FlipY(Axis);
 		r.Dirty = true;
 		r.Render();
-		break;
+	}
+	break;
 	case 'H':
-		b.FlipMarkedX();
+	{
+		int Axis = b.FlipMarkedX();
+		b.FlipX(Axis);
 		r.Dirty = true;
 		r.Render();
-		break;
+	}
+	break;
 	case 'O':
 	{
 		SetState(State::GoHome);
@@ -545,9 +551,9 @@ void IOHandler::OnKeyUp(wxKeyEvent& evt) {
 	case 'E':
 		Keyboarddata.E = false;
 		break;
-	/*case 'F':
-		Keyboarddata.F = false;
-		break;*/
+		/*case 'F':
+			Keyboarddata.F = false;
+			break;*/
 	}
 }
 
@@ -590,7 +596,7 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 			AreaFirstPoint = {};
 			AreaSecondPoint = {};
 			VisualBlockInterior& b = *Frame->BlockManager->CurrentInterior;
-			
+
 			b.ClearMarked();
 
 			Renderer& r = *Frame->renderer;

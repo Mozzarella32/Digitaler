@@ -124,7 +124,7 @@ public:
 
 	Eigen::Vector2i CoordToNearestPoint(Eigen::Vector2f Pos);
 
-	constexpr static const float ZoomDotsBorder = 0.03;
+	constexpr static const float ZoomDotsBorder = 0.03f;
 	bool ShowDots = true;
 	void CheckZoomDots();
 

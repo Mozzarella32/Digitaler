@@ -37,15 +37,15 @@ private:
 	DataResourceManager* ResourceManager;
 	Renderer* renderer;
 
-	BufferedVertexVec<TwoPointIVertex> Edges;
-	BufferedVertexVec<TwoPointIVertex> EdgesMarked;
-	BufferedVertexVec<TwoPointIVertex> EdgesUnmarked;
+	BufferedVertexVec<TwoPointIRGBVertex> Edges;
+	BufferedVertexVec<TwoPointIRGBVertex> EdgesMarked;
+	BufferedVertexVec<TwoPointIRGBVertex> EdgesUnmarked;
 	BufferedVertexVec<PointIVertex> SpecialPoints;
-	BufferedVertexVec<TwoPointIVertex> Verts;
+	BufferedVertexVec<TwoPointIRGBVertex> Verts;
 
-	BufferedVertexVec<TwoPointIVertex> PreviewEdges;
+	BufferedVertexVec<TwoPointIRGBVertex> PreviewEdges;
 	BufferedVertexVec<PointIVertex> PreviewSpecialPoints;
-	BufferedVertexVec<TwoPointIVertex> PreviewVerts;
+	BufferedVertexVec<TwoPointIRGBVertex> PreviewVerts;
 
 	BufferedVertexVec<TextVertex> StaticTextVerts;
 	BufferedVertexVec<TextVertex> DynamicTextVerts;
@@ -56,15 +56,15 @@ private:
 	//BufferedVertexVec <TwoPointIRGBAVertex> Boxes;
 
 public:
-	BufferedVertexVec<TwoPointIVertex>& GetEdges(bool Preview);
+	BufferedVertexVec<TwoPointIRGBVertex>& GetEdges(bool Preview);
 
-	BufferedVertexVec<TwoPointIVertex>& GetEdgesMarked(bool Preview);
+	BufferedVertexVec<TwoPointIRGBVertex>& GetEdgesMarked(bool Preview);
 
-	BufferedVertexVec<TwoPointIVertex>& GetEdgesUnmarked(bool Preview);
+	BufferedVertexVec<TwoPointIRGBVertex>& GetEdgesUnmarked(bool Preview);
 
 	BufferedVertexVec<PointIVertex>& GetSpecialPoints(bool Preview);
 
-	BufferedVertexVec<TwoPointIVertex>& GetVerts(bool Preview);
+	BufferedVertexVec<TwoPointIRGBVertex>& GetVerts(bool Preview);
 
 	//const std::vector<TwoPointIRGBAVertex>& GetBoxes() const;
 
@@ -160,18 +160,25 @@ public:
 	//Bind Context befor this
 	void MarkArea(const MyRectF& Area/*, BlockBoundingBoxCallback bbbc*/);
 
+public:
+	static PointType GetPositionDiff(const BlockMetadata& Meta, const PointType& BlockSize);
+
+	static PointType GetBasePosition(const BlockMetadata& Meta, const PointType& BlockSize);
 private:
+
 	Eigen::Vector2f GetMarkedMean() const;
 
 public:
-	void RotateMarked();
+	//Returnes Mean Position or InvalidPoint
+	PointType RotateMarked();
 
 private:
-	void FlipMarked(bool X);
+	//Returns the axis
+	int FlipMarked(bool X);
 
 public:
-	void FlipMarkedX();
-	void FlipMarkedY();
+	int FlipMarkedX();
+	int FlipMarkedY();
 
 	void RotateCW(const PointType& Pos) {
 		Dirty = true;
@@ -194,6 +201,22 @@ public:
 		for (auto& Path : Paths) {
 			if (Path.IsFree()) continue;
 			Path.RotateHW(Pos);
+		}
+	}
+
+	void FlipX(const int& pos) {
+		Dirty = true;
+		for (auto& Path : Paths) {
+			if (Path.IsFree()) continue;
+			Path.FlipX(pos);
+		}
+	}
+
+	void FlipY(const int& pos) {
+		Dirty = true;
+		for (auto& Path : Paths) {
+			if (Path.IsFree()) continue;
+			Path.FlipY(pos);
 		}
 	}
 

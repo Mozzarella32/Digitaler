@@ -6,12 +6,14 @@
 in vec2 TextureCoord;
 flat in vec4 Foreground;
 flat in vec4 Background;
+flat in float FontScale;
 
 //Out
 out vec4 FragColor;
 
 //Uniforms
 uniform sampler2D UTexture;
+uniform float UZoomFactor;
 
 float avg(float a, float b){
 	return (a+b)/2.0;
@@ -31,29 +33,9 @@ void main(){
 
 	float alpha = median(mtsdf.r, mtsdf.g, mtsdf.b);
 
-    FragColor = mtsdf;
-    FragColor = vec4(mtsdf.rgb,1.0);
-//    return;
+	float screenPxDistance = max(FontScale * 1.0/UZoomFactor*0.001,1)*(alpha - 0.5);
+    float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
 
-	FragColor = mix(Background, Foreground, alpha);
-//	return;
-//
-    if(alpha <= 0.0) {
-        FragColor = Background;
-        return;
-    }
-     if(alpha >= 0.5) {
-        FragColor = Foreground;
-        return;
-    }
-
-    FragColor = Background;
-//
-//    float anti = 1.0-abs(alpha-0.5);
-//
-//    anti = anti * anti;
-//    anti = anti * anti;
-//    anti = anti * anti;
-//
-//    FragColor = vec4(0.0,1.0,0.0,anti);
+	FragColor = mix(Background, Foreground, opacity);
+	return;
 }

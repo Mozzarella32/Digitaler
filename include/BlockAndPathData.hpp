@@ -6,7 +6,7 @@
 
 #include "MyRect.hpp"
 
-struct TwoPointIVertex;
+struct TwoPointIRGBVertex;
 struct PointIVertex;
 class VisualPath;
 class CompressedPathData;
@@ -112,7 +112,7 @@ struct CompressedBlockData {
 			static const constexpr unsigned int VariableMultiplicity = (unsigned int)-1;
 
 			MyDirection::Direction Rotation;
-			unsigned int Offset;
+			int Offset;
 			unsigned int Multiplicity = 1;
 			std::string Name;
 		};
@@ -237,7 +237,8 @@ extern const PointIndex ReservedPointIndex;
 extern const PointIndex FreeListEndPointIndex;
 
 extern const PointType InvalidPoint;
-
+extern const Eigen::Vector2f InvalidPointF;
+extern const int InvalidCoord;
 
 struct PointNode {
 	Eigen::Vector2i Pos;
@@ -371,6 +372,7 @@ private:
 
 public:
 	MyRectI BoundingBox;
+	size_t LineCount;
 private:
 
 	//Is for implementation of Incr/Decr use them instead
@@ -471,32 +473,11 @@ private:
 public:
 
 	//Is unusable until reassigned(every funktion fails assert)
-	VisualPathData(VisualBlockInterior* Block = nullptr) : Block(Block), Id(KlassInstanceCounter++) {}
+	VisualPathData(VisualBlockInterior* Block = nullptr) : Block(Block), Id(KlassInstanceCounter++), LineCount(0) {}
 	VisualPathData(const PointType& p1, const PointType& p2, VisualBlockInterior* Block);
 	VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block);
-	VisualPathData(VisualPathData&& other) noexcept
-		:Points(std::move(other.Points)),
-		Head(std::exchange(other.Head, FreeListEndPointIndex)),
-		BoundingBox(std::exchange(other.BoundingBox, {})),
-		Block(std::exchange(other.Block, nullptr)),
-		Id(std::exchange(other.Id, InvalidId)),
-		LastAddedLine(std::exchange(other.LastAddedLine, InvalidLineIndex)) {
-	}
-
-	VisualPathData& operator=(VisualPathData&& other) noexcept {
-#ifdef UseCollisionGrid
-		Clear();
-#endif
-		PROFILE_FUNKTION;
-
-		Points = std::move(other.Points);
-		Head = std::exchange(other.Head, FreeListEndPointIndex);
-		BoundingBox = std::exchange(other.BoundingBox, {});
-		Block = std::exchange(other.Block, nullptr);
-		LastAddedLine = std::exchange(other.LastAddedLine, InvalidLineIndex);
-		Id = std::exchange(other.Id, InvalidId);
-		return *this;
-	}
+	VisualPathData(VisualPathData&& other) noexcept;
+	VisualPathData& operator=(VisualPathData&& other) noexcept;
 
 #ifdef UseCollisionGrid
 	~VisualPathData();
@@ -519,6 +500,12 @@ public:
 	void RotateAroundCCW(const PointType& pos);
 	//Halfe Way
 	void RotateAroundHW(const PointType& pos);
+
+private:
+	void Flip(const int& pos, bool X);
+public:
+	void FlipX(const int& pos);
+	void FlipY(const int& pos);
 
 private:
 	//Todo set

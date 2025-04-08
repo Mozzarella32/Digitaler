@@ -125,7 +125,7 @@ Renderer::PathVAOs& Renderer::GetPathVAOs(bool Preview) {
 VertexArrayObject Renderer::CreateTwoPointIVAO() {
 	VertexArrayObject VAO = { std::vector<VertexBufferObjectDescriptor>{
 		{GL_STATIC_DRAW, IndexVertex{}},
-		{ GL_DYNAMIC_DRAW, TwoPointIVertex{},1 }
+		{ GL_DYNAMIC_DRAW, TwoPointIRGBVertex{},1 }
 	} };
 
 	VAO.bind();
@@ -463,7 +463,7 @@ void Renderer::Render() {
 		const auto& PathHightlightShader = ShaderManager::GetShader(ShaderManager::HighlightPath);
 
 		PathHightlightShader->bind();
-		GLCALL(glUniform3f(PathHightlightShader->GetLocation("UColor"), 1.0, 1.0, 0.0));
+		//GLCALL(glUniform3f(PathHightlightShader->GetLocation("UColor"), 1.0, 1.0, 0.0));
 		FBOBackgroundTexture.bind(PathHightlightShader.get(), "UBackground", "", 0);
 
 		GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
@@ -1099,7 +1099,7 @@ const std::array<MyRectF, 4>& Renderer::GetBlockBoundingBoxes(const CompressedBl
 	//auto AltMouseIndex = MouseIndex;
 
 	Offset = Eigen::Vector2f{ 0,0 };
-	float TargetZoom = 0.01;
+	float TargetZoom = 0.01f;
 
 	Zoom = TargetZoom;
 
@@ -1314,9 +1314,9 @@ const std::array<MyRectF, 4>& Renderer::GetBlockBoundingBoxes(const CompressedBl
 			};
 
 		auto rectDown = MyRectF::FromCorners(Rotate(0) * Point1, Rotate(0) * Point2);
-		auto rectRight = MyRectF::FromCorners(Rotate(M_PI / 2.0) * Point1, Rotate(M_PI / 2.0) * Point2);
-		auto rectUp = MyRectF::FromCorners(Rotate(M_PI) * Point1, Rotate(M_PI) * Point2);
-		auto rectLeft = MyRectF::FromCorners(Rotate(3.0 * M_PI / 2.0) * Point1, Rotate(3.0 * M_PI / 2.0) * Point2);
+		auto rectRight = MyRectF::FromCorners(Rotate((float)M_PI / 2.0f) * Point1, Rotate((float)M_PI / 2.0f) * Point2);
+		auto rectUp = MyRectF::FromCorners(Rotate((float)M_PI) * Point1, Rotate((float)M_PI) * Point2);
+		auto rectLeft = MyRectF::FromCorners(Rotate(3.0f * (float)M_PI / 2.0f) * Point1, Rotate(3.0f * (float)M_PI / 2.0f) * Point2);
 
 		auto off = PointType{ -1,-1 }*int((BlockSize.y() - BlockSize.x()) / 2.0);
 		auto Off = Eigen::Vector2f{ off.x(),off.y() };
@@ -1337,6 +1337,7 @@ const std::array<MyRectF, 4>& Renderer::GetBlockBoundingBoxes(const CompressedBl
 		BBs[MyDirection::Right].Position.x() += BlockSize.y();
 		BBs[MyDirection::Right].Position.y() -= BlockSize.x();
 		//}
+
 		if (cbdi == SB.Mux) {
 			std::swap(BBs[MyDirection::Left], BBs[MyDirection::Right]);
 			std::swap(BBs[MyDirection::Down], BBs[MyDirection::Up]);

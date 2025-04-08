@@ -8,7 +8,7 @@ layout(location = 0) in int InIndex;
 //Per Instance
 layout(location = 1) in uint InstanceInId;
 layout(location = 2) in ivec2 InstanceInPos;
-layout(location = 3) in int InstanceInOrientation;
+layout(location = 3) in int InstanceInTransform;
 layout(location = 4) in vec3 InstanceInHighlightColor;
 
 //Out
@@ -51,9 +51,24 @@ int IndexTable[2*4] = {
 
 void main() {
 	vec2 CorrectedPos = InstanceInPos + Offset;
+	int Rotation = InstanceInTransform & 0x3;
+	int xflip = (InstanceInTransform >> 2) & 0x1;
+	int yflip = (InstanceInTransform >> 3) & 0x1;
 
-	vec2 Right = vec2(Directions[(InstanceInOrientation+1)%4*2+0],Directions[(InstanceInOrientation+1)%4*2+1]);
-	vec2 Up = vec2(Directions[(InstanceInOrientation+0)%4*2+0],Directions[(InstanceInOrientation+0)%4*2+1]);
+	int flipflip = int(Rotation == 1 || Rotation == 3); 
+
+	int newxflip = xflip*(1-flipflip) + yflip * flipflip;
+	int newyflip = yflip*(1-flipflip) + xflip * flipflip;
+
+	xflip = newxflip;
+	yflip = newyflip;
+
+	vec2 flipx = vec2(1 - 2 * xflip);
+	vec2 flipy = vec2(1 - 2 * yflip);
+	int BetterRot = Rotation*(1-yflip)+(Rotation+2-4*int(floor((Rotation+2)/4)))*yflip;
+
+	vec2 Right = vec2(Directions[(Rotation+1)%4*2+0],Directions[(Rotation+1)%4*2+1]) * flipx;
+	vec2 Up = vec2(Directions[(Rotation+0)%4*2+0],Directions[(Rotation+0)%4*2+1]) * flipy;
 
 	ivec2 Index = ivec2(IndexTable[InIndex*2],IndexTable[InIndex*2+1]);
 
@@ -72,7 +87,7 @@ void main() {
 	Controll1 = CorrectedPos + 1.5*Up - 1.3*Right;
 	Controll2 = CorrectedPos + 1.5*Up + 1.3*Right;
 
-	Orientation = InstanceInOrientation;
+	Orientation = BetterRot;
 
 	HighlightColor = InstanceInHighlightColor;
 

@@ -13,23 +13,23 @@
 int VisualBlockInterior::BoxSize = 5;
 #endif
 
-BufferedVertexVec<TwoPointIVertex>& VisualBlockInterior::GetEdges(bool Preview) {
+BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetEdges(bool Preview) {
 	if (Preview) {
 		return PreviewEdges;
 	}
 	return Edges;
 }
 
-BufferedVertexVec<TwoPointIVertex>& VisualBlockInterior::GetEdgesMarked(bool Preview) {
+BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetEdgesMarked(bool Preview) {
 	if (Preview) {
 		return PreviewEdges;
 	}
 	return EdgesMarked;
 }
 
-static BufferedVertexVec<TwoPointIVertex> EmptyPathVec = {};
+static BufferedVertexVec<TwoPointIRGBVertex> EmptyPathVec = {};
 
-BufferedVertexVec<TwoPointIVertex>& VisualBlockInterior::GetEdgesUnmarked(bool Preview) {
+BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetEdgesUnmarked(bool Preview) {
 	if (Preview) {
 		return EmptyPathVec;
 	}
@@ -43,7 +43,7 @@ BufferedVertexVec<PointIVertex>& VisualBlockInterior::GetSpecialPoints(bool Prev
 	return SpecialPoints;
 }
 
-BufferedVertexVec<TwoPointIVertex>& VisualBlockInterior::GetVerts(bool Preview) {
+BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetVerts(bool Preview) {
 	if (Preview) {
 		return PreviewVerts;
 	}
@@ -151,7 +151,76 @@ void VisualBlockInterior::DeleteMarked() {
 	ClearMarked();
 }
 
+PointType VisualBlockInterior::GetPositionDiff(const BlockMetadata& Meta, const PointType& BlockSize) {
+	using enum MyDirection::Direction;
+	PointType Off{};
+
+
+	/*auto Rotation = Meta.Rotation;
+	if ((Meta.xflip && !Meta.yflip) || !Meta.xflip && Meta.yflip) {
+		switch (Rotation) {
+		case Up: Rotation = Up; break;
+		case Right: Rotation = Left; break;
+		case Down: Rotation = Down; break;
+		case Left: Rotation = Left; break;
+		}
+	}*/
+
+
+	switch (Meta.Rotation) {
+	case Up:
+		Off -= PointType{ 0,0 };
+		break;
+	case Right:
+		Off -= PointType{ BlockSize.y(),0 };
+		break;
+	case Down:
+		Off -= PointType{ BlockSize.x(),-BlockSize.y() };
+		break;
+	case Left:
+		Off -= PointType{ 0,-BlockSize.x() };
+		break;
+	}
+
+
+	auto ToVec2f = [](const MyDirection::Direction& d) {
+		switch (d) {
+		case Up:
+			return PointType{ 0,-1 };
+		case Down:
+			return PointType{ 0,1 };
+		case Left:
+			return PointType{ -1,0 };
+		case Right:
+			return PointType{ 1,0 };
+		default:
+			return PointType{ 0,0 };
+		};
+		};
+
+	auto UpV = ToVec2f(Meta.Rotation);
+	auto RightV = ToVec2f(MyDirection::RotateCW(Meta.Rotation));
+
+	if (Meta.xflip) {
+		int Scale = (Meta.Rotation == Up || Meta.Rotation == Down) ? BlockSize.x() : BlockSize.y();
+		auto Vec = (Meta.Rotation == Up || Meta.Rotation == Down) ? RightV : -UpV;
+		Off -= Vec * Scale;
+	}
+	if (Meta.yflip) {
+		int Scale = (Meta.Rotation == Up || Meta.Rotation == Down) ? BlockSize.y() : BlockSize.x();
+		auto Vec = (Meta.Rotation == Up || Meta.Rotation == Down) ? UpV : -RightV;
+		Off -= Vec * Scale;
+	}
+
+	return Off;
+}
+
+PointType VisualBlockInterior::GetBasePosition(const BlockMetadata& Meta, const PointType& BlockSize) {
+	return Meta.Pos - GetPositionDiff(Meta, BlockSize);
+}
+
 Eigen::Vector2f VisualBlockInterior::GetMarkedMean() const {
+	using enum MyDirection::Direction;
 	int id = 0;
 
 	Eigen::Vector2f Mean = { 0,0 };
@@ -168,28 +237,15 @@ Eigen::Vector2f VisualBlockInterior::GetMarkedMean() const {
 		for (const auto& Meta : MetaVec) {
 			id++;
 			if (!MarkedBlocks[id])continue;
-			Eigen::Vector2f Pos = Meta.Pos.cast<float>();
 
-			switch (Meta.Rotation) {
-			case MyDirection::Up:
-				Pos += Eigen::Vector2f{ 0,0 };
-				break;
-			case MyDirection::Right:
-				Pos += Eigen::Vector2f{ BlockSize.y(),0 };
-				break;
-			case MyDirection::Down:
-				Pos += Eigen::Vector2f{ BlockSize.x(),-BlockSize.y() };
-				break;
-			case MyDirection::Left:
-				Pos += Eigen::Vector2f{ 0,-BlockSize.x() };
-				break;
-			}
-
-			Eigen::Vector2f Diff = Pos - Mean;
+			Eigen::Vector2f Diff = GetBasePosition(Meta, BlockSize).cast<float>() - Mean;
 			Diff /= count + 1;
 			Mean += Diff;
 			count++;
 		}
+	}
+	if (count == 0) {
+		return InvalidPointF;
 	}
 	return Mean;
 }
@@ -213,7 +269,7 @@ void VisualBlockInterior::MarkArea(const MyRectF& Area/*, BlockBoundingBoxCallba
 	}
 }
 
-void VisualBlockInterior::RotateMarked() {
+PointType VisualBlockInterior::RotateMarked() {
 
 	auto Rotate = [](float angle) {
 		return Eigen::Matrix2i{
@@ -221,10 +277,11 @@ void VisualBlockInterior::RotateMarked() {
 			{(int)std::round(sin(angle)),(int)std::round(cos(angle))}
 		};
 		};
-
-	auto Rotation = Rotate(-M_PI / 2.0);
-
+	auto CWRotation = Rotate((float)-M_PI / 2.0f);
+	
 	Eigen::Vector2f Mean = GetMarkedMean();
+
+	if (Mean == InvalidPointF) return InvalidPoint;//No Marked
 
 	Eigen::Vector2i pos = { int(std::round(Mean.x())),int(std::round(Mean.y())) };
 
@@ -237,42 +294,45 @@ void VisualBlockInterior::RotateMarked() {
 		}
 		const auto& ContainedExterior = ContainedExteriorOpt.value();
 		const auto& BlockSize = ContainedExterior.blockExteriorData.Size;
+		int SizeDiff = BlockSize.x() - BlockSize.y();
 		for (auto& Meta : MetaVec) {
 
 			id++;
 			if (!MarkedBlocks[id])continue;
-			Meta.Rotation = MyDirection::RotateCW(Meta.Rotation);
-			PointType Off = Meta.Pos - pos;
-			Off = Rotation * Off;
+			PointType Base = GetBasePosition(Meta, BlockSize);
+			if ((Meta.xflip && !Meta.yflip) || !Meta.xflip && Meta.yflip) {
+				Meta.Rotation = MyDirection::RotateCCW(Meta.Rotation);
+			}
+			else {
+				Meta.Rotation = MyDirection::RotateCW(Meta.Rotation);
+			}
+
+			PointType Off = Base - pos;
+			Off = CWRotation * Off;
 			Meta.Pos = pos + Off;
-			if (Meta.Rotation == MyDirection::Right) {
-				Meta.Pos.x() -= BlockSize.y();
-			}
-			if (Meta.Rotation == MyDirection::Down) {
-				Meta.Pos.x() -= BlockSize.x();
-			}
-			if (Meta.Rotation == MyDirection::Left) {
-				Meta.Pos.x() -= BlockSize.y();
-			}
-			if (Meta.Rotation == MyDirection::Up) {
-				Meta.Pos.x() -= BlockSize.x();
-			}
+			Meta.Pos += GetPositionDiff(Meta, BlockSize);
 		}
 	}
+
+	return pos;
 }
 
-void VisualBlockInterior::FlipMarked(bool X) {
+int VisualBlockInterior::FlipMarked(bool X) {
+	using enum MyDirection::Direction;
 
-	auto Rotate = [](float angle) {
-		return Eigen::Matrix2i{
-			{(int)std::round(cos(angle)),-(int)std::round(sin(angle))},
-			{(int)std::round(sin(angle)),(int)std::round(cos(angle))}
-		};
-		};
+	auto FlipXMat = Eigen::Matrix2i{
+		{-1,0},
+		{0,1},
+	};
 
-	auto Rotation = Rotate(-M_PI / 2.0);
+	auto FlipYMat = Eigen::Matrix2i{
+		{1,0},
+		{0,-1},
+	};
 
 	Eigen::Vector2f Mean = GetMarkedMean();
+
+	if (Mean == InvalidPointF) return InvalidCoord;
 
 	Eigen::Vector2i pos = { int(std::round(Mean.x())),int(std::round(Mean.y())) };
 
@@ -286,41 +346,37 @@ void VisualBlockInterior::FlipMarked(bool X) {
 		const auto& ContainedExterior = ContainedExteriorOpt.value();
 		const auto& BlockSize = ContainedExterior.blockExteriorData.Size;
 		for (auto& Meta : MetaVec) {
-
 			id++;
 			if (!MarkedBlocks[id])continue;
+
+			auto Base = GetBasePosition(Meta, BlockSize);
+
 			if (X) {
 				Meta.xflip = !Meta.xflip;
+				PointType Off = Base - pos;
+				Off = FlipXMat * Off;
+				Meta.Pos = pos + Off;
 			}
 			else {
 				Meta.yflip = !Meta.yflip;
+				PointType Off = Base - pos;
+				Off = FlipYMat * Off;
+				Meta.Pos = pos + Off;
 			}
-			//Meta.Rotation = MyDirection::RotateCW(Meta.Rotation);
-			/*PointType Off = Meta.Pos - pos;
-			Off = Rotation * Off;
-			Meta.Pos = pos + Off;*/
-			//if (Meta.Rotation == MyDirection::Right) {
-			//	//Meta.Pos.x() -= BlockSize.y();
-			//}
-			//if (Meta.Rotation == MyDirection::Down) {
-			//	//Meta.Pos.x() -= BlockSize.x();
-			//}
-			//if (Meta.Rotation == MyDirection::Left) {
-			//	//Meta.Pos.x() -= BlockSize.y();
-			//}
-			//if (Meta.Rotation == MyDirection::Up) {
-			//	//Meta.Pos.x() -= BlockSize.x();
-			//}
+
+			Meta.Pos += GetPositionDiff(Meta, BlockSize);
 		}
 	}
+
+	return X ? pos.x() : pos.y();
 }
 
-void VisualBlockInterior::FlipMarkedX() {
-	FlipMarked(true);
+int VisualBlockInterior::FlipMarkedX() {
+	return FlipMarked(true);
 }
 
-void VisualBlockInterior::FlipMarkedY() {
-	FlipMarked(false);
+int VisualBlockInterior::FlipMarkedY() {
+	return FlipMarked(false);
 }
 
 VisualBlockInterior::VisualBlockInterior(const CompressedBlockData& data, DataResourceManager* ResourceManager, Renderer* renderer)
@@ -733,14 +789,16 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 	SpecialPoints.Clear();
 	Verts.Clear();
 
-	MyRectI ViewRectI{
-		PointType{ViewRect.Position.x(),ViewRect.Position.y()},
-		PointType{ViewRect.Size.x(),ViewRect.Size.y()},
-	};
+	MyRectI ViewRectI = MyRectI::FromCorners(
+		ViewRect.Position.cast<int>() - PointType(1,1),
+		ViewRect.Position.cast<int>() + ViewRect.Size.cast<int>() + PointType(1,1)
+	);
+	/*PointType{ ViewRect.Position.x(),ViewRect.Position.y() },
+		PointType{ ViewRect.Size.x(),ViewRect.Size.y() },*/
 
 	for (auto& p : Paths) {
 		const auto& e = p.ComputeAllAndGetEdges(ViewRectI);
-		if (p.IsMarked()) {
+		if (p.IsMarked() || true) {
 			EdgesMarked.Append(e);
 			Verts.Append(p.getVerts());
 		}
@@ -751,8 +809,8 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 	}
 
 	Edges.AppendOther(EdgesMarked, EdgesUnmarked);
-	Edges.AppendOther(EdgesMarked);
-	Edges.AppendOther(EdgesUnmarked);
+	//Edges.AppendOther(EdgesMarked);
+	//Edges.AppendOther(EdgesUnmarked);
 }
 
 void VisualBlockInterior::UpdateVectsForVAOsPreview(const MyRectF& ViewRect, const PointType& Mouse) {
@@ -793,10 +851,10 @@ void VisualBlockInterior::UpdateVectsForVAOsPreview(const MyRectF& ViewRect, con
 
 		auto& Preview = PreviewCached.value();
 
-		MyRectI ViewRectI{
-			PointType{ViewRect.Position.x(),ViewRect.Position.y()},
-			PointType{ViewRect.Size.x(),ViewRect.Size.y()},
-		};
+		MyRectI ViewRectI = MyRectI::FromCorners(
+			ViewRect.Position.cast<int>() - PointType(1, 1),
+			ViewRect.Position.cast<int>() + ViewRect.Size.cast<int>() + PointType(1, 1)
+		);
 
 		const auto& ToAppend = Preview.ComputeAllAndGetEdges(ViewRectI);
 		PreviewEdges.Append(ToAppend);
@@ -1085,15 +1143,16 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 	PointType TopRight;
 	PointType BottomRight;
 	PointType Flip = { 1 - 2 * Meta.xflip,1 - 2 * Meta.yflip };
+	PointType FlipOff = { Meta.xflip * BlockSize.x(),-int(Meta.yflip) * BlockSize.y() };
 	if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
-		TopLeft = Meta.Pos;
-		//TopLeft = Meta.Pos + PointType{ -1,-1 }*int((BlockSize.y() - BlockSize.x()) / 2.0);
+		//TopLeft = Meta.Off + FlipOff;
+		TopLeft = Meta.Pos + FlipOff + PointType{ Meta.xflip * (BlockSize.y() - BlockSize.x()), Meta.yflip * (BlockSize.y() - BlockSize.x()) };
 		BottomLeft = TopLeft - PointType{ 0,BlockSize.x() }.cwiseProduct(Flip);
 		TopRight = TopLeft + PointType{ BlockSize.y(),0 }.cwiseProduct(Flip);
 		BottomRight = TopLeft + PointType{ BlockSize.y(), -BlockSize.x() }.cwiseProduct(Flip);
 	}
 	else {
-		TopLeft = Meta.Pos;
+		TopLeft = Meta.Pos + FlipOff;
 		BottomLeft = TopLeft - PointType{ 0,BlockSize.y() }.cwiseProduct(Flip);
 		TopRight = TopLeft + PointType{ BlockSize.x(),0 }.cwiseProduct(Flip);
 		BottomRight = TopLeft + PointType{ BlockSize.x(), -BlockSize.y() }.cwiseProduct(Flip);
@@ -1136,11 +1195,19 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 
 MyDirection::Direction VisualBlockInterior::GetPinRotation(const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
 	using enum MyDirection::Direction;
-	if (Meta.Rotation == Up)return Pin.Rotation;
-	if (Meta.Rotation == Left)return MyDirection::RotateCCW(Pin.Rotation);
-	if (Meta.Rotation == Down)return MyDirection::RotateCW(MyDirection::RotateCW(Pin.Rotation));
-	if (Meta.Rotation == Right)return MyDirection::RotateCW(Pin.Rotation);
-	return Neutral;
+	MyDirection::Direction d;
+	if (Meta.Rotation == Up) d = Pin.Rotation;
+	else if (Meta.Rotation == Left) d = MyDirection::RotateCCW(Pin.Rotation);
+	else if (Meta.Rotation == Down) d = MyDirection::RotateCW(MyDirection::RotateCW(Pin.Rotation));
+	else if (Meta.Rotation == Right) d = MyDirection::RotateCW(Pin.Rotation);
+	else d = Neutral;
+	if (Meta.xflip) {
+		d = MyDirection::FlipH(d);
+	}
+	if (Meta.yflip) {
+		d = MyDirection::FlipV(d);
+	}
+	return d;
 }
 
 void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
@@ -1160,10 +1227,10 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 	}
 	Point<float> Offset;
 
-	float Scale = 0.4;
+	float Scale = 0.4f;
 	auto ext = GetTextExtend(Text, false, false, Scale);
 
-	float maxWidth = 0.42;
+	float maxWidth = 0.42f;
 	if (ext.Width > maxWidth) {
 		Scale *= maxWidth / ext.Width;
 		ext = GetTextExtend(Text, false, false, Scale);
@@ -1184,7 +1251,7 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 		TextPlacmentFlags::x_Center | TextPlacmentFlags::y_Center,
 		true, false, Scale,
 		MyDirection::ToReadable(GetPinRotation(Meta, Pin)),
-		ColourType{ 0.687,0.933,0.845,1.0 });
+		ColourType{ 0.687f,0.933f,0.845f,1.0f });
 	//Do final stuff
 }
 
@@ -1195,13 +1262,14 @@ void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSiz
 
 	Point<float> Offset;
 
-	float Scale = 0.4;
+	float Scale = 0.4f;
 
 	auto ext = GetTextExtend(Pin.Name, false, false, Scale);
 
 	float Hightmul = Scale * LineHeight;
 
-	switch (GetPinRotation(Meta, Pin)) {
+	MyDirection::Direction d = GetPinRotation(Meta, Pin);
+	switch (d) {
 	case Up:
 		Offset = { 0.0f,-0.7f - ext.Width };
 		break;
@@ -1232,7 +1300,7 @@ void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSiz
 		TextPlacmentFlags::x_Right | TextPlacmentFlags::y_Center,
 		false, false, Scale,
 		MyDirection::ToReadable(MyDirection::RotateCCW(GetPinRotation(Meta, Pin))),
-		ColourType{ 1.0,0.5,0.0,1.0 });
+		ColourType{ 1.0f,0.5f,0.0f,1.0f });
 	//Do final stuff
 };
 
@@ -1240,14 +1308,16 @@ void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockM
 	Point<float> Off{ 0,0 };
 	PointType TopLeft;
 	Point<float> Flip = { 1.0f - 2.0f * Meta.xflip,1.0f - 2.0f * Meta.yflip };
+	PointType FlipOff = { Meta.xflip * BlockSize.x(),-int(Meta.yflip) * BlockSize.y() };
 	if (Meta.Rotation == MyDirection::Left || Meta.Rotation == MyDirection::Right) {
 		Off += Point<float>{BlockSize.y() / 2.0f, -BlockSize.x() / 2.0f} *Flip;
-		//TopLeft = Meta.Pos + PointType{ -1,-1 }*int((BlockSize.y() - BlockSize.x()) / 2.0);
-		TopLeft = Meta.Pos;
+		//TopLeft = Meta.Off + PointType{ -1,-1 }*int((BlockSize.y() - BlockSize.x()) / 2.0);
+		//TopLeft = Meta.Off + FlipOff;
+		TopLeft = Meta.Pos + FlipOff + PointType{ Meta.xflip * (BlockSize.y() - BlockSize.x()), Meta.yflip * (BlockSize.y() - BlockSize.x()) };
 	}
 	else {
 		Off += Point<float>{BlockSize.x() / 2.0f, -BlockSize.y() / 2.0f} *Flip;
-		TopLeft = Meta.Pos;
+		TopLeft = Meta.Pos + FlipOff;
 	}
 
 	AddText(Name,
@@ -1273,11 +1343,10 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	//NotTriangleVerts.Clear();
 	MuxVerts.Clear();
 	StaticTextVerts.Clear();
-	//auto& buff = renderer->GetAreaSelectVerts();
-	//buff.Clear();
+	auto& buff = renderer->GetAreaSelectVerts();
+	buff.Clear();
 
 	/*std::string T = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnoqrstuvwxyzƒ÷‹‰ˆ¸";
-
 	AddText(T, Point<float>{0.0, 0.0}, true, false, false, 1.0, MyDirection::Up, ColourType{ 0.0,1.0,1.0,1.0 });
 	AddText(T, Point<float>{0.0, 1.0}, true, false, true, 1.0, MyDirection::Up, ColourType{ 0.0,1.0,1.0,1.0 });
 	AddText(T, Point<float>{0.0, 2.0}, true, true, false, 1.0, MyDirection::Up, ColourType{ 0.0,1.0,1.0,1.0 });
@@ -1323,6 +1392,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				continue;
 			}
 
+			buff.Emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
 			//buff.Emplace(BB.Position, BB.Position + BB.Size, ColourType{ 0.0,1.0,0.5,1.0 });
 
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
@@ -1330,32 +1400,34 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			PointType TopLeft;
 			PointType BottomRight;
 			PointType Flip = { 1 - 2 * Meta.xflip,1 - 2 * Meta.yflip };
+			PointType FlipOff = { Meta.xflip * BlockSize.x(),-int(Meta.yflip) * BlockSize.y() };
 			if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
-				TopLeft = Meta.Pos;
+				TopLeft = Meta.Pos + FlipOff + PointType{ Meta.xflip * (BlockSize.y() - BlockSize.x()), Meta.yflip * (BlockSize.y() - BlockSize.x()) };
+				//TopLeft = Meta.Off + FlipOff;
 				BottomRight = TopLeft + PointType{ BlockSize.y(), -BlockSize.x() }.cwiseProduct(Flip);
 			}
 			else {
-				TopLeft = Meta.Pos;
+				TopLeft = Meta.Pos + FlipOff;
 				BottomRight = TopLeft + PointType{ BlockSize.x(), -BlockSize.y() }.cwiseProduct(Flip);
 			}
 
 			assert(MarkedBlocks.size() > id);
 			ColourType Color{};
 			if (MarkedBlocks[id]) {
-				Color = ColourType{ 1.0,0.0,1.0,1.0 };
+				Color = ColourType{ 1.0f,0.0f,1.0f,1.0f };
 			}
 			else if (id == Highlited) {
-				Color = ColourType{ 1.0,1.0,0.0,1.0 };
+				Color = ColourType{ 1.0f,1.0f,0.0f,1.0f };
 			}
 
 			if (IndexContained == SB.SevengSeg) {
-				SevenSegVerts.Emplace(Meta, time(0) % 0x10, ColourType{ 0.78,0.992,0.0,1.0 });
-				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.1,0.1,0.1,1.0 }, Color);
+				SevenSegVerts.Emplace(Meta, time(0) % 0x10, ColourType{ 0.78f,0.992f,0.0f,1.0f });
+				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
 			}
 			else if (IndexContained == SB.SixteenSeg) {
 				static std::array<int, 218> Translation = { 73,99,104,32,104,97,98,101,32,106,101,116,122,116,32,101,105,110,102,117,110,107,116,105,111,110,105,101,114,101,110,100,101,115,49,54,32,83,101,103,109,101,110,116,32,68,105,115,112,108,97,121,100,97,115,32,97,108,108,101,32,97,115,99,105,105,32,90,101,105,99,104,101,110,100,97,114,115,116,101,108,108,101,110,32,107,97,110,110,58,48,49,50,51,52,53,54,55,56,57,116,104,101,32,113,117,105,99,107,32,98,114,111,119,110,32,102,111,120,32,106,117,109,112,115,32,111,118,101,114,32,116,104,101,32,108,97,122,121,32,100,111,103,84,72,69,32,81,85,73,67,75,32,66,82,79,87,78,32,70,79,88,32,74,85,77,80,83,32,79,86,69,82,32,84,72,69,32,76,65,90,89,32,68,79,71,33,64,35,36,37,94,38,42,40,41,95,45,43,123,125,124,58,34,60,62,63,96,126,91,93,92,59,39,44,46,47,126, };
-				SixteenSegVerts.Emplace(Meta, Translation[std::max(i - 5, 0)], ColourType{ 0.992,0.43,0.0,1.0 });
-				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.1,0.1,0.1,1.0 }, Color);
+				SixteenSegVerts.Emplace(Meta, Translation[std::max(i - 5, 0)], ColourType{ 0.992f,0.43f,0.0f,1.0f });
+				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
 			}
 			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.XOr) {
 				if (IndexContained == SB.And)AndVerts.Emplace(id, Meta, Color);
@@ -1363,10 +1435,10 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				else if (IndexContained == SB.XOr)XOrVerts.Emplace(id, Meta, Color);
 
 				for (const auto& Pin : InputPins) {
-					RoundedPinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0,0.0,0.0,0.0 });
+					RoundedPinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0f,0.0f,0.0f,0.0f });
 				}
 				for (const auto& Pin : OutputPins) {
-					RoundedPinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.0,1.0,0.0,0.0 });
+					RoundedPinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.0f,1.0f,0.0f,0.0f });
 				}
 				ShowBlockLabl(BlockSize, Meta, Name);
 				continue;
@@ -1378,16 +1450,16 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.5,0.5,1.0,1.0 }, Color);
 				ShowBlockLabl(BlockSize, Meta, Name);
 				/*if (id == highlited)
-					RoundedPinVerts.Emplace(Pos, ColourType{ 1.0,0.0,1.0,0.0 });*/
+					RoundedPinVerts.Emplace(Off, ColourType{ 1.0,0.0,1.0,0.0 });*/
 			}
 
 			for (const auto& Pin : InputPins) {
-				PinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.7,0.0,0.0,0.0 }, Color);
+				PinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.7f,0.0f,0.0f,0.0f }, Color);
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}
 			for (const auto& Pin : OutputPins) {
-				PinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.0,0.7,0.0,0.0 }, Color);
+				PinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.0f,0.7f,0.0f,0.0f }, Color);
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}
@@ -1643,7 +1715,7 @@ void VisualBlockInterior::AddText(const std::string& Text, const Point<float>& P
 			);
 
 			//StaticTextVerts.Emplace(
-			//	Pos + OFF, CursorOffsets, Clip, d, ForgroundColor, ColourType{ 1.0,0.0,1.0,0.5 }
+			//	Off + OFF, CursorOffsets, Clip, d, ForgroundColor, ColourType{ 1.0,0.0,1.0,0.5 }
 			//);
 		}
 		else {
@@ -1652,7 +1724,7 @@ void VisualBlockInterior::AddText(const std::string& Text, const Point<float>& P
 				Pos + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor
 			);
 			/*	DynamicTextVerts.Emplace(
-					Pos + OFF, CursorOffsets, Clip, d, ForgroundColor, ColourType{ 1.0,0.0,1.0,0.5 }
+					Off + OFF, CursorOffsets, Clip, d, ForgroundColor, ColourType{ 1.0,0.0,1.0,0.5 }
 				);*/
 		}
 

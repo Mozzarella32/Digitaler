@@ -1,4 +1,4 @@
-//Hex.vert
+//Path.vert
 
 #version 330 core
 

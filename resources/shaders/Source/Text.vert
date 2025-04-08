@@ -11,13 +11,15 @@ layout(location = 1) in vec2 InstanceInPos;
 layout(location = 2) in vec4 InstanceInPosOff;
 layout(location = 3) in vec4 InstanceInUVOff;
 layout(location = 4) in int InstanceInOrientation;
-layout(location = 5) in vec4 InstanceInForeground;
-layout(location = 6) in vec4 InstanceInBackground;
+layout(location = 5) in float InstanceInFontScale;
+layout(location = 6) in vec4 InstanceInForeground;
+layout(location = 7) in vec4 InstanceInBackground;
 
 //Out
 out vec2 TextureCoord;
 flat out vec4 Foreground;
 flat out vec4 Background;
+flat out float FontScale;
 
 //Uniforms
 uniform vec2 UOffset;
@@ -56,6 +58,7 @@ void main() {
 
     Foreground = InstanceInForeground;
     Background = InstanceInBackground;
+	FontScale = InstanceInFontScale;
 
     gl_Position = vec4((Pos+UOffset)/UZoom, 0.0, 1.0);
 }

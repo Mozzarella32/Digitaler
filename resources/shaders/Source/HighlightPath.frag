@@ -4,18 +4,18 @@
 
 //In
 in vec2 PosInWorld;
-in vec2 ScreenPos;
+//in vec2 ScreenPos;
+flat in vec2 A;
+flat in vec2 B;
+flat in vec3 Color;
 
 //Out
 out vec4 FragColor;
 
-flat in vec2 A;
-flat in vec2 B;
-
 //Uniforms
 //uniform sampler2D UBackground;
 
-uniform vec3 UColor;
+//uniform vec3 UColor;
 
 float sdSegment( in vec2 p, in vec2 a, in vec2 b )
 {
@@ -46,7 +46,7 @@ void main(){
 //        FragColor = vec4(1.0,0.0,1.0,1.0);
 //        return;
 //    }
-    FragColor = vec4(UColor,2*blend);
+    FragColor = vec4(Color,2*blend);
 }
 
 //	FragColor = vec4((1.0-10*sdSegment(ScreenPos,A,B))*vec3(1.0),1.0);

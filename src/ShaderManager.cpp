@@ -34,6 +34,7 @@ Map{
 	Worker = std::thread(&ShaderManager::Work, this);
 #endif
 }
+#undef X
 
 ShaderManager& ShaderManager::GetInstance() {
 	static ShaderManager This;

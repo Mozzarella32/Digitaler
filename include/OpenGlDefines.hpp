@@ -6,7 +6,7 @@
 
 #include "BlockAndPathData.hpp"
 
-struct TwoPointIVertex {
+struct TwoPointIRGBVertex {
 
 	int x1;
 	int y1;
@@ -14,7 +14,9 @@ struct TwoPointIVertex {
 	int x2;
 	int y2;
 
-
+	float r;
+	float g;
+	float b;
 	//int flags = 0;//flags
 
 	//enum Flags {
@@ -26,46 +28,54 @@ struct TwoPointIVertex {
 
 	//int marked = false;
 
-	TwoPointIVertex(int x1, int y1, int x2, int y2/*,int flags= 0*/)
+	TwoPointIRGBVertex(int x1, int y1, int x2, int y2, float r, float g, float b)
 		:
 		x1(std::min(x1, x2)),
 		y1(std::min(y1, y2)),
 		x2(std::max(x1, x2)),
-		y2(std::max(y1, y2))
+		y2(std::max(y1, y2)),
+		r(r),
+		g(g),
+		b(b)
 		//flags(flags) 
 	{
 	}
 
-	TwoPointIVertex(const PointType& p1, const PointType& p2/*, const int& flags = 0*/)
+	TwoPointIRGBVertex(const PointType& p1, const PointType& p2, const ColourType& c)
 		:
 		x1(std::min(p1.x(), p2.x())),
 		y1(std::min(p1.y(), p2.y())),
 		x2(std::max(p1.x(), p2.x())),
-		y2(std::max(p1.y(), p2.y()))
+		y2(std::max(p1.y(), p2.y())),
+		r(c.x()),
+		g(c.y()),
+		b(c.z())
 		//flags(flags)
 	{
 	}
 
-	TwoPointIVertex() {};
+	TwoPointIRGBVertex() {};
 
-	bool operator ==(const TwoPointIVertex& Other) const = default;
+	bool operator ==(const TwoPointIRGBVertex& Other) const = default;
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIVertex), (void*)offsetof(TwoPointIVertex, x1)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, x1)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIVertex), (void*)offsetof(TwoPointIVertex, x2)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, x2)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		/*GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIVertex), (void*)offsetof(TwoPointIVertex, flags)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, flags)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));*/
 		//GLCALL(glEnableVertexAttribArray(Position));
-		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIVertex), (void*)offsetof(TwoPointIVertex, colour)));
+		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, colour)));
 		//GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		//GLCALL(glEnableVertexAttribArray(Position));
-		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIVertex), (void*)offsetof(TwoPointIVertex, marked)));
+		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, marked)));
 		//GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
 };
@@ -167,8 +177,8 @@ struct TwoPointIRGBAIDVertex {
 
 namespace std {
 	template <>
-	struct hash<TwoPointIVertex> {
-		std::size_t operator()(const TwoPointIVertex& v) const {
+	struct hash<TwoPointIRGBVertex> {
+		std::size_t operator()(const TwoPointIRGBVertex& v) const {
 			// Kombiniere die Hashwerte der einzelnen Felder
 			std::size_t h1 = std::hash<int>{}(v.x1);
 			std::size_t h2 = std::hash<int>{}(v.y1);
@@ -865,6 +875,7 @@ struct TextVertex {
 	float UVOffBottom;
 
 	int Orientation;
+	float FontScale;
 
 	float ColorR;
 	float ColorG;
@@ -908,6 +919,7 @@ struct TextVertex {
 		assert(false && "Invalid Direction for Pin");
 		return 0;
 			}()),
+		FontScale(Scale),
 		ColorR(Foregrorund.x()),
 		ColorG(Foregrorund.y()),
 		ColorB(Foregrorund.z()),
@@ -931,6 +943,9 @@ struct TextVertex {
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TextVertex), (void*)offsetof(TextVertex, Orientation)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 1, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, FontScale)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, ColorR)));

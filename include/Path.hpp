@@ -21,9 +21,9 @@ public:
 	VisualPathData Data;
 private:
 
-	std::vector<TwoPointIVertex> Edges;
+	std::vector<TwoPointIRGBVertex> Edges;
 	std::vector<PointIVertex> SpecialPoints;
-	std::vector<TwoPointIVertex> Verts;
+	std::vector<TwoPointIRGBVertex> Verts;
 
 	MyRectI CachedBoundingBox;
 
@@ -37,10 +37,10 @@ public:
 	void SetMarked(bool Marked) { this->Marked = Marked; }
 
 	//Cached therfore not const
-	const std::vector<TwoPointIVertex>& ComputeAllAndGetEdges(const MyRectI& BoundingBox);
+	const std::vector<TwoPointIRGBVertex>& ComputeAllAndGetEdges(const MyRectI& BoundingBox);
 
 	const std::vector<PointIVertex>& getSpecialPoints() const;
-	const std::vector<TwoPointIVertex>& getVerts() const;
+	const std::vector<TwoPointIRGBVertex>& getVerts() const;
 
 	bool Intercept(const PointType& Pos) const;
 
@@ -59,6 +59,16 @@ public:
 	void RotateHW(const PointType& Pos) {
 		IsDirty = true;
 		Data.RotateAroundHW(Pos);
+	}
+
+	void FlipX(const int& pos) {
+		IsDirty = true;
+		Data.FlipX(pos);
+	}
+
+	void FlipY(const int& pos) {
+		IsDirty = true;
+		Data.FlipY(pos);
 	}
 
 	//Returnes the Next Free

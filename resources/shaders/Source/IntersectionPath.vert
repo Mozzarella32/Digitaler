@@ -1,4 +1,4 @@
-//Hex.vert
+//IntersectionPath.vert
 
 #version 330 core
 

@@ -14,6 +14,9 @@ const PointIndex ReservedPointIndex = PointIndex(-3);
 const PointIndex FreeListEndPointIndex = PointIndex(-4);
 
 const PointType InvalidPoint = PointType(std::numeric_limits<int>::min(), std::numeric_limits<int>::min());
+const Eigen::Vector2f InvalidPointF = Eigen::Vector2f(std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+
+const int InvalidCoord = std::numeric_limits<int>::min();
 
 const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointIndex };
 
@@ -151,6 +154,7 @@ void VisualPathData::AddLine(const PointIndex& a, const PointIndex& b) {
 	assert(Block != nullptr);
 	Points[a].AddConnection(b);
 	Points[b].AddConnection(a);
+	LineCount++;
 #ifdef UseCollisionGrid
 	Block->RegisterLine(LineIndex{ a,b }, Points, Id);
 #endif
@@ -165,6 +169,7 @@ void VisualPathData::AddLineReservedUnreserved(const PointIndex& a, const PointI
 	assert(Block != nullptr);
 	Points[a].AddConnectionReserved(b);
 	Points[b].AddConnection(a);
+	LineCount++;
 #ifdef UseCollisionGrid
 	Block->RegisterLine(LineIndex{ a,b }, Points, Id);
 #endif
@@ -179,6 +184,7 @@ void VisualPathData::AddLineReservedReserved(const PointIndex& a, const PointInd
 	assert(Block != nullptr);
 	Points[a].AddConnectionReserved(b);
 	Points[a].AddConnectionReserved(b);
+	LineCount++;
 #ifdef UseCollisionGrid
 	Block->RegisterLine(LineIndex{ a,b }, Points, Id);
 #endif
@@ -607,6 +613,9 @@ void VisualPathData::RemoveLineBetweenNoDelete(const LineIndex& l) {
 	//This order becouase GetOther needs l.Point to be falid
 	Points[l.B].RemoveConnection(l.A);
 	Points[l.A].RemoveConnection(l.B);
+
+	LineCount--;
+
 #ifdef UseCollisionGrid
 	Block->UnRegisterLine(l, Points, Id);
 #endif
@@ -630,6 +639,8 @@ std::pair<PointIndex, PointIndex> VisualPathData::RemoveLineBetween(const LineIn
 
 	Points[aIndex].RemoveConnection(bIndex);
 	Points[bIndex].RemoveConnection(aIndex);
+
+	LineCount--;
 
 #ifdef UseCollisionGrid
 	Block->UnRegisterLine(l, Points, Id);
@@ -677,6 +688,9 @@ PointIndex VisualPathData::RemoveLineBetweenDeleteIndex(const LineIndex& l, cons
 
 	Points[Start].RemoveConnection(End);
 	Points[End].RemoveConnection(Start);
+
+	LineCount--;
+
 #ifdef UseCollisionGrid
 	Block->UnRegisterLine(l, Points, Id);
 #endif
@@ -851,7 +865,7 @@ LineIndex VisualPathData::StreightLineMiddelRemove(const PointIndex& p) {
 }
 
 VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlockInterior* Block)
-	: Block(Block), Id(KlassInstanceCounter++)
+	: Block(Block), Id(KlassInstanceCounter++), LineCount(0)
 {
 	assert(PointsMakeStreightLine(a, b));
 	assert(a != b);
@@ -865,7 +879,7 @@ VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlo
 }
 
 VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block)
-	:LastAddedLine(pd.LastAddedLine)/*, BoundingBox(pd.BoundingBox)*/, Block(Block), Id(KlassInstanceCounter++) {
+	:LastAddedLine(pd.LastAddedLine),LineCount(0)/*, BoundingBox(pd.BoundingBox)*/, Block(Block), Id(KlassInstanceCounter++) {
 	for (const PointType& p : pd.Points) {
 		AddPoint(p);
 	}
@@ -873,6 +887,32 @@ VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior
 		AddLine(l.first, l.second);
 	}
 	RecalculateBoundingBox();
+}
+
+VisualPathData::VisualPathData(VisualPathData&& other) noexcept
+	:LineCount(std::exchange(other.LineCount, 0)),
+	Points(std::move(other.Points)),
+	Head(std::exchange(other.Head, FreeListEndPointIndex)),
+	BoundingBox(std::exchange(other.BoundingBox, {})),
+	Block(std::exchange(other.Block, nullptr)),
+	Id(std::exchange(other.Id, InvalidId)),
+	LastAddedLine(std::exchange(other.LastAddedLine, InvalidLineIndex)) {
+}
+
+VisualPathData& VisualPathData::operator=(VisualPathData&& other) noexcept {
+#ifdef UseCollisionGrid
+	Clear();
+#endif
+	PROFILE_FUNKTION;
+
+	LineCount = std::exchange(other.LineCount, 0);
+	Points = std::move(other.Points);
+	Head = std::exchange(other.Head, FreeListEndPointIndex);
+	BoundingBox = std::exchange(other.BoundingBox, {});
+	Block = std::exchange(other.Block, nullptr);
+	LastAddedLine = std::exchange(other.LastAddedLine, InvalidLineIndex);
+	Id = std::exchange(other.Id, InvalidId);
+	return *this;
 }
 
 bool VisualPathData::PointsMakeStreightLine(const PointType& a, const PointType& b) {
@@ -1048,6 +1088,7 @@ void VisualPathData::Clear() noexcept {
 			}
 		}
 	}
+	LineCount = 0;
 }
 #endif
 
@@ -1106,6 +1147,33 @@ void VisualPathData::RotateAroundCCW(const PointType& pos) {
 
 void VisualPathData::RotateAroundHW(const PointType& pos) {
 	RotateAround(pos, M_PI);
+}
+
+void VisualPathData::Flip(const int& pos, bool X) {
+	auto CPD = CompressedPathData(*this);
+
+	for (PointType& Point : CPD.Points) {
+		if (X) {
+			int x = Point.x() - pos;
+			x = -x;
+			Point.x() = pos + x;
+		}
+		else {
+			int y = Point.y() - pos;
+			y = -y;
+			Point.y() = pos + y;
+		}
+	}
+
+	(*this) = VisualPathData(CPD, Block);
+}
+
+void VisualPathData::FlipX(const int& pos) {
+	Flip(pos, true);
+}
+
+void VisualPathData::FlipY(const int& pos) {
+	Flip(pos, false);
 }
 
 void VisualPathData::SetLastAdded(const PointIndex& pIndex) {
@@ -1562,20 +1630,6 @@ void PointNode::RemoveConnection(const PointIndex& p) {
 		}
 	}
 	assert(false);
-	//LineIndexInPoint removedAt = 4;
-	//for (LineIndexInPoint i = 0; i < 4; i++) {
-	//	if (Connections[i] == p) {
-	//		removedAt = i;
-	//		break;
-	//	}
-	//}
-	//assert(removedAt != 4);
-	////Move Rest to Left
-	//for (LineIndexInPoint i = removedAt; i < 3; i++) {
-	//	Connections[i] = Connections[i + 1];
-	//}
-	//Connections[3] = InvalidPointIndex;
-	//std::unreachable();
 }
 
 CompressedPathData::CompressedPathData(const VisualPathData& pd)

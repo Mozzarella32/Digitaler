@@ -1,4 +1,4 @@
-//Hex.frag
+//Path.frag
 
 #version 330 core
 
