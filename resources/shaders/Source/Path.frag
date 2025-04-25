@@ -4,12 +4,12 @@
 
 //In
 in vec2 PosInWorld;
+flat in vec2 A;
+flat in vec2 B;
+flat in vec3 PathColor;
 
 //Out
 out vec4 FragColor;
-
-flat in vec2 A;
-flat in vec2 B;
 
 //flat in int Flags;
 
@@ -37,7 +37,8 @@ void main(){
         FragColor = vec4(0.0,1.0,1.0,1.0);
         return;
     }
-	FragColor = vec4(0.941,0.286,0.351,step(-0.1,1.0-10*sdSegment(PosInWorld,A,B)));
+	FragColor = vec4(PathColor,step(-0.1,1.0-10*sdSegment(PosInWorld,A,B)));
+//	FragColor = vec4(0.941,0.286,0.351,step(-0.1,1.0-10*sdSegment(PosInWorld,A,B)));
 //    FragColor = vec4(0.0);
 //	FragColor = vec4(0.0,0.0,1.0,1.0-3*sdSegment(PosInWorld,A,B));
 //	FragColor = vec4(0.0,0.0,1.0,step(-0.1,1.0-10*sdSegment(PosInWorld,A,B)));

@@ -6,7 +6,9 @@
 
 #include "../resources/shaders/Shader_Includes.hpp"
 
+#ifdef HotShaderReload
 bool ShaderManager::IsDirty = false;
+#endif
 
 #define X(Vert, Frag) \
 Map.emplace(Frag,\
@@ -51,7 +53,7 @@ void ShaderManager::Work() {
 	while (Running) {
 		XList_Shaders_Combined
 #ifdef _WIN32
-		Sleep(16);
+		Sleep(100);
 #else
 		sleep(16);
 #endif
@@ -135,4 +137,56 @@ const std::vector<std::pair<ShaderManager::Shaders, GLenum>>& ShaderManager::Get
 void ShaderManager::Initilise() {
 	PROFILE_FUNKTION;
 	GetInstance();
+}
+
+std::unique_ptr<Shader> ShaderManager::PlacholderShader;
+
+const std::unique_ptr<Shader>& ShaderManager::GetPlacholderShader() {
+	PROFILE_FUNKTION;
+	if (PlacholderShader) return PlacholderShader;
+	PlacholderShader = std::make_unique<Shader>(ErrorHandler,
+		std::string(R"--(
+//PlacholderShader.vert
+
+#version 330 core
+
+//In 
+layout(location = 0) in vec2 InPosition;
+
+//Out
+out vec2 TextureCoord;
+
+void main() {
+	 TextureCoord = (InPosition+1)/2;
+	gl_Position = vec4(InPosition,0.0,1.0);
+}
+)--"),
+std::string(R"--(
+//PlacholderShader.frag
+
+#version 330 core
+
+// In
+in vec2 TextureCoord;
+
+// Out
+out vec4 FragColor;
+
+// Uniform
+uniform vec2 USize;
+
+void main() {
+    vec2 pixelCoord = TextureCoord * USize;
+
+    int x = int(floor(pixelCoord.x)) % 2;
+    int y = int(floor(pixelCoord.y)) % 2;
+
+    if (x == y) {
+        FragColor = vec4(0.0,0.0,0.0, 1.0); 
+    } else {
+        FragColor = vec4(0.953, 0.286, 0.961, 1.0);
+    }
+}
+)--"));
+	return PlacholderShader;
 }

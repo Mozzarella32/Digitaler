@@ -8,6 +8,7 @@ in vec2 ScreenPos;
 flat in vec2 A;
 flat in vec2 B;
 flat in vec3 Color;
+flat in vec3 ColorHightlight;
 
 //Out
 out vec4 FragColor;
@@ -50,7 +51,7 @@ void main(){
 //    FragColor = vec4(blend*UColor+(1.0-blend)*BackgroundColor.rgb,1.0);
 //	vec3 BackgroundColor = vec3(0.05,0.05,0.05);
 
-    FragColor = vec4(2*blend*Color+(1.0-2*blend)*BackgroundColor.rgb,1.0);
+    FragColor = vec4(2*blend*ColorHightlight+(1.0-2*blend)*BackgroundColor.rgb,1.0);
 //    if(blend > 1.0){
 //        FragColor = vec4(1.0,0.0,1.0,1.0);
 //        return;

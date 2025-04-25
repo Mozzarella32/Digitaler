@@ -13,12 +13,14 @@
 
 #include "DataResourceManager.hpp"
 
+#include "BlockSelector.hpp"
+
 MyFrame::MyFrame(MyApp* App)
 	:
 	wxFrame(nullptr, wxID_ANY, "MyFrame", wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxFULL_REPAINT_ON_RESIZE),
-#ifdef HotShaderReload
+//#ifdef HotShaderReload
 	App(App),
-#endif
+//#endif
 	LoopTimer(this, [this]() {Loop(); })
 
 {
@@ -254,7 +256,7 @@ MyFrame::MyFrame(MyApp* App)
 
 	Canvas->Bind(wxEVT_SIZE, [this](wxSizeEvent& evt) {
 		evt.Skip();
-		if (!Initilized) return;
+		if (!IO) return;
 		IO->OnCanvasSizeChange();
 		});
 	Canvas->Bind(wxEVT_MOUSEWHEEL, [this](wxMouseEvent& evt) {
@@ -331,20 +333,50 @@ MyFrame::MyFrame(MyApp* App)
 	Maximize();
 
 	PROFILE_SESSION_START("Hi", std::filesystem::path(wxGetHomeDir().ToStdString()) / "Profiled.json");
+	
+	InitilizeDescriptor = "Waiting for Opengl initilisation";
+
+	SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
 	CallAfter([this]() {
 		PROFILE_SCOPE("Initilizing");
 
 		this->App->ContextBinder->BindContext(this->App->GlContext.get());
+
+	/*	InitilizeDescriptor = "Loaing Shaders";
+		SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
+
+		ShaderManager::Initilise();*/
+
 		IO = std::make_unique<IOHandler>(this);
 		{
 			PROFILE_SCOPE("Creating Renderer");
 			renderer = std::make_unique<Renderer>(this->App, this);
 		}
+
+
+		IO->OnCanvasSizeChange();
+
+		InitilizeDescriptor = "Loaing Block Data";
+		SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
+
 		//CurrentBlock = std::make_unique<VisualBlockInterior>(0);
 		BlockManager = std::make_unique<DataResourceManager>(renderer.get());
-		IO->OnCanvasSizeChange();
+
+		Blockselector = std::make_unique<BlockSelector>(BlockManager.get(), renderer.get());
+
+		BlockManager->Blockselector = Blockselector.get();
+
+		BlockManager->SetCurrent(BlockManager->GetBlockIndex(BlockIdentifiyer::ParsePredefined("Testing:MainBlock")), 0.01f, {0,0},true);
+
+		InitilizeDescriptor = "Resizing Textures, Creating BoundingBoxes and Initial Render";
+		SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
+
+
 		Initilized = true;
+		IO->SetState(IOHandler::State::Normal);
+		IO->OnCanvasSizeChange();
+		SetTitle("Ready");
 		});
 }
 
@@ -352,12 +384,11 @@ MyFrame::~MyFrame() {
 	PROFILE_SESSION_END;
 }
 
-
 void MyFrame::Loop() {
 	PROFILE_FUNKTION;
 
 	if (!Initilized) {
-		SetTitle("Initilizing");
+		SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 		return;
 	}
 

@@ -7,7 +7,7 @@
 #include "Block.hpp"
 
 class Renderer;
-
+class BlockSelector;
 //
 class BlockFileAddress {
 	std::string Package;
@@ -33,20 +33,21 @@ class BlockFileAddress {
 //class VisualPathData;
 //
 
-using VisualPathDataIndex = unsigned int;
-
 class DataResourceManager {
 	/*std::unordered_map<BlockDataID, BlockFileAddress> IdToAddress;
 	std::unordered_map<BlockFileAddress, BlockDataID> AddressToId;*/
-
+public:
 	Renderer* renderer;
+	BlockSelector* Blockselector;
+private:
 
 	std::queue<CompressedBlockDataIndex> FreeBlockIndecies;
 	CompressedBlockDataIndex NextNewBlockIndex = 0;
 
 	std::unordered_map<CompressedBlockDataIndex, CompressedBlockData> Blocks;
 
-	std::map<std::string, CompressedBlockDataIndex> NameToBlockIndex;
+	std::unordered_map<BlockIdentifiyer, CompressedBlockDataIndex> IdentifyerToBlockIndex;
+	std::unordered_map<CompressedBlockDataIndex, BlockIdentifiyer> BlockIndexToIdentifiyer;
 
 	struct SpecialBlockIndex {
 		CompressedBlockDataIndex SevengSeg;
@@ -69,17 +70,22 @@ class DataResourceManager {
 	void RemoveCompressedData(const CompressedBlockDataIndex& Index);
 
 public:
-	std::unique_ptr<VisualBlockInterior> CurrentInterior;
+
+	VisualBlockInterior Interior;
+
+	std::optional<CompressedBlockDataIndex> InteriorData;
 
 	DataResourceManager(Renderer* renderer);
 
 	std::optional<CompressedBlockData> GetCompressedBlockData(const CompressedBlockDataIndex& index) const;
 
-	std::optional<CompressedBlockData> GetCompressedBlockData(const std::string& Name) const;
+	std::optional<CompressedBlockData> GetCompressedBlockData(const BlockIdentifiyer& Ident) const;
 
-	CompressedBlockDataIndex GetBlockIndex(const std::string& Name) const;
+	std::optional<BlockIdentifiyer> GetIdentifyer(const CompressedBlockDataIndex& Index) const;
 
-	void SetCurrent(const CompressedBlockData& cbd);
+	CompressedBlockDataIndex GetBlockIndex(const BlockIdentifiyer& Ident) const;
+
+	void SetCurrent(const CompressedBlockDataIndex& cbdi, double Zoom, const Eigen::Vector2f& Offset, bool Push);
 
 	const SpecialBlockIndex& GetSpecialBlockIndex() const;
 };

@@ -6,21 +6,28 @@ class IOHandler;
 class Renderer;
 class VisualBlockInterior;
 class DataResourceManager;
+class BlockSelector;
 
 class MyFrame : public wxFrame {
 	GameLoopTimer LoopTimer;
 
-#ifdef HotShaderReload
+//#ifdef HotShaderReload
 	MyApp* App;
-#endif
+//#endif
 
 public:
 	bool Initilized = false;
 	std::unique_ptr<IOHandler> IO;
 	std::unique_ptr<Renderer> renderer;
 	std::unique_ptr<DataResourceManager> BlockManager;
+
+	//GUI
+	std::unique_ptr<BlockSelector> Blockselector;
+
 	wxGLCanvas* Canvas;
 	//std::unique_ptr<Board> board;
+
+	std::string InitilizeDescriptor = "none";
 
 private:
 	//void PositionButtons(wxGLCanvas* Canvas, std::vector<wxButton*> Buttons);

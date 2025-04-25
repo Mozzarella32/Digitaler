@@ -4,13 +4,15 @@
 #define UseCollisionGrid
 
 
-#define RenderCollisionGrid
+//#define RenderCollisionGrid
 
 #ifndef UseCollisionGrid
 #undef RenderCollisionGrid
 #endif
 
+//#define ShowBasePositionOfBlocks
+
 #define HotShaderReload
 
-#define PROFILING
+//#define PROFILING
 #include "../submodules/Instrumentor/Instrumentor.hpp"

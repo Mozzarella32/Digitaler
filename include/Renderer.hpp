@@ -56,6 +56,8 @@ private:
 		VertexArrayObject EdgesUnmarkedVAO;
 		VertexArrayObject SpecialPointsVAO;
 		VertexArrayObject VertsVAO;
+
+		VertexArrayObject ConflictPointsVAO;
 	};
 
 	PathVAOs VAOsPath;
@@ -69,8 +71,9 @@ private:
 	VertexArrayObject MuxVAO;
 
 #ifdef RenderCollisionGrid
-	VertexArrayObject BlocksVAO;
+	VertexArrayObject CollisionGridVAO;
 #endif
+	VertexArrayObject BlocksVAO;
 	VertexArrayObject PinVAO;
 	VertexArrayObject RoundPinVAO;
 
@@ -81,28 +84,34 @@ private:
 	//VertexArrayObject NDotVAO;
 	VertexArrayObject AreaSelectVAO;
 
+#ifdef ShowBasePositionOfBlocks
+	VertexArrayObject BlockBasePotitionVAO;
+#endif
+
 	BufferedVertexVec<PointFRGBVertex> AreaSelectVerts;
 
 	PointType MouseIndex;
 
-	static VertexArrayObject CreateTwoPointIVAO();
+	template<typename VertexType>
+	static VertexArrayObject CreateVAO();
 
-	static VertexArrayObject CreatePointIVAO();
+	//static VertexArrayObject CreateTwoPointIRGBVAO();
 
-	static VertexArrayObject CreateSevenSegVAO();
-	static VertexArrayObject CreateSixteenSegVAO();
+	//static VertexArrayObject CreatePointIVAO();
 
-	static VertexArrayObject CreateMuxVAO();
+	//static VertexArrayObject CreateSevenSegVAO();
+	//static VertexArrayObject CreateSixteenSegVAO();
 
-#ifdef RenderCollisionGrid
-	static VertexArrayObject CreateBlockRGBAVAO();
-#endif
-	static VertexArrayObject CreatePointIOrientationRGBVAO();
-	static VertexArrayObject CreatePointIOrientationVAO();
+	//static VertexArrayObject CreateMuxVAO();
 
-	static VertexArrayObject CreatePointIRGBIDVAO();
-	static VertexArrayObject CreatePointFRGBVAO();
-	static VertexArrayObject CreateTextVAO();
+	//static VertexArrayObject CreateBlockRGBAVAO();
+
+	//static VertexArrayObject CreatePointIOrientationRGBVAO();
+	//static VertexArrayObject CreatePointIOrientationVAO();
+
+	//static VertexArrayObject CreatePointIRGBIDVAO();
+	//static VertexArrayObject CreatePointFRGBVAO();
+	//static VertexArrayObject CreateTextVAO();
 
 	VertexArrayObject StaticTextVAO;
 	VertexArrayObject DynamicTextVAO;
@@ -114,7 +123,15 @@ public:
 
 	std::string title;
 
+	bool AllowHover = true;
+private:
+	void RenderWires();
+
+	public:
+
 	void Render();
+
+	void RenderPlacholder();
 
 private:
 	void RenderIDMap();
@@ -131,7 +148,7 @@ public:
 	Renderer(MyApp* App, MyFrame* Frame);
 	~Renderer();
 
-	void UpdateSize();
+	void UpdateSize(bool Initilized);
 
 	BufferedVertexVec<PointFRGBVertex>& GetAreaSelectVerts();
 

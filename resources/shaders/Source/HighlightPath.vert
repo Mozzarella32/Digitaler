@@ -8,14 +8,15 @@ layout(location = 0) in int InIndex;
 //Per Instance
 layout(location = 1) in ivec2 InstanceInFirst;
 layout(location = 2) in ivec2 InstanceInSecond;
-layout(location = 3) in vec3 InstanceInColor;
+layout(location = 4) in vec3 InstanceInColorHightlight;
 
 //Out
 out vec2 PosInWorld;
 out vec2 ScreenPos;
 flat out vec2 A;
 flat out vec2 B;
-flat out vec3 Color;
+//flat out vec3 ColorPath;
+flat out vec3 ColorHightlight;
 
 //Uniforms
 uniform vec2 UOffset;
@@ -56,7 +57,7 @@ void main() {
     A = InstanceInFirst;
     B = InstanceInSecond;
     
-    Color = InstanceInColor;
+    ColorHightlight = InstanceInColorHightlight;
 
     vec2 PosOnScreen = (Pos+UOffset)/UZoom;
 

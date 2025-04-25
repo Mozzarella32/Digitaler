@@ -4,51 +4,58 @@
 #include "OpenGlDefines.hpp"
 
 #include "DataResourceManager.hpp"
-
-#include "AtlasMap.hpp"
-
 #include "Renderer.hpp"
+
+#include "RenderTextUtility.hpp"
 
 #ifdef UseCollisionGrid
 int VisualBlockInterior::BoxSize = 5;
 #endif
 
-BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetEdges(bool Preview) {
-	if (Preview) {
-		return PreviewEdges;
+BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetEdges(bool Floating) {
+	if (Floating) {
+		return FloatingEdges;
 	}
 	return Edges;
 }
 
-BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetEdgesMarked(bool Preview) {
-	if (Preview) {
-		return PreviewEdges;
+BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetEdgesMarked(bool Floating) {
+	if (Floating) {
+		return FloatingEdges;
 	}
 	return EdgesMarked;
 }
 
-static BufferedVertexVec<TwoPointIRGBVertex> EmptyPathVec = {};
+static BufferedVertexVec<TwoPointIRGBRHGHBHVertex> EmptyPathVec = {};
 
-BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetEdgesUnmarked(bool Preview) {
-	if (Preview) {
+BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetEdgesUnmarked(bool Floating) {
+	if (Floating) {
 		return EmptyPathVec;
 	}
 	return EdgesUnmarked;
 }
 
-BufferedVertexVec<PointIVertex>& VisualBlockInterior::GetSpecialPoints(bool Preview) {
-	if (Preview) {
-		return PreviewSpecialPoints;
+BufferedVertexVec<PointIRGBVertex>& VisualBlockInterior::GetSpecialPoints(bool Floating) {
+	if (Floating) {
+		return FloatingSpecialPoints;
 	}
 	return SpecialPoints;
 }
 
-BufferedVertexVec<TwoPointIRGBVertex>& VisualBlockInterior::GetVerts(bool Preview) {
-	if (Preview) {
-		return PreviewVerts;
+BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetVerts(bool Floating) {
+	if (Floating) {
+		return FloatingVerts;
 	}
 	return Verts;
 }
+
+BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetConflictPoints(bool Floating) {
+	if (Floating) {
+		return EmptyPathVec;
+	}
+	return ConflictPoints;
+}
+
 //
 //const std::vector<TwoPointIRGBAIDVertex>& VisualBlockInterior::GetBlockVerts() const {
 //	return std::vector<;
@@ -71,12 +78,81 @@ bool VisualBlockInterior::HasHighlited() const {
 	return Highlited != 0;
 }
 
+std::optional<CompressedBlockDataIndex> VisualBlockInterior::GetBlockIdByStencil(unsigned int Id) const {
+	unsigned int id = 0;
+	for (auto& [type, vec] : Blocks) {
+		for (auto& block : vec) {
+			id++;
+			if (id != Id) continue;
+			return type;
+		}
+	}
+	return std::nullopt;
+}
+
 void VisualBlockInterior::ClearMarked() {
-	std::fill(begin(MarkedBlocks), end(MarkedBlocks), false);
+	bool HadMarkedBlocks = HasMarkedBlocks();
+	if (HadMarkedBlocks) {
+		std::fill(begin(MarkedBlocks), end(MarkedBlocks), false);
+		NumMarkedBlocks = 0;
+		DirtyBlocks = true;
+	}
+
+	//Dosen't use HasMarkedPaths becaus that would be two sweeps
+	bool FoundPath = false;
+	for (auto& p : Paths) {
+		if (p.IsFree()) continue;
+		FoundPath |= p.ClearMarkedArea();
+	}
+	if (FoundPath) {
+		MergeAfterMove();
+	}
+	Dirty |= HadMarkedBlocks | FoundPath;
 }
 
 void VisualBlockInterior::MarkAll() {
-	std::fill(begin(MarkedBlocks), end(MarkedBlocks), true);
+	bool HasUnmarkedBlocks = NumMarkedBlocks != MarkedBlocks.size();
+	if (HasUnmarkedBlocks) {
+		std::fill(begin(MarkedBlocks), end(MarkedBlocks), true);
+		NumMarkedBlocks = MarkedBlocks.size() - 1;
+		DirtyBlocks = true;
+	}
+	bool FoundPath = false;
+	for (auto& p : Paths) {
+		if (p.IsFree()) continue;
+		FoundPath |= p.SetMarkedArea(FullRectI);
+	}
+	Dirty |= HasUnmarkedBlocks | FoundPath;
+}
+
+bool VisualBlockInterior::ToggleMarkHoverPath() {
+	bool Return = false;
+	for (auto& p : Paths) {
+		if (p.IsFree()) continue;
+		Return |= p.ToggleMarkedIfHover();
+	}
+	if (Return)
+		Dirty = true;
+	return Return;
+}
+
+//Carefull O(n) with n = Paths.size()
+bool VisualBlockInterior::HasAnythingMarked() const {
+	return HasMarkedBlocks() || HasMarkedPaths();//Short circuit simple check
+}
+
+//Carefull O(n) with n = Paths.size()
+bool VisualBlockInterior::HasMarkedPaths() const {
+	bool Return = false;
+	for (const auto& p : Paths) {
+		if (p.IsFree()) continue;
+		if (p.HasMarked()) Return = true;
+	}
+	return Return;
+}
+
+bool VisualBlockInterior::HasMarkedBlocks() const {
+	return NumMarkedBlocks != 0;
 }
 
 //Returns if need is to redraw
@@ -84,88 +160,97 @@ bool VisualBlockInterior::SetMarked(unsigned int Mark, const bool& Value) {
 	if (MarkedBlocks.size() <= Mark) return false;
 	if (MarkedBlocks[Mark] == Value)return false;
 	MarkedBlocks[Mark] = Value;
+	if (Value) {
+		NumMarkedBlocks++;
+	}
+	else {
+		NumMarkedBlocks--;
+	}
 	Dirty = true;
 	DirtyBlocks = true;
 	return true;
 }
 
-bool VisualBlockInterior::GertMarked(unsigned int Mark) const {
+bool VisualBlockInterior::GetMarked(unsigned int Mark) const {
 	assert(MarkedBlocks.size() > Mark);
+	if (Mark == 0) return false;
 	return MarkedBlocks[Mark];
 }
 
-void VisualBlockInterior::MoveMarked(const Eigen::Vector2i& Diff) {
-	unsigned int id = 0;
-	for (auto& [type, vec] : Blocks) {
-		for (auto& block : vec) {
-			id++;
-			assert(MarkedBlocks.size() > id);
-			if (!MarkedBlocks[id]) continue;
-			block.Pos += Diff;
+bool VisualBlockInterior::HasMarkedPathAt(const PointType& Mouse) const {
+	for (const auto& p : Paths) {
+		if (p.IsFree()) continue;
+		if (p.HasMarkedAt(Mouse)) {
+			return true;
 		}
 	}
+	return false;
 }
 
-void VisualBlockInterior::DeleteMarked() {
-	std::vector<CompressedBlockDataIndex> Indecies;
-
-	std::stringstream log;
-
+//Returnes if Modifyed
+bool VisualBlockInterior::ApplyToMarked(const BlockApplyer& Blockapplyer, const PathApplyer& Pathapplyer) {
+	if (!HasAnythingMarked()) return false;
 	unsigned int id = 0;
-	for (auto& [type, vec] : Blocks) {
-		Indecies.push_back(type);
-		id += vec.size();
-		log << type << " " << vec.size() << "\n";
-	}
-
-	log << "ID: " << id << "\n";
-
-	size_t Deleted = 0;
-
-	//id contains highest id
-	for (auto it = rbegin(Indecies); it != rend(Indecies); it++) {
-		auto& vec = Blocks.at(*it);
-		if (vec.size() == 0) continue;
-		for (size_t i = vec.size() - 1;; i--) {
-			if (!MarkedBlocks[id--]) {
-				if (i == 0) break;
+	bool HadMarkedBlock = HasMarkedBlocks();
+	if (HadMarkedBlock) {
+		for (auto& [type, vec] : Blocks) {
+			const auto& DataOpt = ResourceManager->GetCompressedBlockData(type);
+			if (!DataOpt) {
+				assert(false && "you messed up");
 				continue;
 			}
+			const auto& BlockSize = DataOpt->blockExteriorData.Size;
 
-			if (Highlited > id) {
-				Highlited--;
+			for (auto& block : vec) {
+				id++;
+				assert(MarkedBlocks.size() > id);
+				if (!MarkedBlocks[id]) continue;
+				Blockapplyer(block, BlockSize);
 			}
-			if (Highlited == id) {
-				Highlited = 0;
-			}
+		}
+	}
+	Dirty |= HadMarkedBlock;
+	DirtyBlocks |= HadMarkedBlock;
 
-			Deleted++;
-			auto itdelete = vec.begin();
-			std::advance(itdelete, i);
-			vec.erase(itdelete);
-			if (i == 0) break;
+	const bool FoundPath = ApplyToMarkedPath(Pathapplyer);
+
+	return HadMarkedBlock || FoundPath;
+}
+
+//Returnes if Modifyed
+bool VisualBlockInterior::ApplyToMarkedPath(const PathApplyer& Pathapplyer) {
+	bool FoundPath = false;
+
+	//split if necessary
+	if (!Moving) {
+		Moving = true;
+		for (size_t i = 0; i < Paths.size(); i++) {
+			auto& p = Paths[i];
+			if (p.IsFree()) continue;
+			if (!p.IsFullyMarked() && p.HasMarked()) {
+				SplitPath(i);
+			}
 		}
 	}
 
-	MarkedBlocks.resize(MarkedBlocks.size() - Deleted, false);
-	ClearMarked();
+	//apply
+	for (size_t i = 0; i < Paths.size(); i++) {
+		auto& p = Paths[i];
+		if (p.IsFree()) continue;
+		if (!p.IsFullyMarked()) continue;
+		FoundPath = true;
+		Pathapplyer(p);
+	}
+
+	Dirty |= FoundPath;
+	PathNeedsMerging |= FoundPath;
+
+	return FoundPath;
 }
 
 PointType VisualBlockInterior::GetPositionDiff(const BlockMetadata& Meta, const PointType& BlockSize) {
 	using enum MyDirection::Direction;
 	PointType Off{};
-
-
-	/*auto Rotation = Meta.Rotation;
-	if ((Meta.xflip && !Meta.yflip) || !Meta.xflip && Meta.yflip) {
-		switch (Rotation) {
-		case Up: Rotation = Up; break;
-		case Right: Rotation = Left; break;
-		case Down: Rotation = Down; break;
-		case Left: Rotation = Left; break;
-		}
-	}*/
-
 
 	switch (Meta.Rotation) {
 	case Up:
@@ -236,13 +321,24 @@ Eigen::Vector2f VisualBlockInterior::GetMarkedMean() const {
 		const auto& BlockSize = ContainedExterior.blockExteriorData.Size;
 		for (const auto& Meta : MetaVec) {
 			id++;
-			if (!MarkedBlocks[id])continue;
+			if (!MarkedBlocks[id]) continue;
 
 			Eigen::Vector2f Diff = GetBasePosition(Meta, BlockSize).cast<float>() - Mean;
 			Diff /= count + 1;
 			Mean += Diff;
 			count++;
 		}
+	}
+	for (const auto& p : Paths) {
+		if (p.IsFree()) continue;
+		if (!p.HasMarked()) continue;
+
+		auto Pos = p.Data.BoundingBox.Position.cast<float>() + (p.Data.BoundingBox.Size.cast<float>() / 2.0);
+
+		Eigen::Vector2f Diff = Pos - Mean;
+		Diff /= count + 1;
+		Mean += Diff;
+		count++;
 	}
 	if (count == 0) {
 		return InvalidPointF;
@@ -267,488 +363,307 @@ void VisualBlockInterior::MarkArea(const MyRectF& Area/*, BlockBoundingBoxCallba
 			SetMarked(id, true);
 		}
 	}
+
+
+	const Eigen::Vector2f floatMin = Area.Position;
+	const Eigen::Vector2f floatMax = Area.Position + Area.Size;
+
+	Eigen::Vector2f min = floatMin.cwiseMin(floatMax);
+	Eigen::Vector2f max = floatMin.cwiseMax(floatMax);
+
+	Eigen::Vector2i intMin = floatMin.array().ceil().cast<int>();
+	Eigen::Vector2i intMax = floatMax.array().floor().cast<int>();
+	Eigen::Vector2i intSize = (intMax - intMin).cwiseMax(Eigen::Vector2i::Zero());
+
+	const MyRectI AreaI(intMin, intSize);
+
+	bool hasAnyIntPoint = (min.array().ceil() <= (max.array().floor())).all();
+
+	if (!hasAnyIntPoint)return;
+
+	for (auto& p : Paths) {
+		if (p.IsFree())continue;
+		p.SetMarkedArea(AreaI);
+	}
 }
 
-PointType VisualBlockInterior::RotateMarked() {
-
+//Returnes if Modifyed
+bool VisualBlockInterior::RotateMarked(bool CW) {
 	auto Rotate = [](float angle) {
 		return Eigen::Matrix2i{
 			{(int)std::round(cos(angle)),-(int)std::round(sin(angle))},
 			{(int)std::round(sin(angle)),(int)std::round(cos(angle))}
 		};
 		};
-	auto CWRotation = Rotate((float)-M_PI / 2.0f);
-	
-	Eigen::Vector2f Mean = GetMarkedMean();
+	auto Rotation = Rotate(CW ? (float)M_PI / 2.0f : (float)-M_PI / 2.0);
 
-	if (Mean == InvalidPointF) return InvalidPoint;//No Marked
+	const Eigen::Vector2f Mean = GetMarkedMean();
 
 	Eigen::Vector2i pos = { int(std::round(Mean.x())),int(std::round(Mean.y())) };
 
-	int id = 0;
-	for (auto& [Index, MetaVec] : Blocks) {
-		const auto& ContainedExteriorOpt = ResourceManager->GetCompressedBlockData(Index);
-		if (!ContainedExteriorOpt) {
-			assert(false && "you messed up");
-			continue;
-		}
-		const auto& ContainedExterior = ContainedExteriorOpt.value();
-		const auto& BlockSize = ContainedExterior.blockExteriorData.Size;
-		int SizeDiff = BlockSize.x() - BlockSize.y();
-		for (auto& Meta : MetaVec) {
+	return ApplyToMarked(
+		[pos, Rotation, CW](BlockMetadata& meta, const PointType& BlockSize) {
 
-			id++;
-			if (!MarkedBlocks[id])continue;
-			PointType Base = GetBasePosition(Meta, BlockSize);
-			if ((Meta.xflip && !Meta.yflip) || !Meta.xflip && Meta.yflip) {
-				Meta.Rotation = MyDirection::RotateCCW(Meta.Rotation);
+			//Importent to be before meta is modified
+			const PointType Base = GetBasePosition(meta, BlockSize);
+
+			//Update Rotateion
+			if ((meta.xflip && !meta.yflip) || !meta.xflip && meta.yflip) {
+				meta.Rotation = CW ? MyDirection::RotateCW(meta.Rotation) : MyDirection::RotateCCW(meta.Rotation);
 			}
 			else {
-				Meta.Rotation = MyDirection::RotateCW(Meta.Rotation);
+				meta.Rotation = CW ? MyDirection::RotateCCW(meta.Rotation) : MyDirection::RotateCW(meta.Rotation);
 			}
 
+			//Update Position
 			PointType Off = Base - pos;
-			Off = CWRotation * Off;
-			Meta.Pos = pos + Off;
-			Meta.Pos += GetPositionDiff(Meta, BlockSize);
+			Off = Rotation * Off;
+			meta.Pos = pos + Off;
+			meta.Pos += GetPositionDiff(meta, BlockSize);
+		},
+		[pos, CW](VisualPath& p) {
+			p.Rotate(pos, CW);
 		}
-	}
-
-	return pos;
+	);
 }
 
-int VisualBlockInterior::FlipMarked(bool X) {
-	using enum MyDirection::Direction;
+//Returnes if Modifyed
+bool VisualBlockInterior::FlipMarked(bool X) {
 
-	auto FlipXMat = Eigen::Matrix2i{
+	static const constexpr auto FlipXMat = Eigen::Matrix2i{
 		{-1,0},
 		{0,1},
 	};
 
-	auto FlipYMat = Eigen::Matrix2i{
+	static const auto  FlipYMat = Eigen::Matrix2i{
 		{1,0},
 		{0,-1},
 	};
 
-	Eigen::Vector2f Mean = GetMarkedMean();
-
-	if (Mean == InvalidPointF) return InvalidCoord;
+	const Eigen::Vector2f Mean = GetMarkedMean();
 
 	Eigen::Vector2i pos = { int(std::round(Mean.x())),int(std::round(Mean.y())) };
 
-	int id = 0;
-	for (auto& [Index, MetaVec] : Blocks) {
-		const auto& ContainedExteriorOpt = ResourceManager->GetCompressedBlockData(Index);
-		if (!ContainedExteriorOpt) {
-			assert(false && "you messed up");
-			continue;
-		}
-		const auto& ContainedExterior = ContainedExteriorOpt.value();
-		const auto& BlockSize = ContainedExterior.blockExteriorData.Size;
-		for (auto& Meta : MetaVec) {
-			id++;
-			if (!MarkedBlocks[id])continue;
+	const auto& FlipMat = X ? FlipXMat : FlipYMat;
 
-			auto Base = GetBasePosition(Meta, BlockSize);
+	return ApplyToMarked(
+		[pos, FlipMat, X](BlockMetadata& meta, const PointType& BlockSize) {
+
+			//Importent to be before meta is modified
+			const PointType Base = GetBasePosition(meta, BlockSize);
 
 			if (X) {
-				Meta.xflip = !Meta.xflip;
-				PointType Off = Base - pos;
-				Off = FlipXMat * Off;
-				Meta.Pos = pos + Off;
+				meta.xflip = !meta.xflip;
 			}
 			else {
-				Meta.yflip = !Meta.yflip;
-				PointType Off = Base - pos;
-				Off = FlipYMat * Off;
-				Meta.Pos = pos + Off;
+				meta.yflip = !meta.yflip;
 			}
 
-			Meta.Pos += GetPositionDiff(Meta, BlockSize);
+			PointType Off = Base - pos;
+			Off = FlipMat * Off;
+			meta.Pos = pos + Off;
+			meta.Pos += GetPositionDiff(meta, BlockSize);
+		},
+		[pos, X](VisualPath& p) {
+			p.Flip(X ? pos.x() : pos.y(), X);
+		}
+	);
+}
+
+void VisualBlockInterior::MoveMarked(const PointType& Diff) {
+	ApplyToMarked(
+		[Diff](BlockMetadata& meta, const PointType& BlockSize) {meta.Pos += Diff; },
+		[Diff](VisualPath& p) {p.Move(Diff); }
+	);
+}
+
+//Returnes if Modifyed
+bool VisualBlockInterior::DeleteMarked() {
+	std::vector<CompressedBlockDataIndex> Indecies;
+
+	bool HadMarkedBlocks = HasMarkedBlocks();
+
+	if (HadMarkedBlocks) {
+		unsigned int id = 0;
+		size_t Deleted = 0;
+
+		for (auto& [type, vec] : Blocks) {
+			Indecies.push_back(type);
+			id += vec.size();
+		}
+
+		//id contains highest id
+		for (auto it = rbegin(Indecies); it != rend(Indecies); it++) {
+			auto& vec = Blocks.at(*it);
+			if (vec.size() == 0) continue;
+			for (size_t i = vec.size() - 1;; i--) {
+				assert(id != 0);//Would read irrelevant
+				if (!MarkedBlocks[id--]) {
+					if (i == 0) break;
+					continue;
+				}
+
+				if (Highlited > id) {
+					Highlited--;
+				}
+				if (Highlited == id) {
+					Highlited = 0;
+				}
+
+				Deleted++;
+				auto itdelete = vec.begin();
+				std::advance(itdelete, i);
+				vec.erase(itdelete);
+				if (i == 0) break;
+			}
+		}
+		assert(Deleted != 0);
+		MarkedBlocks.resize(MarkedBlocks.size() - Deleted, false);
+		NumMarkedBlocks = std::numeric_limits<unsigned int>::max();
+		DirtyBlocks = true;
+	}
+
+	bool FoundPath = false;
+	for (size_t i = 0; i < Paths.size(); i++) {
+		auto& p = Paths[i];
+		if (p.IsFree()) continue;
+		if (p.IsFullyMarked()) {
+			p.Free(PathsFreeListHead);
+			PathsFreeListHead = i;
+			FoundPath = true;
+		}
+		else if (p.HasMarked()) {
+			SplitPath(i).Free(PathsFreeListHead);
+			PathsFreeListHead = i;
+			FoundPath = true;
 		}
 	}
 
-	return X ? pos.x() : pos.y();
-}
-
-int VisualBlockInterior::FlipMarkedX() {
-	return FlipMarked(true);
-}
-
-int VisualBlockInterior::FlipMarkedY() {
-	return FlipMarked(false);
-}
-
-VisualBlockInterior::VisualBlockInterior(const CompressedBlockData& data, DataResourceManager* ResourceManager, Renderer* renderer)
-	:ResourceManager(ResourceManager), renderer(renderer),
-
-	CharMap([this]() {
-	std::map<int, CharInfo> CharMap;
-	//         0  1  2   3 4 5 6 7 8 9 10
-	//bolditallic id adv l t r b l t r b
-	//                   plain   atlas
-	for (int i = 0; i < (sizeof(atlasMap) / sizeof(atlasMap[0]) / 11); i++) {
-		CharMap[(10000 * atlasMap[i * 11]) + atlasMap[i * 11 + 1]] = {
-			(float)atlasMap[i * 11 + 2],{
-				(float)atlasMap[i * 11 + 3], (float)atlasMap[i * 11 + 4],
-				(float)atlasMap[i * 11 + 5],(float)atlasMap[i * 11 + 6]},
-			{(float)atlasMap[i * 11 + 7] / TextAtlasSize.x,(TextAtlasSize.y - (float)atlasMap[i * 11 + 8]) / TextAtlasSize.y,
-			(float)atlasMap[i * 11 + 9] / TextAtlasSize.x,(TextAtlasSize.y - (float)atlasMap[i * 11 + 10]) / TextAtlasSize.y} };
+	DirtyBlocks |= HadMarkedBlocks;
+	Dirty |= HadMarkedBlocks || FoundPath;
+	if (HadMarkedBlocks || FoundPath) {
+		ClearMarked();
 	}
-	return CharMap;
-		}())
+	return HadMarkedBlocks || FoundPath;
+}
+
+VisualBlockInterior::VisualBlockInterior(DataResourceManager* ResourceManager, Renderer* renderer)
+	:ResourceManager(ResourceManager), renderer(renderer)
 {
 	PROFILE_FUNKTION;
+}
 
-	Paths.reserve(data.Paths.size());
-	for (const auto& pd : data.Paths) {
+void VisualBlockInterior::WriteBack(CompressedBlockData& Data) {
+	Data.Paths.clear();
+
+	Data.Paths.reserve(Paths.size());
+	for (const auto& p : Paths) {
+		if (p.IsFree()) continue;
+		Data.Paths.emplace_back(std::move(p.Data));
+	}
+	PathsFreeListHead = VisualPath::FreeListEnd;
+	Paths.clear();
+
+	Data.blockExteriorData.ContainedBlocks.clear();
+	for (const auto& [IndexContained, MetaVec] : Blocks) {
+		Data.blockExteriorData.ContainedBlocks[ResourceManager->GetIdentifyer(IndexContained).value()] = std::move(MetaVec);
+	}
+
+	Highlited = 0;
+
+	MarkedBlocks.clear();
+	NumMarkedBlocks = 0;
+	Blocks.clear();
+}
+
+void VisualBlockInterior::UpdateCurrentBlock() {
+	PROFILE_FUNKTION;
+
+	Destructing = true;
+	Paths.clear();
+	Blocks.clear();
+	Destructing = false;
+
+	Edges.Clear();
+	EdgesMarked.Clear();
+	EdgesUnmarked.Clear();
+	SpecialPoints.Clear();
+	Verts.Clear();
+	ConflictPoints.Clear();
+	FloatingEdges.Clear();
+	FloatingSpecialPoints.Clear();
+	FloatingVerts.Clear();
+	StaticTextVerts.Clear();
+	DynamicTextVerts.Clear();
+
+	PinVerts.Clear();
+	BlockVerts.Clear();
+	SevenSegVerts.Clear();
+	SixteenSegVerts.Clear();
+	RoundedPinVerts.Clear();
+	AndVerts.Clear();
+	OrVerts.Clear();
+	XOrVerts.Clear();
+	MuxVerts.Clear();
+
+#ifdef ShowBasePositionOfBlocks
+	BasePositionVerts.Clear();
+#endif
+
+	PreviewData.clear();
+	PreviewCached.reset();
+	PreviewIsDirty = true;
+	PreviewBoundingBoxIsDirty = true;
+	Dirty = true;
+	Destructing = false;
+	DirtyBlocks = true;
+	PathNeedsMerging = false;
+	Moving = false;
+
+	CachedBoundingBox = {};
+	MouseCached = InvalidPoint;
+	PreviewCachedBoundingBox = {};
+	MouseCachedPreview = InvalidPoint;
+	CachedBoundingBoxPreview = {};
+
+	Highlited = 0;
+
+	MarkedBlocks.clear();
+	NumMarkedBlocks = 0;
+
+	CollisionMap.clear();
+	PathsFreeListHead = VisualPath::FreeListEnd;
+
+	//PlacingBlock.clear();
+
+	const auto& DataIndexOpt = ResourceManager->InteriorData;
+
+	if (!DataIndexOpt) return;
+	const auto& DataOpt = ResourceManager->GetCompressedBlockData(DataIndexOpt.value());
+	if (!DataOpt) return;
+	auto& Data = DataOpt.value();
+
+	Paths.reserve(Data.Paths.size());
+	for (const auto& pd : Data.Paths) {
 		Paths.emplace_back(VisualPathData(pd, this));
 	}
 
 	std::map<CompressedBlockDataIndex, std::vector<BlockMetadata>> ToInser;
-	for (const auto& [Name, Blocks] : data.blockExteriorData.ContainedBlocks) {
+	for (const auto& [Ident, Blocks] : Data.blockExteriorData.ContainedBlocks) {
 		for (const auto& Block : Blocks) {
-			ToInser[ResourceManager->GetBlockIndex(Name)].push_back(Block);
+			ToInser[ResourceManager->GetBlockIndex(Ident)].push_back(Block);
 		}
 	}
 
 	AddBlockBatched(ToInser);
-
-	//return;
-	VisualPathData pd;
-
-
-#ifdef Testing
-	//3426
-	//TODO has to be called somewhere else
-	//srand(FrameCount);
-
-	auto r = []() {
-		return (rand() % 1000) - 500;
-		};
-
-
-	//std::string s;
-	for (int i = 0; i < 10; i++) {
-
-		std::vector<PointType> Points;
-
-		auto shared = r();
-		auto first = r();
-
-		Points.push_back({ first, shared });
-
-		int other;
-		do {
-			other = r();
-		} while (other == first);
-
-		Points.push_back({ other, shared });
-
-		pd = VisualPathData(Points[0], Points[1], this);
-
-		for (int j = 0; j < 100; j++) {
-			//if (i * 10 + j > FrameCount / 5)break;
-			Points.push_back({ r(), r() });
-			//std::stringstream ss;
-			//for (const auto& p : Points) {
-			//	ss << "Vec.push_back({ " << p.x() << "," << p.y() << " });\n";
-			//}
-			///*std::ofstream of("Test.txt");
-			//of << ss.str();
-			//of.flush();
-			//of.close();*/
-			//s = ss.str();
-			//std::cout << FrameCount;
-			//auto hr = pd.toHumanReadable();
-			pd.addTo(Points.back());
-		}
-		Points.push_back({ r(), r() });
-		pd.addTo(Points.back());
-
-		//Paths.emplace_back(std::move(pd));
-
-
-		/*if ((i+1) * 10 > FrameCount / 5) {
-		}*/
-		//std::cout << FrameCount;
-
-		VisualPath vp(std::move(pd));
-		if (!TryAbsorb(vp)) {
-			Paths.emplace_back(std::move(vp));
-		}
-	}
-
-	//auto hr = Paths[0].Data.toHumanReadable();
-	auto i = 0;
-#else
-	//std::vector<PointType> Vec;
-	////Todo Resolve this
-	//Vec.push_back({ -3,-4 });
-	//Vec.push_back({ -5,-4 });
-	//Vec.push_back({ -1,-7 });
-	//Vec.push_back({ 3,-8 });
-	//Vec.push_back({ -1,0 });
-	//Vec.push_back({ -2,5 });
-	//Vec.push_back({ -6,8 });
-	//Vec.push_back({ -8,-4 });
-	//Vec.push_back({ 6,7 });
-	//Vec.push_back({ -4,3 });
-	//Vec.push_back({ -10,-6 });
-	//Vec.push_back({ 2,2 });
-	//Vec.push_back({ -6,1 });
-	//Vec.push_back({ 8,-8 });
-	//Vec.push_back({ 9,5 });
-	//Vec.push_back({ 6,8 });
-	//Vec.push_back({ -7,2 });
-	//Vec.push_back({ -6,-2 });
-	//Vec.push_back({ -1,-5 });
-	//Vec.push_back({ 7,1 });
-	//Vec.push_back({ 4,7 });
-	//Vec.push_back({ -9,5 });
-	//Vec.push_back({ -5,3 });
-	//Vec.push_back({ -9,-4 });
-	//Vec.push_back({ -8,6 });
-	//Vec.push_back({ -6,8 });
-	//Vec.push_back({ 8,0 });
-	//Vec.push_back({ -8,9 });
-	//Vec.push_back({ -10,6 });
-	//Vec.push_back({ -8,-7 });
-	//Vec.push_back({ -7,-4 });
-	//Vec.push_back({ 8,7 });
-	//Vec.push_back({ -1,3 });
-	//Vec.push_back({ 8,-8 });
-	//Vec.push_back({ -10,2 });
-	//Vec.push_back({ -2,-9 });
-	//Vec.push_back({ 9,8 });
-	//Vec.push_back({ -8,-4 });
-	//Vec.push_back({ 1,0 });
-	//Vec.push_back({ -10,7 });
-	//Vec.push_back({ -3,4 });
-	//Vec.push_back({ -6,6 });
-	//Vec.push_back({ 6,-6 });
-	//Vec.push_back({ -7,0 });
-	//Vec.push_back({ 7,8 });
-	//Vec.push_back({ -1,-1 });
-	//Vec.push_back({ 0,-3 });
-	//Vec.push_back({ -2,-7 });
-	//Vec.push_back({ -3,-4 });
-	//Vec.push_back({ -5,7 });
-	//Vec.push_back({ 5,-7 });
-	//Vec.push_back({ -2,-7 });
-	//Vec.push_back({ -9,-6 });
-	//Vec.push_back({ -8,9 });
-	//Vec.push_back({ -10,0 });
-	//Vec.push_back({ 5,5 });
-	//Vec.push_back({ 8,2 });
-	//Vec.push_back({ -9,7 });
-	//Vec.push_back({ 0,0 });
-	//Vec.push_back({ -1,0 });
-	//Vec.push_back({ 0,8 });
-	//Vec.push_back({ -6,8 });
-	//Vec.push_back({ 0,1 });
-	//Vec.push_back({ 1,-10 });
-	//Vec.push_back({ 5,9 });
-	//Vec.push_back({ -8,-3 });
-	//Vec.push_back({ 4,-7 });
-	//Vec.push_back({ -7,-3 });
-	//Vec.push_back({ -2,2 });
-	//Vec.push_back({ 7,3 });
-	//Vec.push_back({ -8,-2 });
-	//Vec.push_back({ 1,3 });
-	//Vec.push_back({ -5,-5 });
-	//Vec.push_back({ -7,-3 });
-	//Vec.push_back({ -6,0 });
-	//Vec.push_back({ 0,-6 });
-	//Vec.push_back({ -5,5 });
-	//Vec.push_back({ 0,-9 });
-	//Vec.push_back({ -10,-4 });
-	//Vec.push_back({ 3,6 });
-	//Vec.push_back({ -5,5 });
-	//Vec.push_back({ -6,-8 });
-	//Vec.push_back({ 7,-7 });
-	//Vec.push_back({ -6,-6 });
-	//Vec.push_back({ -10,-1 });
-
-
-	//bool last = false;
-	////last = true;
-	//pd = VisualPathData(Vec[0], Vec[1], this);
-	//for (int i = 2; i < Vec.size() - 1; i++) {
-	//	//if (i > FrameCount)break;
-	//	if (i == Vec.size() - 1)continue;
-	//	if (Vec[i] == PointType{ -7,2 }) {
-	//		int j = 0;
-	//	}
-	//	auto hr = CollisionMapToString();
-	//	pd.addTo(Vec[i]);
-	//	hr = CollisionMapToString();
-	//}
-	//if (last)pd.addTo(Vec.back());
-
-	////auto hr = pd.toHumanReadable();
-
-	//AddPath(std::move(pd));
-
-	//auto i = 0;
-	/*{
-		pd = VisualPathData({ 0,0 }, { 0,1 },this);
-		pd.addTo({ 0,2 });
-	}
-	{
-		pd = VisualPathData({ 0,0 }, { 0,1 }, this);
-		pd.addTo({ 0,2 });
-	}
-	{
-		pd = VisualPathData({ 0,0 }, { 0,1 }, this);
-		pd.addTo({ 0,2 });
-	}
-	{
-		pd = VisualPathData({ 0,0 }, { 0,1 }, this);
-		pd.addTo({ 0,2 });
-	}*/
-#endif
-
-	/*pd = VisualPathData({ {0,0},{0,-2} });
-	pd.addTo({ 1,-2 });
-	pd.addTo({ 1,2 });
-	pd.addTo({ 0,2 });
-	pd.addTo({ 0,1 });
-	pd.addTo({ -1, -3 });
-
-	Paths.emplace_back(pd);*/
-
-	/*pd = VisualPathData({ {0,0},{0,-2} });
-	pd.addTo({ 1,-1 });
-	pd.addTo({ 1,1 });
-	pd.addTo({ 1,1 });
-	pd.addTo({ 0,1 });
-	pd.addTo({ 0,2 });
-	pd.addTo({ 1,2 });
-	pd.addTo({ 1,3 });
-	pd.addTo({ 0,3 });
-	pd.addTo({ 0,-3 });*/
-
-	/*pd = VisualPathData({ {0,0},{0,-2} });
-	pd.addTo({ 2,-2 });
-	pd.addTo({ 2,-1});
-	pd.addTo({ 1,-1});
-	pd.addTo({ 0,-1});
-	Paths.emplace_back(pd);*/
-
-
-	/*pd = VisualPathData({ {0,1},{0,0} });
-	pd.addTo({ 2,0 });
-	pd.addTo({ 2,2 });
-	pd.addTo({ 2,-2 });
-
-	auto hr = pd.toHumanReadable();
-
-	Paths.emplace_back(pd);
-
-	pd = VisualPathData({ {0,2},{2,2} });
-	pd.addTo({ 2,-2 });
-	pd.addTo({ 0,-2 });
-	pd.addTo({ 0,2 });
-
-	 hr = pd.toHumanReadable();
-
-	 Paths.emplace_back(pd);
-
-	 Paths[0].TryAbsorb(Paths[1]);
-
-	 hr = Paths[0].Data.toHumanReadable();
-
-	 Paths.pop_back();*/
-
-	 //Paths.emplace_back(pd);
-
-
-	/*
-	pds.push_back({ { 10,0 },{ 0,0 } });
-
-	pds.back().addTo(0, { 0,10 });
-	*/
-	/*pds.push_back({ { 10,0 },{ 0,0 } });
-
-	//pds.back().addTo(0, { 0,5 });*/
-
-	////pd.addTo(0, { 0,0 }, { 0,-5 });
-	//pds.back().addTo(0, { 5,5 });
-	//pds.back().addTo(3, { 10,5 });
-	//pds.back().addTo(4, { 10,10 });
-	//pds.back().addTo(5, { 5,10 });
-	//pds.back().addTo(5, { 5,7 });
-	//pds.back().addTo(8, { 5,8 });
-	//pds.back().addTo(3, { 10,3 });
-	//pds.back().addTo(7, { 7,8 });
-	//auto hr = pds.back().toHumanReadable();
-
-	///*auto mouse = PointType{ MouseIndex.x(),MouseIndex.y() };
-	//if (mouse == PointType{9, 0}) {
-	//int i = 0;
-	//}
-
-	//pds.back().addTo(0, mouse);*/
-
-	//int MyFrameCount = (FrameCount) % 144;
-
-	//PointType Point = { MyFrameCount / 12, MyFrameCount % 12 };
-
-	//pds.back().addTo(0, Point);
-
-	///*pd.addTo( { 5,0 }, { 5,5 });
-
-	//pd.addTo({ 5,2 }, { MouseIndex.x(),2});
-
-	//pd.addTo({MouseIndex.})*/
-
-	/*for (int i = 32; i < 42; i++) {
-		pd = VisualPathData({ { 5 + i,-530 + i },{ 5 + i,3 + i } });
-
-		pd.addTo(0, { 20 + i,3 + i });
-
-		pd.addTo(1, { 5 + i,500 + i });
-
-		pd.addTo(1, { -500 + i,500 + i });
-		pd.addTo(0, { -500 + i,-20 + i });
-		pd.addTo(0, { 20 + i,-20 + i });
-		pd.addTo(6, { -500 + i,-20 + i });
-
-		pd.addTo(3, { 5 + i,500 + i });
-
-		Paths.emplace_back(pd);
-	}*/
-
-	/*for (const auto& pd : pds) {
-		Paths.emplace_back(pd);
-	}*/
-
-	////Paths.front().Marked = true;
-	//Paths.front().SetMarked(FrameCount % 20 <= 10);
-
-	//for (int i = 1; i < Paths.size(); i++) {
-	//	if ((FrameCount % 200) / 200.0 < 0.1 * i) {
-	//		Paths[i].SetMarked(true);
-	//	}
-	//}
-
 }
 
 VisualBlockInterior::~VisualBlockInterior() noexcept {
 	Destructing = true;
 }
 
-void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse) {
+void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover) {
 	PROFILE_FUNKTION;
-	//std::vector<std::string> hrs;
-	//for (auto& Path : Paths) {
-	//	hrs.push_back(Path.Data.toHumanReadable());
-	//	hrs.back().append("\nCompressed:\n");
-	//	hrs.back().append(CompressedPathData(Path.Data).toHumanReadable());
-	//	//Path = VisualPath(VisualPathData(CompressedPathData(Path.Data)));
-	//	hrs.push_back(Path.Data.toHumanReadable());
-	//}
 	if (CachedBoundingBox != ViewRect) {
 		CachedBoundingBox = ViewRect;
 		Dirty = true;
@@ -760,21 +675,17 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		Dirty = true;
 		DirtyBlocks = true;
 		for (auto& p : Paths) {
-			if (p.Intercept(Mouse)) {
-				if (!HasPreview()) {
-					p.SetMarked(true);
-				}
-				else {
-					p.SetMarked(false);
-				}
+			if (p.IsFree()) continue;
+			p.SetDontShowHover(Moving || HasPreview());
+			if (AllowHover && p.Intercept(Mouse)) {
+				p.SetHover(true);
 			}
 			else {
-				p.SetMarked(false);
+				p.SetHover(false);
 			}
 		}
 	}
 
-	DirtyBlocks = true;
 	if (DirtyBlocks) {
 		UpdateBlocks(Zoom);
 	}
@@ -788,33 +699,44 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 	EdgesUnmarked.Clear();
 	SpecialPoints.Clear();
 	Verts.Clear();
+	ConflictPoints.Clear();
 
 	MyRectI ViewRectI = MyRectI::FromCorners(
-		ViewRect.Position.cast<int>() - PointType(1,1),
-		ViewRect.Position.cast<int>() + ViewRect.Size.cast<int>() + PointType(1,1)
+		ViewRect.Position.cast<int>() - PointType(1, 1),
+		ViewRect.Position.cast<int>() + ViewRect.Size.cast<int>() + PointType(1, 1)
 	);
-	/*PointType{ ViewRect.Position.x(),ViewRect.Position.y() },
-		PointType{ ViewRect.Size.x(),ViewRect.Size.y() },*/
-
 	for (auto& p : Paths) {
-		const auto& e = p.ComputeAllAndGetEdges(ViewRectI);
-		if (p.IsMarked() || true) {
-			EdgesMarked.Append(e);
-			Verts.Append(p.getVerts());
-		}
-		else {
-			EdgesUnmarked.Append(e);
-		}
+		if (p.IsFree()) continue;
+		p.ComputeAll(ViewRectI);
+		if (p.IsFullyMarked()) continue;
+		EdgesMarked.Append(p.getEdgesMarked());
+		EdgesUnmarked.Append(p.getEdgesUnmarked());
+		Verts.Append(p.getVerts());
 		SpecialPoints.Append(p.getSpecialPoints());
+		ConflictPoints.Append(p.getConflictPoints());
 	}
 
 	Edges.AppendOther(EdgesMarked, EdgesUnmarked);
-	//Edges.AppendOther(EdgesMarked);
-	//Edges.AppendOther(EdgesUnmarked);
 }
 
-void VisualBlockInterior::UpdateVectsForVAOsPreview(const MyRectF& ViewRect, const PointType& Mouse) {
+void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, const PointType& Mouse) {
 	PROFILE_FUNKTION;
+
+	if (!HasPreview()) {
+		FloatingEdges.Clear();
+		FloatingVerts.Clear();
+		FloatingSpecialPoints.Clear();
+
+		for (auto& p : Paths) {
+			if (p.IsFree()) continue;
+			if (!p.IsFullyMarked()) continue;
+			FloatingEdges.Append(p.getEdgesMarked());
+			FloatingVerts.Append(p.getVerts());
+			FloatingSpecialPoints.Append(p.getSpecialPoints());
+		}
+		return;
+	}
+
 	if (CachedBoundingBoxPreview != ViewRect) {
 		CachedBoundingBoxPreview = ViewRect;
 		PreviewBoundingBoxIsDirty = true;
@@ -843,34 +765,38 @@ void VisualBlockInterior::UpdateVectsForVAOsPreview(const MyRectF& ViewRect, con
 
 	if (RecalcVecs) {
 
-		PreviewEdges.Clear();
-		PreviewVerts.Clear();
-		PreviewSpecialPoints.Clear();
+		FloatingEdges.Clear();
+		FloatingVerts.Clear();
+		FloatingSpecialPoints.Clear();
 
 		if (!PreviewCached.has_value()) return;
 
 		auto& Preview = PreviewCached.value();
+
+		Preview.SetPreview(true);
 
 		MyRectI ViewRectI = MyRectI::FromCorners(
 			ViewRect.Position.cast<int>() - PointType(1, 1),
 			ViewRect.Position.cast<int>() + ViewRect.Size.cast<int>() + PointType(1, 1)
 		);
 
-		const auto& ToAppend = Preview.ComputeAllAndGetEdges(ViewRectI);
-		PreviewEdges.Append(ToAppend);
-		PreviewVerts.Append(Preview.getVerts());
-		PreviewSpecialPoints.Append(Preview.getSpecialPoints());
+		Preview.ComputeAll(ViewRectI);
+		FloatingEdges.Append(Preview.getEdgesMarked());
+		FloatingVerts.Append(Preview.getVerts());
+		FloatingSpecialPoints.Append(Preview.getSpecialPoints());
 	}
 }
 
 #ifdef UseCollisionGrid
 std::vector<PointType> VisualBlockInterior::GetBoxesFromLine(const PointType& A, const PointType& B) {
+	PROFILE_FUNKTION;
+
 	std::vector<PointType> ret;
 
 	auto GetBoxCorner = [](const PointType& p) -> PointType {
 		return {
-			(p.x() < 0 ? (static_cast<int>(p.x()) / BoxSize - 1) : static_cast<int>(p.x()) / BoxSize) * BoxSize,
-			(p.y() < 0 ? (static_cast<int>(p.y()) / BoxSize - 1) : static_cast<int>(p.y()) / BoxSize) * BoxSize
+			std::floor((float)p.x() / (float)BoxSize) * BoxSize,
+			std::floor((float)p.y() / (float)BoxSize) * BoxSize
 		};
 		};
 
@@ -896,7 +822,7 @@ std::vector<PointType> VisualBlockInterior::GetBoxesFromLine(const PointType& A,
 }
 
 void VisualBlockInterior::RegisterLine(const LineIndex& l, const std::vector<PointNode>& Points, const VisualPathData::VisualPathDataId& Id) {
-	//PROFILE_FUNKTION;
+	PROFILE_FUNKTION;
 
 	for (const auto& p : GetBoxesFromLine(Points[l.A].Pos, Points[l.B].Pos)) {
 		CollisionMap[p].emplace_back(l, Id);
@@ -904,7 +830,7 @@ void VisualBlockInterior::RegisterLine(const LineIndex& l, const std::vector<Poi
 }
 
 void VisualBlockInterior::UnRegisterLine(const LineIndex& l, const std::vector<PointNode>& Points, const VisualPathData::VisualPathDataId& Id) {
-	//PROFILE_FUNKTION;
+	PROFILE_FUNKTION;
 
 	if (Destructing)return;
 	for (const auto& p : GetBoxesFromLine(Points[l.A].Pos, Points[l.B].Pos)) {
@@ -920,29 +846,11 @@ void VisualBlockInterior::UnRegisterLine(const LineIndex& l, const std::vector<P
 		if (lap.empty()) {
 			CollisionMap.erase(lapItr);
 		}
-
 	}
 }
-//
-//std::vector<LineIndex> VisualBlockInterior::GetLinesWith(const PointType& p, const VisualPathData& pd) {
-//	if (Destructing)return {};
-//	std::vector<LineIndex> ret;
-//	for (const auto& Box : GetBoxesFromLine(p, p)) {
-//		auto it = CollisionMap.find(Box);
-//		if (it == CollisionMap.end())continue;
-//		for (const auto& l : it->second.GetLines()) {
-//			if (l.IsFree())continue;
-//			if (l.PathId != pd.Id)continue;
-//			//const auto& Points = pd->Points;
-//			ret.emplace_back(l.Line);
-//		}
-//	}
-//	return ret;
-//}
-
 
 LineIndex VisualBlockInterior::GetLineWith(const PointType& p, const VisualPathData& pd) {
-	//PROFILE_FUNKTION;
+	PROFILE_FUNKTION;
 
 	if (Destructing)return {};
 	for (const auto& Box : GetBoxesFromLine(p, p)) {
@@ -951,7 +859,6 @@ LineIndex VisualBlockInterior::GetLineWith(const PointType& p, const VisualPathD
 		for (const auto& l : it->second) {
 			if (l.PathId != pd.Id)continue;
 			if (!pd.PointStrictelyOnLine(l.Line, p))continue;
-			//const auto& Points = pd->Points;
 			return l.Line;
 		}
 	}
@@ -970,48 +877,107 @@ VisualPath::PathIndex VisualBlockInterior::AddPath(VisualPathData&& p) {
 	return OldHead;
 }
 
-bool VisualBlockInterior::TryAbsorb(VisualPath& Path) {
+bool VisualBlockInterior::TryAbsorb(VisualPathData& Path) {
 	PROFILE_FUNKTION;
 
-	Dirty = true;
-	PreviewIsDirty = true;
 
 	bool MergedAtLeastOnes = false;
 	std::optional<size_t> AbsorbIndex = std::nullopt;
+
 	for (size_t i = 0; i < Paths.size(); i++) {
-		if (Paths[i].TryAbsorb(Path)) {
-			AbsorbIndex = i;
-			MergedAtLeastOnes = true;
-			break;
-		}
+		if (Paths[i].IsFree()) continue;
+		if (!Paths[i].TryAbsorb(Path)) continue;
+		MergedAtLeastOnes = true;
+		AbsorbIndex = i;
+		break;
 	}
 	while (AbsorbIndex) {
 		bool found = false;
 		for (size_t i = 0; i < Paths.size(); i++) {
-			if (i != AbsorbIndex.value() && Paths[i].TryAbsorb(Paths[AbsorbIndex.value()])) {
-				Paths.erase(Paths.begin() + AbsorbIndex.value());
-				if (i > AbsorbIndex.value())i--;
-				AbsorbIndex = i;
-				found = true;
-				break;
-			}
+			if (Paths[i].IsFree()) continue;
+			if (i == AbsorbIndex.value()) continue;
+			if (!Paths[i].TryAbsorb(Paths[AbsorbIndex.value()].Data)) continue;
+			Paths[AbsorbIndex.value()].Free(PathsFreeListHead);
+			PathsFreeListHead = AbsorbIndex.value();
+			AbsorbIndex = i;
+			found = true;
+			break;
 		}
-		if (!found)break;
+		if (!found) break;
 	}
 
+	if (MergedAtLeastOnes) {
+		Dirty = true;
+		PreviewIsDirty = true;
+	}
 	return MergedAtLeastOnes;
 }
 
-bool VisualBlockInterior::hasMark(bool Preview) {
+void VisualBlockInterior::AbsorbOrAdd(VisualPathData&& Data) {
+	if (TryAbsorb(Data)) {
+		return;
+	}
+	AddPath(std::move(Data));
+}
+
+//Be carfull, may invalidate Paths ref/ptr/it
+VisualPath& VisualBlockInterior::SplitPath(size_t PathIndex) {
+	assert(PathIndex < Paths.size());
+	assert(!Paths[PathIndex].IsFree());
+	assert(!Paths[PathIndex].IsFullyMarked());
+	assert(Paths[PathIndex].HasMarked());
+	auto [Marked, Unmarked] = Paths[PathIndex].Split();
+	for (auto& CCMarked : Marked) {
+		const VisualPath::PathIndex i = AddPath(VisualPathData(std::move(CCMarked), this));
+		Paths[i].MarkAll();
+	}
+	for (auto& CCUnmarked : Unmarked) {
+		AddPath(VisualPathData(std::move(CCUnmarked), this));
+	}
+	Dirty = true;
+	return Paths[PathIndex];
+}
+
+void VisualBlockInterior::MergeAfterMove() {
+	Moving = false;
+
+	std::queue<size_t> PathsToMerge;
+	for (size_t i = 0; i < Paths.size(); i++) {
+		auto& p = Paths[i];
+		if (p.IsFree()) continue;
+		if (!p.NeedsMerging()) continue;
+		PathsToMerge.push(i);
+	}
+
+	while (!PathsToMerge.empty()) {
+		size_t curr = PathsToMerge.front();
+		PathsToMerge.pop();
+		bool Merged = false;
+		for (size_t i = 0; i < Paths.size(); i++) {
+			auto& p = Paths[i];
+			if (p.IsFree()) continue;
+			if (p.NeedsMerging()) continue;
+			if (!p.TryAbsorb(Paths[curr].Data)) continue;
+			Paths[curr].Free(PathsFreeListHead);
+			PathsFreeListHead = curr;
+			curr = i;
+			Merged = true;
+		}
+		if (Merged) continue;
+		Paths[curr].ClearNeedsMerging();
+	}
+}
+
+bool VisualBlockInterior::HasMark(bool Preview) {
 	return !GetEdgesMarked(Preview).Empty();
 }
 
-bool VisualBlockInterior::hasUnmarked(bool Preview) {
+bool VisualBlockInterior::HasUnmarked(bool Preview) {
 	return !GetEdgesUnmarked(Preview).Empty();
 }
 
 
-std::optional<VisualPath> VisualBlockInterior::GeneratePreviewPath(const PointType& Mouse) {
+std::optional<VisualPathData > VisualBlockInterior::GeneratePreviewPath(const PointType& Mouse) {
 	if (PreviewData.size() < 1) return std::nullopt;
 
 	VisualPathData pd;
@@ -1020,11 +986,11 @@ std::optional<VisualPath> VisualBlockInterior::GeneratePreviewPath(const PointTy
 		if (PreviewData[0] == Mouse)return std::nullopt;
 		if (VisualPathData::PointsMakeStreightLine(PreviewData[0], Mouse)) {
 			pd = VisualPathData(PreviewData[0], Mouse, this);
-			return VisualPath(std::move(pd));
+			return pd;
 		}
 		pd = VisualPathData(PreviewData[0], { PreviewData[0].x(),Mouse.y() }, this);
 		pd.addTo(Mouse);
-		return VisualPath(std::move(pd));
+		return pd;
 	}
 
 	if (PreviewData[0] == PreviewData[1])return std::nullopt;
@@ -1041,10 +1007,10 @@ std::optional<VisualPath> VisualBlockInterior::GeneratePreviewPath(const PointTy
 		pd.addTo(PreviewData[i]);
 	}
 	pd.addTo(Mouse);
-	return VisualPath(std::move(pd));
+	return pd;
 }
 
-std::optional<VisualPath> VisualBlockInterior::GeneratePreviewPath() {
+std::optional<VisualPathData> VisualBlockInterior::GeneratePreviewPath() {
 	if (PreviewData.size() < 2) return std::nullopt;
 	if (PreviewData[0] == PreviewData[1])return std::nullopt;
 
@@ -1061,7 +1027,7 @@ std::optional<VisualPath> VisualBlockInterior::GeneratePreviewPath() {
 	for (size_t i = 2; i < PreviewData.size(); i++) {
 		pd.addTo(PreviewData[i]);
 	}
-	return VisualPath(std::move(pd));
+	return pd;
 }
 
 size_t VisualBlockInterior::GetDragSize() const {
@@ -1086,13 +1052,15 @@ void VisualBlockInterior::StartDrag(const PointType& p) {
 
 bool VisualBlockInterior::AddDrag(const PointType& mouse) {
 	auto PathOpt = GeneratePreviewPath();
-	if (PathOpt && PathOpt.value().Intercept(mouse)) {
+	if (PathOpt && PathOpt.value().Intercept(mouse) != InvalidLineIndex) {
 		PreviewData.emplace_back(mouse);
 		return true;
 	}
 	PreviewData.emplace_back(mouse);
 	for (const auto& p : Paths) {
-		if (p.Intercept(mouse))return true;
+		if (p.IsFree()) continue;
+		if (p.Intercept(mouse))
+			return true;
 	}
 	return false;
 }
@@ -1101,18 +1069,15 @@ void VisualBlockInterior::EndDrag() {
 	auto PathOpt = GeneratePreviewPath();
 	PreviewData.clear();
 	PreviewCached.reset();
-	PreviewEdges.Clear();
-	PreviewVerts.Clear();
-	PreviewSpecialPoints.Clear();
+	FloatingEdges.Clear();
+	FloatingVerts.Clear();
+	FloatingSpecialPoints.Clear();
+	PreviewIsDirty = true;
 	if (!PathOpt) {
 		return;
 	}
-	PreviewIsDirty = true;
 	Dirty = true;
-	if (TryAbsorb(PathOpt.value())) {
-		return;
-	}
-	Paths.emplace_back(std::move(PathOpt.value()));
+	AbsorbOrAdd(std::move(PathOpt.value()));
 }
 
 void VisualBlockInterior::CancleDrag() {
@@ -1122,6 +1087,10 @@ void VisualBlockInterior::CancleDrag() {
 
 bool VisualBlockInterior::HasPreview() const {
 	return !PreviewData.empty();
+}
+
+bool VisualBlockInterior::HasFloating() const {
+	return !FloatingEdges.Empty() || HasPreview();
 }
 //
 //std::string VisualBlockInterior::CollisionMapToString() const {
@@ -1166,6 +1135,8 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		case Down: return BottomRight + PointType{ -Pin.Offset,-Expoltion }.cwiseProduct(Flip);
 		case Left: return BottomLeft + PointType{ -Expoltion,Pin.Offset }.cwiseProduct(Flip);
 		}
+		assert(false);
+
 	case Right:
 		switch (Rotation) {
 		case Up: return TopRight + PointType{ Expoltion,-Pin.Offset }.cwiseProduct(Flip);
@@ -1173,6 +1144,8 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		case Down: return BottomLeft + PointType{ -Expoltion,Pin.Offset }.cwiseProduct(Flip);
 		case Left: return TopLeft + PointType{ Pin.Offset,Expoltion }.cwiseProduct(Flip);
 		}
+		assert(false);
+
 	case Down:
 		switch (Rotation) {
 		case Up: return BottomLeft + PointType{ Pin.Offset,-Expoltion }.cwiseProduct(Flip);
@@ -1180,6 +1153,8 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		case Down: return TopRight + PointType{ -Pin.Offset,Expoltion }.cwiseProduct(Flip);
 		case Left: return BottomRight + PointType{ Expoltion,Pin.Offset }.cwiseProduct(Flip);
 		}
+		assert(false);
+
 	case Left:
 		switch (Rotation) {
 		case Up: return TopLeft + PointType{ -Expoltion,-Pin.Offset }.cwiseProduct(Flip);
@@ -1187,6 +1162,7 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		case Down: return BottomRight + PointType{ Expoltion,Pin.Offset }.cwiseProduct(Flip);
 		case Left: return BottomLeft + PointType{ Pin.Offset,-Expoltion }.cwiseProduct(Flip);
 		}
+		assert(false);
 
 	}
 	assert(false);
@@ -1228,12 +1204,12 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 	Point<float> Offset;
 
 	float Scale = 0.4f;
-	auto ext = GetTextExtend(Text, false, false, Scale);
+	auto ext = RenderTextUtility::GetTextExtend(Text, false, false, Scale);
 
 	float maxWidth = 0.42f;
 	if (ext.Width > maxWidth) {
 		Scale *= maxWidth / ext.Width;
-		ext = GetTextExtend(Text, false, false, Scale);
+		ext = RenderTextUtility::GetTextExtend(Text, false, false, Scale);
 	}
 
 	const MyDirection::Direction& d = GetPinRotation(Meta, Pin);
@@ -1245,10 +1221,10 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 	Offset *= 0.35f;
 
 	const auto Pos = GetPinPosition(BlockSize, Meta, Pin, 1);
-	AddText(Text,
+	RenderTextUtility::AddText(Text,
 		Point<float>{(float)Pos.x() + Offset.x, (float)Pos.y() + Offset.y},
-		true,
-		TextPlacmentFlags::x_Center | TextPlacmentFlags::y_Center,
+		StaticTextVerts,
+		RenderTextUtility::TextPlacmentFlags::x_Center | RenderTextUtility::TextPlacmentFlags::y_Center,
 		true, false, Scale,
 		MyDirection::ToReadable(GetPinRotation(Meta, Pin)),
 		ColourType{ 0.687f,0.933f,0.845f,1.0f });
@@ -1264,9 +1240,9 @@ void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSiz
 
 	float Scale = 0.4f;
 
-	auto ext = GetTextExtend(Pin.Name, false, false, Scale);
+	auto ext = RenderTextUtility::GetTextExtend(Pin.Name, false, false, Scale);
 
-	float Hightmul = Scale * LineHeight;
+	float Hightmul = Scale * RenderTextUtility::LineHeight;
 
 	MyDirection::Direction d = GetPinRotation(Meta, Pin);
 	switch (d) {
@@ -1285,19 +1261,12 @@ void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSiz
 	default:
 		break;
 	}
-	//const MyDirection::Direction& d = GetRotation(Pin);
-
-	//Offset += d;//Up
-	//if (d == MyDirection::Left || d == MyDirection::Right) {
-	//	Offset.x *= -1;
-	//}
-	//Offset *= 0.7f;
 
 	const auto Pos = GetPinPosition(BlockSize, Meta, Pin, 1);
-	AddText(Pin.Name,
+	RenderTextUtility::AddText(Pin.Name,
 		Point<float>{(float)Pos.x() + Offset.x, (float)Pos.y() + Offset.y},
-		true,
-		TextPlacmentFlags::x_Right | TextPlacmentFlags::y_Center,
+		StaticTextVerts,
+		RenderTextUtility::TextPlacmentFlags::x_Right | RenderTextUtility::TextPlacmentFlags::y_Center,
 		false, false, Scale,
 		MyDirection::ToReadable(MyDirection::RotateCCW(GetPinRotation(Meta, Pin))),
 		ColourType{ 1.0f,0.5f,0.0f,1.0f });
@@ -1320,10 +1289,10 @@ void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockM
 		TopLeft = Meta.Pos + FlipOff;
 	}
 
-	AddText(Name,
+	RenderTextUtility::AddText(Name,
 		Point<float>{(float)TopLeft.x(), (float)TopLeft.y()} + Off,
-		true,
-		TextPlacmentFlags::x_Center | TextPlacmentFlags::y_Center,
+		StaticTextVerts,
+		RenderTextUtility::TextPlacmentFlags::x_Center | RenderTextUtility::TextPlacmentFlags::y_Center,
 		true, false, 0.5,
 		MyDirection::ToReadable(Meta.Rotation));
 };
@@ -1343,24 +1312,9 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	//NotTriangleVerts.Clear();
 	MuxVerts.Clear();
 	StaticTextVerts.Clear();
-	auto& buff = renderer->GetAreaSelectVerts();
-	buff.Clear();
-
-	/*std::string T = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnoqrstuvwxyzƒ÷‹‰ˆ¸";
-	AddText(T, Point<float>{0.0, 0.0}, true, false, false, 1.0, MyDirection::Up, ColourType{ 0.0,1.0,1.0,1.0 });
-	AddText(T, Point<float>{0.0, 1.0}, true, false, true, 1.0, MyDirection::Up, ColourType{ 0.0,1.0,1.0,1.0 });
-	AddText(T, Point<float>{0.0, 2.0}, true, true, false, 1.0, MyDirection::Up, ColourType{ 0.0,1.0,1.0,1.0 });
-	AddText(T, Point<float>{0.0, 3.0}, true, true, true, 1.0, MyDirection::Up, ColourType{ 0.0,1.0,1.0,1.0 });*/
-
-	//AddText("RightTop", Point<float>{-30, 0}, true, TextPlacmentFlags::x_Right| TextPlacmentFlags::y_Top);
-	//AddText("RightCenter", Point<float>{-30, -2}, true, TextPlacmentFlags::x_Right | TextPlacmentFlags::y_Center);
-	//AddText("RightBottom", Point<float>{-30, -4}, true, TextPlacmentFlags::x_Right | TextPlacmentFlags::y_Bottom);
-	//AddText("CenterTop", Point<float>{-30, -6}, true, TextPlacmentFlags::x_Center | TextPlacmentFlags::y_Top);
-	//AddText("CenterCenter", Point<float>{-30, -8}, true, TextPlacmentFlags::x_Center | TextPlacmentFlags::y_Center);
-	//AddText("CenterBottom", Point<float>{-30, -10}, true, TextPlacmentFlags::x_Center | TextPlacmentFlags::y_Bottom);
-	//AddText("LeftTop", Point<float>{-30, -12}, true, TextPlacmentFlags::x_Left | TextPlacmentFlags::y_Top);
-	//AddText("LeftCenter", Point<float>{-30, -14}, true, TextPlacmentFlags::x_Left | TextPlacmentFlags::y_Center);
-	//AddText("LeftBottom", Point<float>{-30, -16}, true, TextPlacmentFlags::x_Left | TextPlacmentFlags::y_Bottom);
+#ifdef ShowBasePositionOfBlocks
+	BasePositionVerts.Clear();
+#endif
 
 	int id = 0;
 
@@ -1373,7 +1327,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 		const auto& ContainedExterior = ContainedExteriorOpt.value();
 		const auto& InputPins = ContainedExterior.blockExteriorData.InputPin;
 		const auto& OutputPins = ContainedExterior.blockExteriorData.OutputPin;
-		const auto& Name = ContainedExterior.blockExteriorData.Name;
+		const auto& Name = ContainedExterior.blockExteriorData.Identifiyer.GetName();
 
 		auto BBs = renderer->GetBlockBoundingBoxes(IndexContained);
 
@@ -1392,8 +1346,9 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				continue;
 			}
 
-			buff.Emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
-			//buff.Emplace(BB.Position, BB.Position + BB.Size, ColourType{ 0.0,1.0,0.5,1.0 });
+#ifdef ShowBasePositionOfBlocks
+			BasePositionVerts.Emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
+#endif
 
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
 
@@ -1403,7 +1358,6 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			PointType FlipOff = { Meta.xflip * BlockSize.x(),-int(Meta.yflip) * BlockSize.y() };
 			if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
 				TopLeft = Meta.Pos + FlipOff + PointType{ Meta.xflip * (BlockSize.y() - BlockSize.x()), Meta.yflip * (BlockSize.y() - BlockSize.x()) };
-				//TopLeft = Meta.Off + FlipOff;
 				BottomRight = TopLeft + PointType{ BlockSize.y(), -BlockSize.x() }.cwiseProduct(Flip);
 			}
 			else {
@@ -1449,8 +1403,6 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			else {
 				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.5,0.5,1.0,1.0 }, Color);
 				ShowBlockLabl(BlockSize, Meta, Name);
-				/*if (id == highlited)
-					RoundedPinVerts.Emplace(Off, ColourType{ 1.0,0.0,1.0,0.0 });*/
 			}
 
 			for (const auto& Pin : InputPins) {
@@ -1520,6 +1472,11 @@ BufferedVertexVec<TextVertex>& VisualBlockInterior::GetDynamicTextVerts() {
 	return DynamicTextVerts;
 }
 
+#ifdef ShowBasePositionOfBlocks
+BufferedVertexVec<PointFRGBVertex>& VisualBlockInterior::GetBasePotitionOfBlocksVerts() {
+	return BasePositionVerts;
+}
+#endif
 
 void VisualBlockInterior::AddBlock(const CompressedBlockDataIndex& bedi, const BlockMetadata& Transform) {
 	Blocks[bedi].push_back(Transform);
@@ -1574,177 +1531,4 @@ void VisualBlockInterior::SetBlockMetadata(const BlockIndex& index, const BlockM
 	if (vec.size() <= index.second) return;
 	DirtyBlocks = true;
 	vec[index.second] = Transform;
-}
-
-void VisualBlockInterior::StartPlacingBlock(const CompressedBlockDataIndex& bedi, const BlockMetadata& Transform) {
-	PlacingBlock.emplace(bedi, Transform);
-}
-
-std::optional<std::reference_wrapper<BlockMetadata>> VisualBlockInterior::GetPlacingBlockTransform() {
-	if (!PlacingBlock.has_value())return std::nullopt;
-	return PlacingBlock.value().second;
-}
-
-void VisualBlockInterior::EndPlacingBlock() {
-	if (!PlacingBlock.has_value())return;
-	AddBlock(PlacingBlock.value().first, PlacingBlock.value().second);
-	PlacingBlock = std::nullopt;
-}
-
-void VisualBlockInterior::CancalePlacingBlock() {
-	PlacingBlock = std::nullopt;
-}
-
-
-int VisualBlockInterior::GetCharMapIndex(const char& c, const bool& bold, const bool& italic) {
-	return static_cast<unsigned char>(c) + (10000 * ((int)bold + (int)italic * 2));
-}
-
-VisualBlockInterior::TextInfo VisualBlockInterior::GetTextExtend(const std::string& Text, const bool& Bold, const bool& Italic, const float& Scale) {
-	TextInfo i;
-	float Highest = -LineHeight * Scale;
-	float Lowest = LineHeight * Scale;
-	i.LineWidths.push_back(0);
-	float y = 0;
-
-	if (!CharMap.contains(GetCharMapIndex('?', Bold, Italic)))return{};
-
-	static CharInfo ciQuestion = CharMap.at(GetCharMapIndex('?', Bold, Italic));
-
-
-	for (const auto& c : Text) {
-		if (c == '\n') {
-			y -= LineHeight * Scale;
-			i.LineWidths.push_back(0);
-			continue;
-		}
-
-		const CharInfo& ci = CharMap.contains(GetCharMapIndex(c, Bold, Italic))
-			? CharMap.at(GetCharMapIndex(c, Bold, Italic))
-			: ciQuestion;
-
-		i.LineWidths.back() += ci.Advance * Scale;
-		if (i.LineWidths.size() == 1)
-			Highest = std::max(Highest, ci.CursorOffsets[3] * Scale);
-		Lowest = std::min(Highest, y + ci.CursorOffsets[1] * Scale);
-	}
-	i.Width = *std::min_element(i.LineWidths.begin(), i.LineWidths.end());
-	i.TheoreticalHeight = std::abs(TextAscender * Scale) + std::abs(TextDescender * Scale)
-		+ (i.LineWidths.size() - 1) * LineHeight * Scale;
-	i.EvendentHeight = Highest - Lowest;
-	return i;
-}
-
-void VisualBlockInterior::AddText(const std::string& Text, const Point<float>& Pos, const bool& Static, int TextPlacmentFlag, const bool& Bold, const bool& Italic, const float& Scale, MyDirection::Direction d, const ColourType& ForgroundColor, const ColourType& BackgroundColor) {
-	using enum TextPlacmentFlags;
-
-	Point<float> OFF = { 0,0 };
-
-	//static const constexpr std::map<MyDirection::Direction, Point<float>> 
-
-	Point<float> Up;
-	Point<float> Right;
-	//auto d2 = d;
-	//d = MyDirection::Left;
-
-	Up += d;
-	Right += MyDirection::RotateCW(d);
-
-	//OFF += ((LineHeight / 2.0) * Up);
-
-	if (d == MyDirection::Left || d == MyDirection::Right) {
-		Right.y *= -1;
-		Up.x *= -1;
-	}
-
-
-	/*Right.y *= -1; */
-
-	if (!CharMap.contains(GetCharMapIndex('?', Bold, Italic)))return;
-
-	static CharInfo ciQuestion = CharMap.at(GetCharMapIndex('?', Bold, Italic));
-
-	if (TextPlacmentFlag != (x_Right | y_Top)) {
-		auto extend = GetTextExtend(Text, Bold, Italic, Scale);
-
-		if (TextPlacmentFlag & x_Center) {
-			OFF -= Right * extend.Width / 2.0;
-		}
-
-		if (TextPlacmentFlag & y_Center) {
-			OFF += Up * extend.EvendentHeight / 2.0;
-		}
-
-		if (TextPlacmentFlag & x_Left) {
-			OFF -= Right * extend.Width;
-		}
-
-		if (TextPlacmentFlag & y_Bottom) {
-			OFF += Up * extend.EvendentHeight;
-		}
-	}
-
-
-	for (const char& c : Text) {
-		if (c == '\n') {
-			OFF -= (OFF * Right * Right);//x = 0
-			OFF += LineHeight * Up * Scale;
-			continue;
-		}
-		//c = (c + rand()) % 255;
-
-		/*for(int y = 0; y )*/
-
-		CharInfo ci = CharMap.contains(GetCharMapIndex(c, Bold, Italic)) ?
-			ci = CharMap.at(GetCharMapIndex(c, Bold, Italic))
-			: ciQuestion;
-
-		//std::array<float, 4> Clip = ci.Clip;
-
-		if (c == ' ') {
-			OFF += ci.Advance * Right * Scale;
-			continue;
-		}
-
-		/*float Clip[4] = { 0.0,0.0,-0.0,-0.0 };
-		float CursorOffsets[4] = { 0.1,0.1,-0.1,-0.1 };*/
-		if (Static) {
-			StaticTextVerts.Dirty = true;
-			StaticTextVerts.Emplace(
-				Pos + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor
-			);
-
-			//StaticTextVerts.Emplace(
-			//	Off + OFF, CursorOffsets, Clip, d, ForgroundColor, ColourType{ 1.0,0.0,1.0,0.5 }
-			//);
-		}
-		else {
-			DynamicTextVerts.Dirty = true;
-			DynamicTextVerts.Emplace(
-				Pos + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor
-			);
-			/*	DynamicTextVerts.Emplace(
-					Off + OFF, CursorOffsets, Clip, d, ForgroundColor, ColourType{ 1.0,0.0,1.0,0.5 }
-				);*/
-		}
-
-		//Clip[0] = Clip[0] / AtlasSize.x;
-		//Clip[1] = Clip[1] / AtlasSize.y;
-		//Clip[2] = Clip[2] / AtlasSize.x;
-		//Clip[3] = Clip[3] / AtlasSize.y;
-
-		//Point<float> TextSize = { Clip[0] - Clip[2], Clip[1] - Clip[3] };
-
-		/*float TargetHight = 1.0;
-		TextSize = { TextSize.x * TargetHight / TextSize.y,TargetHight };*/
-
-		/*TextVerts.emplace_back(ci.CursorOffsets[0] + OFF.x, ci.CursorOffsets[1] - OFF.y, Clip[0], Clip[1]);
-		TextVerts.emplace_back(ci.CursorOffsets[0] + OFF.x, ci.CursorOffsets[3] - OFF.y, Clip[0], Clip[3]);
-		TextVerts.emplace_back(ci.CursorOffsets[2] + OFF.x, ci.CursorOffsets[1] - OFF.y, Clip[2], Clip[1]);
-		TextVerts.emplace_back(ci.CursorOffsets[0] + OFF.x, ci.CursorOffsets[3] - OFF.y, Clip[0], Clip[3]);
-		TextVerts.emplace_back(ci.CursorOffsets[2] + OFF.x, ci.CursorOffsets[1] - OFF.y, Clip[2], Clip[1]);
-		TextVerts.emplace_back(ci.CursorOffsets[2] + OFF.x, ci.CursorOffsets[3] - OFF.y, Clip[2], Clip[3]);*/
-
-		OFF += ci.Advance * Right * Scale;
-	}
 }

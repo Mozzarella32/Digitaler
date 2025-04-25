@@ -156,8 +156,6 @@ void MyApp::OnOGLInit() {
 		ContextBinder->BindContext(GlContext.get());
 	}
 
-	ShaderManager::Initilise();
-
 	{
 		PROFILE_SCOPE("Create HoleScreenVAO");
 		//Create Static VAO

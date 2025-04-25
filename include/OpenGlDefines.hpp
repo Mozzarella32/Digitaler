@@ -6,7 +6,7 @@
 
 #include "BlockAndPathData.hpp"
 
-struct TwoPointIRGBVertex {
+struct TwoPointIRGBRHGHBHVertex {
 
 	int x1;
 	int y1;
@@ -17,6 +17,10 @@ struct TwoPointIRGBVertex {
 	float r;
 	float g;
 	float b;
+
+	float rh;
+	float gh;
+	float bh;
 	//int flags = 0;//flags
 
 	//enum Flags {
@@ -28,7 +32,7 @@ struct TwoPointIRGBVertex {
 
 	//int marked = false;
 
-	TwoPointIRGBVertex(int x1, int y1, int x2, int y2, float r, float g, float b)
+	TwoPointIRGBRHGHBHVertex(int x1, int y1, int x2, int y2, float r, float g, float b, float rh, float gh, float bh)
 		:
 		x1(std::min(x1, x2)),
 		y1(std::min(y1, y2)),
@@ -36,12 +40,15 @@ struct TwoPointIRGBVertex {
 		y2(std::max(y1, y2)),
 		r(r),
 		g(g),
-		b(b)
+		b(b),
+		rh(rh),
+		gh(gh),
+		bh(bh)
 		//flags(flags) 
 	{
 	}
 
-	TwoPointIRGBVertex(const PointType& p1, const PointType& p2, const ColourType& c)
+	TwoPointIRGBRHGHBHVertex(const PointType& p1, const PointType& p2, const ColourType& c, const ColourType& h)
 		:
 		x1(std::min(p1.x(), p2.x())),
 		y1(std::min(p1.y(), p2.y())),
@@ -49,33 +56,39 @@ struct TwoPointIRGBVertex {
 		y2(std::max(p1.y(), p2.y())),
 		r(c.x()),
 		g(c.y()),
-		b(c.z())
+		b(c.z()),
+		rh(h.x()),
+		gh(h.y()),
+		bh(h.z())
 		//flags(flags)
 	{
 	}
 
-	TwoPointIRGBVertex() {};
+	TwoPointIRGBRHGHBHVertex() {};
 
-	bool operator ==(const TwoPointIRGBVertex& Other) const = default;
+	bool operator ==(const TwoPointIRGBRHGHBHVertex& Other) const = default;
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, x1)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, x1)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, x2)));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, x2)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, r)));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, rh)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		/*GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, flags)));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, flags)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));*/
 		//GLCALL(glEnableVertexAttribArray(Position));
-		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, colour)));
+		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, colour)));
 		//GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		//GLCALL(glEnableVertexAttribArray(Position));
-		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBVertex), (void*)offsetof(TwoPointIRGBVertex, marked)));
+		//GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, marked)));
 		//GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
 };
@@ -177,8 +190,8 @@ struct TwoPointIRGBAIDVertex {
 
 namespace std {
 	template <>
-	struct hash<TwoPointIRGBVertex> {
-		std::size_t operator()(const TwoPointIRGBVertex& v) const {
+	struct hash<TwoPointIRGBRHGHBHVertex> {
+		std::size_t operator()(const TwoPointIRGBRHGHBHVertex& v) const {
 			// Kombiniere die Hashwerte der einzelnen Felder
 			std::size_t h1 = std::hash<int>{}(v.x1);
 			std::size_t h2 = std::hash<int>{}(v.y1);
@@ -216,7 +229,7 @@ struct PointIRGBIDVertex {
 	{
 	}*/
 
-	PointIRGBIDVertex( unsigned int id, const PointType& p, const ColourType& c)
+	PointIRGBIDVertex(unsigned int id, const PointType& p, const ColourType& c)
 		:
 		id(id),
 		x(p.x()),
@@ -232,7 +245,7 @@ struct PointIRGBIDVertex {
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_UNSIGNED_INT, sizeof(PointIRGBIDVertex), (void*)offsetof(PointIRGBIDVertex, id)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor)); 
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIRGBIDVertex), (void*)offsetof(PointIRGBIDVertex, x)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
@@ -292,7 +305,7 @@ struct PointFRGBVertex {
 
 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 2, GL_FLOAT,GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, x1)));
+		GLCALL(glVertexAttribPointer(Position, 2, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, x1)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribPointer(Position, 2, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, x2)));
@@ -339,13 +352,60 @@ struct PointIVertex {
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIVertex), (void*)offsetof(PointIVertex, x1)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		/*GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));*/
+	}
+};
+
+
+struct PointIRGBVertex {
+
+	int x1;
+	int y1;
+
+	float r;
+	float g;
+	float b;
+
+	PointIRGBVertex() {}
+
+	PointIRGBVertex(int x1, int y1, float r, float g, float b)
+		:
+		x1(x1),
+		y1(y1),
+		r(r),
+		g(g),
+		b(b)
+	{
+	}
+
+	PointIRGBVertex(const PointType& p1, const ColourType& c)
+		:
+		x1(p1.x()),
+		y1(p1.y()),
+		r(c.x()),
+		g(c.y()),
+		b(c.z())
+	{
+	}
+
+	bool operator ==(const PointIRGBVertex& Other) const = default;
+
+	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIRGBVertex), (void*)offsetof(PointIRGBVertex, x1)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIRGBVertex), (void*)offsetof(PointIRGBVertex, r)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
 };
 
 namespace std {
 	template <>
-	struct hash<PointIVertex> {
-		std::size_t operator()(const PointIVertex& v) const {
+	struct hash<PointIRGBVertex> {
+		std::size_t operator()(const PointIRGBVertex& v) const {
 			// Kombiniere die Hashwerte der einzelnen Felder
 			std::size_t h1 = std::hash<int>{}(v.x1);
 			std::size_t h2 = std::hash<int>{}(v.y1);
@@ -895,7 +955,7 @@ struct TextVertex {
 		:
 		x(Pos.x),
 		y(Pos.y),
-		PosOffLeft(PosOff[0]*Scale),
+		PosOffLeft(PosOff[0] * Scale),
 		PosOffTop(PosOff[1] * Scale),
 		PosOffRight(PosOff[2] * Scale),
 		PosOffBottom(PosOff[3] * Scale),

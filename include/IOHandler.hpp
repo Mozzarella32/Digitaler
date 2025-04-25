@@ -29,7 +29,7 @@ struct KeyboardData {
 
 class IOHandler {
 public:
-	Eigen::Vector2i MouseIndex;
+	PointType MouseIndex;
 
 	std::vector<VisualPathData> Paths;
 
@@ -75,7 +75,7 @@ private:
 	//bool NextPlacePossible = true;
 	//float DeleterAnimation = 0.0;
 	//private:
-private:
+public:
 
 	enum class State {
 		Normal,
@@ -88,10 +88,15 @@ private:
 		AreaFirstPoint,
 		DraggingWhileAreaFistPoint,
 		GoHome,
+		Loading,
 	};
 
-	State state = State::Normal;
+private:
+	State state = State::Loading;
+public:
 	void SetState(const State& state);
+
+private:
 
 	State GoHomeSaveState;
 public:

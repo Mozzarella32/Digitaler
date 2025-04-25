@@ -7,10 +7,12 @@ layout(location = 0) in int InIndex;
 
 //Per Instance
 layout(location = 1) in ivec2 InstanceInFirst;
+layout(location = 2) in vec3 InstanceInColorPath;
 
 //Out
 out vec2 PosInWorld;
 flat out vec2 A;
+flat out vec3 ColorPath;
 
 //Uniforms
 uniform vec2 UOffset;
@@ -38,6 +40,8 @@ void main() {
 
     A = InstanceInFirst;
     
+    ColorPath = InstanceInColorPath;
+
     gl_Position = vec4((Pos+UOffset)/UZoom, 0.0, 1.0);
 }
 

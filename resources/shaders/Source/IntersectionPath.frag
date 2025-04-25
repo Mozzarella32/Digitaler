@@ -9,6 +9,7 @@ in vec2 PosInWorld;
 out vec4 FragColor;
 
 flat in vec2 A;
+flat in vec3 ColorPath;
 
 //Uniforms
 //uniform sampler2D UBackground;
@@ -48,7 +49,8 @@ void main(){
     //float blend = clamp(sdCircle(PosInWorld,A),0.0,1.0);
 	//FragColor = vec4(blend*vec3(1.0,1.0,0.0)+(1.0-blend)*backgroundColour.rgb,1.0);
     if(blend > 0.67059){
-        FragColor = vec4(0.941,0.286,0.351,1.0);
+//        FragColor = vec4(0.941,0.286,0.351,1.0);
+        FragColor = vec4(ColorPath,1.0);
 //        FragColor = vec4(0.941,0.286,0.351,blend);
         return;
     }

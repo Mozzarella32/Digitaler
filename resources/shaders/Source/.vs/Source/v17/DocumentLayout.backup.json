@@ -1,0 +1,687 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Text.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Text.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Text.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Text.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPath.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HighlightPath.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\IntersectionPath.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:IntersectionPath.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\IntersectionPath.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:IntersectionPath.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Path.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Path.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPathCornerOverdraw.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HighlightPathCornerOverdraw.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPath.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HighlightPath.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Path.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Path.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\AreaSelect.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:AreaSelect.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Mux.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Mux.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SevenSeg.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SevenSeg.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SixteenSeg.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SixteenSeg.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Or.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Or.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Mux.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Mux.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\And.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:And.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\XOr.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:XOr.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\XOr.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:XOr.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Pin.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Pin.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\AreaSelect.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:AreaSelect.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\RoundPin.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:RoundPin.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\RoundPin.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:RoundPin.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Pin.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Pin.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Background.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Background.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Background.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Background.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Or.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Or.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Block.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Block.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\And.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:And.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Block.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Block.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SevenSeg.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:SevenSeg.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NDot.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:NDot.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NDot.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:NDot.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NotTriangle.frag||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:NotTriangle.frag||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NotTriangle.vert||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:NotTriangle.vert||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Todo.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Todo.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\repos\\Digitaler\\MigrationToCMake\\Digitaler\\include\\TextAtlasDescriptorString.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\valen\\source\\repos\\Digitaler\\MigrationToCMake\\msdf-atlas-gen\\arial.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 190,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Text.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Text.vert",
+              "RelativeDocumentMoniker": "Text.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Text.vert",
+              "RelativeToolTip": "Text.vert",
+              "ViewState": "AgIAADkAAAAAAAAAAAAAABIAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-24T12:20:35.383Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "HighlightPath.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPath.vert",
+              "RelativeDocumentMoniker": "HighlightPath.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPath.vert",
+              "RelativeToolTip": "HighlightPath.vert",
+              "ViewState": "AgIAADMAAAAAAAAAAAAAAEQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.699Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Path.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Path.vert",
+              "RelativeDocumentMoniker": "Path.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Path.vert",
+              "RelativeToolTip": "Path.vert",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.542Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "SevenSeg.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SevenSeg.vert",
+              "RelativeDocumentMoniker": "SevenSeg.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SevenSeg.vert",
+              "RelativeToolTip": "SevenSeg.vert",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAACUAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.809Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AreaSelect.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\AreaSelect.vert",
+              "RelativeDocumentMoniker": "AreaSelect.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\AreaSelect.vert",
+              "RelativeToolTip": "AreaSelect.vert",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-04-01T11:32:32.865Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "And.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\And.vert",
+              "RelativeDocumentMoniker": "And.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\And.vert",
+              "RelativeToolTip": "And.vert",
+              "ViewState": "AgIAACkAAAAAAAAAAAAuwDEAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.338Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Mux.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Mux.vert",
+              "RelativeDocumentMoniker": "Mux.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Mux.vert",
+              "RelativeToolTip": "Mux.vert",
+              "ViewState": "AgIAADsAAAAAAAAAAAAuwEMAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.464Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Pin.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Pin.frag",
+              "RelativeDocumentMoniker": "Pin.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Pin.frag",
+              "RelativeToolTip": "Pin.frag",
+              "ViewState": "AgIAADMAAAAAAAAAAAAUwDwAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.511Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "NotTriangle.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NotTriangle.vert",
+              "RelativeDocumentMoniker": "NotTriangle.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NotTriangle.vert",
+              "RelativeToolTip": "NotTriangle.vert",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-29T15:53:26.081Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IntersectionPath.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\IntersectionPath.vert",
+              "RelativeDocumentMoniker": "IntersectionPath.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\IntersectionPath.vert",
+              "RelativeToolTip": "IntersectionPath.vert",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.574Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "XOr.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\XOr.vert",
+              "RelativeDocumentMoniker": "XOr.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\XOr.vert",
+              "RelativeToolTip": "XOr.vert",
+              "ViewState": "AgIAADwAAAAAAAAAAAAAAEsAAABXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.275Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "Background.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Background.vert",
+              "RelativeDocumentMoniker": "Background.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Background.vert",
+              "RelativeToolTip": "Background.vert",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.84Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "Or.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Or.frag",
+              "RelativeDocumentMoniker": "Or.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Or.frag",
+              "RelativeToolTip": "Or.frag",
+              "ViewState": "AgIAAHgAAAAAAAAAAAAAAHsAAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.401Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "SixteenSeg.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SixteenSeg.vert",
+              "RelativeDocumentMoniker": "SixteenSeg.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SixteenSeg.vert",
+              "RelativeToolTip": "SixteenSeg.vert",
+              "ViewState": "AgIAAF4AAAAAAAAAAAAUwGoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.123Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "RoundPin.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\RoundPin.vert",
+              "RelativeDocumentMoniker": "RoundPin.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\RoundPin.vert",
+              "RelativeToolTip": "RoundPin.vert",
+              "ViewState": "AgIAACAAAAAAAAAAAAAAACoAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:55.758Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "Block.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Block.vert",
+              "RelativeDocumentMoniker": "Block.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Block.vert",
+              "RelativeToolTip": "Block.vert",
+              "ViewState": "AgIAACcAAAAAAAAAAAAAADUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:55.962Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "NDot.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NDot.vert",
+              "RelativeDocumentMoniker": "NDot.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NDot.vert",
+              "RelativeToolTip": "NDot.vert",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADYAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-29T15:53:25.85Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "Todo.txt",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Todo.txt",
+              "RelativeDocumentMoniker": "Todo.txt",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Todo.txt",
+              "RelativeToolTip": "Todo.txt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-03-27T15:45:20.928Z"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 210,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Or.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Or.vert",
+              "RelativeDocumentMoniker": "Or.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Or.vert",
+              "RelativeToolTip": "Or.vert",
+              "ViewState": "AgIAADAAAAAAAAAAAAAmwDkAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.904Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "Block.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Block.frag",
+              "RelativeDocumentMoniker": "Block.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Block.frag",
+              "RelativeToolTip": "Block.frag",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAAEUAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.636Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IntersectionPath.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\IntersectionPath.frag",
+              "RelativeDocumentMoniker": "IntersectionPath.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\IntersectionPath.frag",
+              "RelativeToolTip": "IntersectionPath.frag",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACMAAAA/AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:55.883Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Path.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Path.frag",
+              "RelativeDocumentMoniker": "Path.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Path.frag",
+              "RelativeToolTip": "Path.frag",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.935Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Text.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Text.frag",
+              "RelativeDocumentMoniker": "Text.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Text.frag",
+              "RelativeToolTip": "Text.frag",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAACYAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-24T12:20:35.497Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "HighlightPathCornerOverdraw.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPathCornerOverdraw.frag",
+              "RelativeDocumentMoniker": "HighlightPathCornerOverdraw.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPathCornerOverdraw.frag",
+              "RelativeToolTip": "HighlightPathCornerOverdraw.frag",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAADEAAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.223Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "HighlightPath.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPath.frag",
+              "RelativeDocumentMoniker": "HighlightPath.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\HighlightPath.frag",
+              "RelativeToolTip": "HighlightPath.frag",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.605Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Mux.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Mux.frag",
+              "RelativeDocumentMoniker": "Mux.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Mux.frag",
+              "RelativeToolTip": "Mux.frag",
+              "ViewState": "AgIAABMAAAAAAAAAAAAcwBwAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.448Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "XOr.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\XOr.frag",
+              "RelativeDocumentMoniker": "XOr.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\XOr.frag",
+              "RelativeToolTip": "XOr.frag",
+              "ViewState": "AgIAAFEAAAAAAAAAAAAqwI4AAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:55.836Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AreaSelect.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\AreaSelect.frag",
+              "RelativeDocumentMoniker": "AreaSelect.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\AreaSelect.frag",
+              "RelativeToolTip": "AreaSelect.frag",
+              "ViewState": "AgIAACcAAAAAAAAAAAAAADEAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-04-01T11:32:32.209Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "RoundPin.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\RoundPin.frag",
+              "RelativeDocumentMoniker": "RoundPin.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\RoundPin.frag",
+              "RelativeToolTip": "RoundPin.frag",
+              "ViewState": "AgIAAFcAAAAAAAAAAAAAAGMAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.872Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "Pin.vert",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Pin.vert",
+              "RelativeDocumentMoniker": "Pin.vert",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Pin.vert",
+              "RelativeToolTip": "Pin.vert",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAAAEsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:54.785Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "Background.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Background.frag",
+              "RelativeDocumentMoniker": "Background.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\Background.frag",
+              "RelativeToolTip": "Background.frag",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAAAQAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.197Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "NDot.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NDot.frag",
+              "RelativeDocumentMoniker": "NDot.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NDot.frag",
+              "RelativeToolTip": "NDot.frag",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAACEAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-29T15:53:26.183Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "NotTriangle.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NotTriangle.frag",
+              "RelativeDocumentMoniker": "NotTriangle.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\NotTriangle.frag",
+              "RelativeToolTip": "NotTriangle.frag",
+              "ViewState": "AgIAAGkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-29T15:53:25.975Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "And.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\And.frag",
+              "RelativeDocumentMoniker": "And.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\And.frag",
+              "RelativeToolTip": "And.frag",
+              "ViewState": "AgIAACsAAAAAAAAAAAAAADMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.385Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "SevenSeg.frag",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SevenSeg.frag",
+              "RelativeDocumentMoniker": "SevenSeg.frag",
+              "ToolTip": "C:\\Users\\valen\\source\\Git repos\\Digitaler\\resources\\shaders\\Source\\SevenSeg.frag",
+              "RelativeToolTip": "SevenSeg.frag",
+              "ViewState": "AgIAADsAAAAAAAAAAAAAAEcAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-03-18T11:20:56.245Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "TextAtlasDescriptorString.h",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\repos\\Digitaler\\MigrationToCMake\\Digitaler\\include\\TextAtlasDescriptorString.h",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\repos\\Digitaler\\MigrationToCMake\\Digitaler\\include\\TextAtlasDescriptorString.h",
+              "ToolTip": "C:\\Users\\valen\\source\\repos\\Digitaler\\MigrationToCMake\\Digitaler\\include\\TextAtlasDescriptorString.h",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\repos\\Digitaler\\MigrationToCMake\\Digitaler\\include\\TextAtlasDescriptorString.h",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAACUAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-03-24T19:36:19.056Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "arial.json",
+              "DocumentMoniker": "C:\\Users\\valen\\source\\repos\\Digitaler\\MigrationToCMake\\msdf-atlas-gen\\arial.json",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\repos\\Digitaler\\MigrationToCMake\\msdf-atlas-gen\\arial.json",
+              "ToolTip": "C:\\Users\\valen\\source\\repos\\Digitaler\\MigrationToCMake\\msdf-atlas-gen\\arial.json",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\repos\\Digitaler\\MigrationToCMake\\msdf-atlas-gen\\arial.json",
+              "ViewState": "AgIAAMoHAAAAAAAAAAAmwNsHAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-03-24T17:49:45.956Z"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:27:0:{dcc4ea97-1c0c-482b-b205-e541c0df9728}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:28:0:{dcc4ea97-1c0c-482b-b205-e541c0df9728}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:2:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:3:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{68487888-204a-11d3-87eb-00c04f7971a5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{dcc4ea97-1c0c-482b-b205-e541c0df9728}"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3822e751-eb69-4b0e-b301-595a9e4c74d5}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

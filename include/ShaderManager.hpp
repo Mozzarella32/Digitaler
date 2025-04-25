@@ -9,7 +9,10 @@
 class ShaderManager {
 private:
 	ShaderManager();
+
+#ifdef HotShaderReload
 	~ShaderManager();
+#endif
 private:
 	static ShaderManager& GetInstance();
 
@@ -49,6 +52,8 @@ public:
 
 private:
 	std::map<std::string, std::vector<std::pair<Shaders, GLenum>>> Uniforms;
+
+	static std::unique_ptr<Shader> PlacholderShader;
 public:
 
 	static const std::vector<std::pair<Shaders, GLenum>>& GetShadersWithUniform(const std::string& uniform);
@@ -56,4 +61,6 @@ public:
 	static const std::unique_ptr<Shader>& GetShader(const Shaders& shader);
 
 	static void Initilise();
+
+	static const std::unique_ptr<Shader>& GetPlacholderShader();
 };

@@ -16,7 +16,6 @@ class Renderer;
 struct PointNode;
 class DataResourceManager;
 
-
 //
 //class VisualBlockExterior {
 //
@@ -37,15 +36,16 @@ private:
 	DataResourceManager* ResourceManager;
 	Renderer* renderer;
 
-	BufferedVertexVec<TwoPointIRGBVertex> Edges;
-	BufferedVertexVec<TwoPointIRGBVertex> EdgesMarked;
-	BufferedVertexVec<TwoPointIRGBVertex> EdgesUnmarked;
-	BufferedVertexVec<PointIVertex> SpecialPoints;
-	BufferedVertexVec<TwoPointIRGBVertex> Verts;
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> Edges;
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> EdgesMarked;
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> EdgesUnmarked;
+	BufferedVertexVec<PointIRGBVertex> SpecialPoints;
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> Verts;
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> ConflictPoints;
 
-	BufferedVertexVec<TwoPointIRGBVertex> PreviewEdges;
-	BufferedVertexVec<PointIVertex> PreviewSpecialPoints;
-	BufferedVertexVec<TwoPointIRGBVertex> PreviewVerts;
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> FloatingEdges;
+	BufferedVertexVec<PointIRGBVertex> FloatingSpecialPoints;
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> FloatingVerts;
 
 	BufferedVertexVec<TextVertex> StaticTextVerts;
 	BufferedVertexVec<TextVertex> DynamicTextVerts;
@@ -56,60 +56,19 @@ private:
 	//BufferedVertexVec <TwoPointIRGBAVertex> Boxes;
 
 public:
-	BufferedVertexVec<TwoPointIRGBVertex>& GetEdges(bool Preview);
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetEdges(bool Floating);
 
-	BufferedVertexVec<TwoPointIRGBVertex>& GetEdgesMarked(bool Preview);
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetEdgesMarked(bool Floating);
 
-	BufferedVertexVec<TwoPointIRGBVertex>& GetEdgesUnmarked(bool Preview);
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetEdgesUnmarked(bool Floating);
 
-	BufferedVertexVec<PointIVertex>& GetSpecialPoints(bool Preview);
+	BufferedVertexVec<PointIRGBVertex>& GetSpecialPoints(bool Floating);
 
-	BufferedVertexVec<TwoPointIRGBVertex>& GetVerts(bool Preview);
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetVerts(bool Floating);
+
+	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetConflictPoints(bool Floating);
 
 	//const std::vector<TwoPointIRGBAVertex>& GetBoxes() const;
-
-private:
-	struct CharInfo {
-		float Advance;
-		//l t r b
-		std::array<float, 4> CursorOffsets;
-		std::array<float, 4> Clip;
-	};
-
-	const std::map<int, CharInfo> CharMap;
-
-	static const constexpr float LineHeight = 1.32f;
-	static const constexpr float TextAscender = 1.02f;
-	static const constexpr float TextDescender = -0.3f;
-	static const constexpr Point<int> TextAtlasSize = { 4280, 4280 };
-
-public:
-	struct TextInfo {
-		std::vector<float> LineWidths;
-		unsigned int LineCount;
-		float TheoreticalHeight;//Based on acender/decender
-		float EvendentHeight;//Based on the height of characters
-		float Width;
-	};
-
-private:
-
-	int GetCharMapIndex(const char& c, const bool& bold, const bool& italic);
-public:
-
-	enum TextPlacmentFlags : int {
-		x_Right = 0x1,
-		x_Center = 0x2,
-		x_Left = 0x4,
-		y_Top = 0x8,
-		y_Center = 0x10,
-		y_Bottom = 0x20,
-	};
-
-	TextInfo GetTextExtend(const std::string& Text, const bool& Bold = false, const bool& Italic = false, const float& Scale = 1);
-
-	void AddText(const std::string& Text, const Point<float>& Pos, const bool& Static, int TextPlacmentFlag = x_Right | y_Top, const bool& Bold = false, const bool& Italic = false, const float& Scale = 1, MyDirection::Direction d = MyDirection::Up, const ColourType& ForgroundColor = { 1.0,1.0,1.0,1.0 }, const ColourType& BackgroundColor = { 0.0,0.0,0.0,0.0 });
-
 
 private:
 	std::optional<VisualPath> PreviewCached;
@@ -118,6 +77,10 @@ private:
 	bool Dirty : 1 = true;
 	bool Destructing : 1 = false;
 	bool DirtyBlocks : 1 = true;
+	bool PathNeedsMerging : 1= false;
+	bool Moving : 1 = false;//Used to know when to scann for split
+
+	//bool HasSthMarked : 1 = false;
 
 	MyRectF PreviewCachedBoundingBox;
 
@@ -131,8 +94,20 @@ private:
 
 	//Carefull index 0 is unused
 	std::vector<bool> MarkedBlocks;
+	unsigned int NumMarkedBlocks = 0;
+
+	using BlockApplyer = std::function<void(BlockMetadata&, const PointType&)>;
+	using PathApplyer = std::function<void(VisualPath&)>;
+
+	//Returnes if Modifyed
+	bool ApplyToMarked(const BlockApplyer& Blockapplyer, const PathApplyer& Pathapplyer);
+
+	//Returnes if Modifyed
+	bool ApplyToMarkedPath(const PathApplyer& PathApplyer);
 
 public:
+
+
 
 	//Returns if need is to redraw
 	bool SetHighlited(unsigned int Highlited);
@@ -142,17 +117,25 @@ public:
 
 	bool HasHighlited() const;
 
+	std::optional<CompressedBlockDataIndex> GetBlockIdByStencil(unsigned int Id) const;
+
 	void ClearMarked();
 	void MarkAll();
+	bool ToggleMarkHoverPath();
+
+	//Carefull O(n) with n = Paths.size()
+	bool HasAnythingMarked() const;
+
+	//Carefull O(n) with n = Paths.size()
+	bool HasMarkedPaths() const;
+	bool HasMarkedBlocks() const;
 
 	//Returns if need is to redraw
 	bool SetMarked(unsigned int Mark, const bool& Value);
 
-	bool GertMarked(unsigned int Mark) const;
+	bool GetMarked(unsigned int Mark) const;
 
-	void MoveMarked(const Eigen::Vector2i& Diff);
-
-	void DeleteMarked();
+	bool HasMarkedPathAt(const PointType& Mouse) const;
 
 	//using BlockBoundingBoxCallback = std::function<const std::array<MyRectF, 4>& (const CompressedBlockDataIndex&)>;
 	const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbi);
@@ -170,62 +153,44 @@ private:
 
 public:
 	//Returnes Mean Position or InvalidPoint
-	PointType RotateMarked();
+	//PointType RotateMarked();
 
 private:
 	//Returns the axis
-	int FlipMarked(bool X);
+	//int FlipMarkedBlocks(bool X);
 
+	//int FlipMarkedBlocksX();
+	//int FlipMarkedBlocksY();
 public:
-	int FlipMarkedX();
-	int FlipMarkedY();
 
-	void RotateCW(const PointType& Pos) {
-		Dirty = true;
-		for (auto& Path : Paths) {
-			if (Path.IsFree()) continue;
-			Path.RotateCW(Pos);
-		}
-	}
+	//Returnes if Modifyed
+	bool RotateMarked(bool CW);
 
-	void RotateCCW(const PointType& Pos) {
-		Dirty = true;
-		for (auto& Path : Paths) {
-			if (Path.IsFree()) continue;
-			Path.RotateCCW(Pos);
-		}
-	}
+	//void RotateMarkedCCW(const PointType& Pos);
 
-	void RotateHW(const PointType& Pos) {
-		Dirty = true;
-		for (auto& Path : Paths) {
-			if (Path.IsFree()) continue;
-			Path.RotateHW(Pos);
-		}
-	}
+	//void RotateMarkedHW(const PointType& Pos);
 
-	void FlipX(const int& pos) {
-		Dirty = true;
-		for (auto& Path : Paths) {
-			if (Path.IsFree()) continue;
-			Path.FlipX(pos);
-		}
-	}
+	//Returnes if Modifyed
+	bool FlipMarked(bool X);
 
-	void FlipY(const int& pos) {
-		Dirty = true;
-		for (auto& Path : Paths) {
-			if (Path.IsFree()) continue;
-			Path.FlipY(pos);
-		}
-	}
+	//void FlipMarkedY(const int& pos);
 
-	VisualBlockInterior(const CompressedBlockData& data, DataResourceManager* ResourceManager, Renderer* renderer);
+	void MoveMarked(const PointType& Diff);
+
+	//Returnes if Modifyed
+	bool DeleteMarked();
+
+	VisualBlockInterior(DataResourceManager* ResourceManager, Renderer* renderer);
+
+	//Looses its state, musst be updated before next action
+	void WriteBack(CompressedBlockData& Data);
+
+	void UpdateCurrentBlock();
 
 	~VisualBlockInterior() noexcept;
 
-	void UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse);
-	void UpdateVectsForVAOsPreview(const MyRectF& ViewRect, const PointType& Mouse);
+	void UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover);
+	void UpdateVectsForVAOsFloating(const MyRectF& ViewRect, const PointType& Mouse);
 
 private:
 
@@ -272,15 +237,24 @@ public:
 
 	VisualPath::PathIndex AddPath(VisualPathData&& p);
 
-	bool TryAbsorb(VisualPath& Path);
+	bool TryAbsorb(VisualPathData& Path);
+
+	void AbsorbOrAdd(VisualPathData&& Data);
+
+	//Be carfull, may invalidate Paths ref/ptr/it
+	VisualPath& SplitPath(size_t PathIndex);
+
+	//Does not merge two how need merging
+	void MergeAfterMove();
 public:
 
-	bool hasMark(bool Preview);
-	bool hasUnmarked(bool Preview);
 
-	std::optional<VisualPath> GeneratePreviewPath(const PointType& Mouse);
+	bool HasMark(bool Preview);
+	bool HasUnmarked(bool Preview);
 
-	std::optional<VisualPath> GeneratePreviewPath();
+	std::optional<VisualPathData> GeneratePreviewPath(const PointType& Mouse);
+
+	std::optional<VisualPathData> GeneratePreviewPath();
 
 	size_t GetDragSize() const;
 	void StartDrag(const PointType& p);
@@ -295,6 +269,8 @@ public:
 	void CancleDrag();
 
 	bool HasPreview() const;
+
+	bool HasFloating() const;
 private:
 
 	std::unordered_map<CompressedBlockDataIndex, std::vector<BlockMetadata>> Blocks;
@@ -309,6 +285,9 @@ private:
 	BufferedVertexVec<PointIOrientationRGBIDVertex> XOrVerts;
 	BufferedVertexVec<MuxIDVertex> MuxVerts;
 
+#ifdef ShowBasePositionOfBlocks
+	BufferedVertexVec<PointFRGBVertex> BasePositionVerts;
+#endif
 	/*BufferedVertexVec<PointIOrientationRGBIDVertex> NotTriangleVerts;
 	BufferedVertexVec<PointIOrientationRGBIDVertex> NDotVerts;*/
 
@@ -353,15 +332,8 @@ public:
 	BufferedVertexVec<MuxIDVertex>& GetMuxVerts();
 	BufferedVertexVec<TextVertex>& GetStaticTextVerts();
 	BufferedVertexVec<TextVertex>& GetDynamicTextVerts();
-private:
 
-	std::optional<std::pair<CompressedBlockDataIndex, BlockMetadata>> PlacingBlock;
-public:
-
-	void StartPlacingBlock(const CompressedBlockDataIndex& bedi, const BlockMetadata& Transform);
-	std::optional<std::reference_wrapper<BlockMetadata>> GetPlacingBlockTransform();
-	void EndPlacingBlock();
-	void CancalePlacingBlock();
-
-	//std::string CollisionMapToString() const;
+#ifdef ShowBasePositionOfBlocks
+	BufferedVertexVec<PointFRGBVertex>& GetBasePotitionOfBlocksVerts();
+#endif
 };

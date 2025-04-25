@@ -7,7 +7,7 @@ in vec2 PosInWorld;
 //in vec2 ScreenPos;
 flat in vec2 A;
 flat in vec2 B;
-flat in vec3 Color;
+flat in vec3 ColorHightlight;
 
 //Out
 out vec4 FragColor;
@@ -46,7 +46,7 @@ void main(){
 //        FragColor = vec4(1.0,0.0,1.0,1.0);
 //        return;
 //    }
-    FragColor = vec4(Color,2*blend);
+    FragColor = vec4(ColorHightlight,2*blend);
 }
 
 //	FragColor = vec4((1.0-10*sdSegment(ScreenPos,A,B))*vec3(1.0),1.0);

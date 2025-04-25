@@ -18,119 +18,140 @@ const Eigen::Vector2f InvalidPointF = Eigen::Vector2f(std::numeric_limits<float>
 
 const int InvalidCoord = std::numeric_limits<int>::min();
 
+
+const MyRectI FullRectI({ -2,-2 }, { 0,0 });
+const MyRectF FullRectF({ -2,-2 }, { 0,0 });
+
 const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointIndex };
 
-//void VisualPathData::PopPCAIC() {
-//	assert(PCAICSize > 0);
-//	assert(!PCAIC.empty());
-//	SetPCAIC(PCAICSize - 1, 0);
-//	PCAICSize--;
-//	if (PCAICSize % 21 == 0) {
-//		PCAIC.pop_back();
-//	}
-//}
+int BlockMetadata::Transform() const {
+	int Transform = 0;
+	switch (Rotation) {
+	case MyDirection::Up: Transform = 0; break;
+	case MyDirection::Right: Transform = 1; break;
+	case MyDirection::Down: Transform = 2; break;
+	case MyDirection::Left: Transform = 3; break;
+	case MyDirection::UpLeft:assert(false && "Invalid Direction for Pin");
+	case MyDirection::UpRight:assert(false && "Invalid Direction for Pin");
+	case MyDirection::DownLeft:assert(false && "Invalid Direction for Pin");
+	case MyDirection::DownRight:assert(false && "Invalid Direction for Pin");
+	case MyDirection::Neutral:assert(false && "Invalid Direction for Pin");
+	default: assert(false && "Invalid Direction for Pin");
+	}
+	Transform |= xflip << 2;
+	Transform |= yflip << 3;
+	return Transform;
+}
 
-//void VisualPathData::PushPCAIC(unsigned char val) {
-//	assert(val < 8);
-//	size_t index = PCAICSize / 21;
-//	size_t bitPos = (PCAICSize % 21) * 3;
-//
-//	if (bitPos == 0) {
-//		PCAIC.push_back((uint16_t)val);
-//	}
-//	else {
-//		PCAIC[index] |= (uint16_t)val << bitPos;
-//	}
-//	PCAICSize++;
-//}
+const BlockIdentifiyer BlockIdentifiyer::CreateNewBlockIdent = BlockIdentifiyer::Parse("Hidden:+").value();
 
-//void VisualPathData::ErasePCAIC(size_t i) {
-//	assert(i < PCAICSize);
-//
-//	size_t blockCount = i / 21;
-//	size_t bitPos = (i % 21) * 3;
-//
-//	for (size_t j = i; j < PCAICSize - 1; j++) {
-//		SetPCAIC(j, GetPCAIC(j + 1));
-//	}
-//
-//	PopPCAIC();
-//}
+void BlockIdentifiyer::UpdateCombined() {
+	std::stringstream ss;
+	ss << Package << ":";
+	for (const std::string& s : Dirs) {
+		ss << s << ":";
+	}
+	ss << Name;
+	Combined = ss.str();
+}
 
-//unsigned char VisualPathData::GetPCAIC(size_t i) const {
-//	assert(i < PCAICSize);
-//	size_t index = i / 21;
-//	size_t bitPos = (i % 21) * 3;
-//	return (unsigned char)((PCAIC[index] >> bitPos) & 0b111);
-//}
+BlockIdentifiyer::BlockIdentifiyer(const std::string& Package, const std::vector<std::string> Dirs, const std::string Name)
+	: Package(Package), Dirs(Dirs), Name(Name) {
+	UpdateCombined();
+}
 
-//void VisualPathData::SetPCAIC(size_t i, unsigned char val) {
-//	assert(val < 8);
-//
-//	size_t index = i / 21;
-//	size_t bitPos = (i % 21) * 3;
-//
-//
-//	PCAIC[index] = ((uint64_t)val << bitPos) | (PCAIC[index] & ~((uint64_t)0b111 << bitPos));
-//}
+//PackageDir is used to relativize DirsAndName
+BlockIdentifiyer::BlockIdentifiyer(const std::filesystem::path& PackageDir, const std::filesystem::path& DirsAndName) {
+	assert(std::filesystem::is_directory(PackageDir));
+	assert(PackageDir.filename() != "");
+	assert(std::filesystem::is_regular_file(DirsAndName));
+	assert(DirsAndName.filename() != "");
 
-//void VisualPathData::IncrPointConnectionCount(const PointIndex& i, bool allowNewConnect) {
-//#ifdef _DEBUG 
-//	IsValidCaller __vc(this);
-//#endif
-//	assert(!PointIsDeleted(i));
-//
-//	int Count = GetPCAIC(i);
-//
-//	assert(allowNewConnect || Count != Rejoining);
-//	assert(Count != Deleted);
-//
-//	if (Count == Rejoining) {
-//		assert(allowNewConnect);
-//		Count = 1;
-//	}
-//	else {
-//		Count += 1;
-//	}
-//
-//	assert(Count != Rejoining);
-//	assert(Count != Deleted);
-//
-//	SetPCAIC(i, Count);
-//
-//}
+	Package = PackageDir.filename().string();
 
-//void VisualPathData::DecrPointConnectionCount(const PointIndex& i, bool allowRejoining) {
-//#ifdef _DEBUG 
-//	IsValidCaller __vc(this);
-//#endif
-//	assert(!PointIsDeleted(i));
-//
-//	int Count = GetPCAIC(i);
-//
-//	assert(Count != Rejoining);
-//	assert(Count != Deleted);
-//
-//	Count -= 1;
-//
-//	assert(Count != Rejoining || !allowRejoining);
-//	assert(Count != Deleted);
-//
-//	SetPCAIC(i, Count);
-//}
+	const std::filesystem::path RelativeDirsAndName = std::filesystem::relative(DirsAndName, PackageDir);
 
-//int VisualPathData::GetConnectionCount(const PointIndex& i) const {
-//#ifdef _DEBUG
-//	IsValidCaller __vc(this);
-//#endif
-//	assert(!PointIsDeleted(i));
-//
-//	int ret = GetPCAIC(i);
-//
-//	assert(ret != Deleted);
-//
-//	return ret;
-//}
+	Name = RelativeDirsAndName.filename().string();
+
+	const std::filesystem::path RelativeDirs = RelativeDirsAndName.parent_path();
+
+	for (const auto& p : RelativeDirs) {
+		Dirs.push_back(p.string());
+	}
+	UpdateCombined();
+}
+
+bool BlockIdentifiyer::operator==(const BlockIdentifiyer& Other) const noexcept {
+	return Combined == Other.Combined;
+}
+
+//Package and Name are required
+std::optional<BlockIdentifiyer> BlockIdentifiyer::Parse(const std::string& str) {
+	if (str == "") return std::nullopt;
+
+	std::vector<std::string> result;
+	std::stringstream ss(str);
+	std::string token;
+
+	while (std::getline(ss, token, ':')) {
+		result.push_back(token);
+	}
+
+	if (result.size() < 2) return std::nullopt;
+
+	std::string Package = result[0];
+	std::string Name = result.back();
+	std::vector<std::string> Dirs(result.begin() + 1, result.end() - 1);
+
+	return BlockIdentifiyer(Package, Dirs, Name);
+}
+
+//Package and Name are required
+BlockIdentifiyer BlockIdentifiyer::ParsePredefined(const std::string& str) {
+	assert(str != "");
+
+	std::vector<std::string> result;
+	std::stringstream ss(str);
+	std::string token;
+
+	while (std::getline(ss, token, ':')) {
+		result.push_back(token);
+	}
+
+	std::string Package = "Predefined";
+	std::string Name = result.back();
+	std::vector<std::string> Dirs(result.begin(), result.end() - 1);
+
+	return BlockIdentifiyer(Package, Dirs, Name);
+}
+
+const std::string& BlockIdentifiyer::GetPackage() const {
+	return Package;
+}
+
+const std::vector<std::string>& BlockIdentifiyer::GetDirs() const {
+	return Dirs;
+}
+
+const std::string& BlockIdentifiyer::GetName() const {
+	return Name;
+}
+
+//Package:Dir1:Dir2...:Name
+const std::string& BlockIdentifiyer::GetCombined() const {
+	return Combined;
+}
+
+//Package/Dir1/Dir2/Name
+std::filesystem::path BlockIdentifiyer::GetPath() const {
+	std::filesystem::path p;
+	p /= Package;
+	for (const std::string& d : Dirs) {
+		p /= d;
+	}
+	p /= Name;
+	return p;
+}
 
 PointIndex VisualPathData::AddPoint(const PointType& p) {
 	BoundingBox.GrowToInclude(p);
@@ -646,6 +667,9 @@ std::pair<PointIndex, PointIndex> VisualPathData::RemoveLineBetween(const LineIn
 	Block->UnRegisterLine(l, Points, Id);
 #endif
 
+	assert(Points[aIndex].ConnectionCount() != 0 || Points[bIndex].ConnectionCount() != 0);
+
+
 	if (aIsEnd && bIsEnd) {
 		assert(false && "This is not posible, maby inside TryAbsorb but elswhere it should be hangging together");
 	}
@@ -654,7 +678,7 @@ std::pair<PointIndex, PointIndex> VisualPathData::RemoveLineBetween(const LineIn
 			RemovePoint(aIndex);
 			aIndex = InvalidPointIndex;
 		}
-		else if (bIsEnd) {
+		if (bIsEnd) {
 			RemovePoint(bIndex);
 			bIndex = InvalidPointIndex;
 		}
@@ -663,10 +687,46 @@ std::pair<PointIndex, PointIndex> VisualPathData::RemoveLineBetween(const LineIn
 		RecalculateBoundingBox();
 	}
 
-	assert(Points[aIndex].ConnectionCount() != 0 || Points[bIndex].ConnectionCount() != 0);
-
-
 	return { aIndex,bIndex };
+}
+
+
+void VisualPathData::RemoveLineBetweenDeleteLonlyPoints(const LineIndex& l) {
+#ifdef _DEBUG
+	IsValidCaller __vc(this);
+#endif
+	assert(l != InvalidLineIndex);
+
+	assert(!Points[l.A].IsFree());
+	assert(!Points[l.B].IsFree());
+	assert(Block != nullptr);
+
+	PointIndex aIndex = l.A;
+	PointIndex bIndex = l.B;
+
+	const bool aIsEnd = Points[aIndex].ConnectionCount() == 1;
+	const bool bIsEnd = Points[bIndex].ConnectionCount() == 1;
+
+	Points[aIndex].RemoveConnection(bIndex);
+	Points[bIndex].RemoveConnection(aIndex);
+
+	LineCount--;
+
+#ifdef UseCollisionGrid
+	Block->UnRegisterLine(l, Points, Id);
+#endif
+
+	if (aIsEnd) {
+		RemovePoint(aIndex);
+		aIndex = InvalidPointIndex;
+	}
+	if (bIsEnd) {
+		RemovePoint(bIndex);
+		bIndex = InvalidPointIndex;
+	}
+	if (aIsEnd || bIsEnd) {
+		RecalculateBoundingBox();
+	}
 }
 
 PointIndex VisualPathData::RemoveLineBetweenDeleteIndex(const LineIndex& l, const PointIndex& End) {
@@ -864,6 +924,40 @@ LineIndex VisualPathData::StreightLineMiddelRemove(const PointIndex& p) {
 	//AddLine(a, b);
 }
 
+void VisualPathData::Sanitize() {
+#ifdef _DEBUG
+	IsValidCaller __vc(this);
+#endif
+	//Start:
+		//for (PointIndex i = 0; i < Points.size(); i++) {
+			//A - b - B
+	for (PointIndex p = 0; p < Points.size(); p++) {
+		if (Points[p].IsFree())continue;
+
+		StreightLineMiddelRemove(p);
+	}
+	/*if (Points[i].IsFree()) continue;
+	const auto& p = Points[i];
+	if (p.ConnectionCount() != 2) continue;
+	LineIndex l0 = InvalidLineIndex;
+	LineIndex l1 = InvalidLineIndex;
+	for (LineIndexInPoint j = 0; j < 4; j++) {
+		if (Points[i].Connections[j] != InvalidPointIndex && Points[i].Connections[j] != ReservedPointIndex) {
+			if (l0 == InvalidLineIndex) {
+				l0 = LineIndex{ i,Points[i].Connections[j] };
+				continue;
+			}
+			if (l1 == InvalidLineIndex) {
+				l1 = LineIndex{ i,Points[i].Connections[j] };
+				break;
+			}
+		}
+	}
+
+
+	if (LineIsHorizontal(l0) != LineIsHorizontal(l1));*/
+}
+
 VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlockInterior* Block)
 	: Block(Block), Id(KlassInstanceCounter++), LineCount(0)
 {
@@ -879,12 +973,16 @@ VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlo
 }
 
 VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block)
-	:LastAddedLine(pd.LastAddedLine),LineCount(0)/*, BoundingBox(pd.BoundingBox)*/, Block(Block), Id(KlassInstanceCounter++) {
+	:LastAddedLine(pd.LastAddedLine), LineCount(0)/*, BoundingBox(pd.BoundingBox)*/, Block(Block), Id(KlassInstanceCounter++) {
+
 	for (const PointType& p : pd.Points) {
 		AddPoint(p);
 	}
 	for (const CompressedPathData::Line& l : pd.Lines) {
 		AddLine(l.first, l.second);
+	}
+	if (pd.NeedsToBeSanitized) {
+		Sanitize();
 	}
 	RecalculateBoundingBox();
 }
@@ -1113,7 +1211,10 @@ LineIndex VisualPathData::Intercept(const PointType& pos) const {
 	}
 	return InvalidLineIndex;
 #endif
-	//Todo Makover
+}
+
+VisualPathData::VisualPathDataId VisualPathData::GetId() const {
+	return Id;
 }
 
 void VisualPathData::RotateAround(const PointType& pos, double angle) {
@@ -1127,27 +1228,27 @@ void VisualPathData::RotateAround(const PointType& pos, double angle) {
 	auto Rotation = Rotate(angle);
 
 	auto CPD = CompressedPathData(*this);
-	
+
 	for (PointType& Point : CPD.Points) {
 		PointType Off = Point - pos;
 		Off = Rotation * Off;
 		Point = pos + Off;
 	}
 
-	(*this) = VisualPathData(CPD,Block);
+	(*this) = VisualPathData(CPD, Block);
 }
 
-void VisualPathData::RotateAroundCW(const PointType& pos) {
-	RotateAround(pos, -M_PI / 2.0);
+void VisualPathData::RotateAround(const PointType& pos, bool CW) {
+	RotateAround(pos, CW ? M_PI / 2.0 : -M_PI / 2.0);
 }
 
-void VisualPathData::RotateAroundCCW(const PointType& pos) {
-	RotateAround(pos, M_PI / 2.0);
-}
+//void VisualPathData::RotateAroundCCW(const PointType& pos) {
+	//RotateAround(pos, M_PI / 2.0);
+//}
 
-void VisualPathData::RotateAroundHW(const PointType& pos) {
-	RotateAround(pos, M_PI);
-}
+//void VisualPathData::RotateAroundHW(const PointType& pos) {
+//	RotateAround(pos, M_PI);
+//}
 
 void VisualPathData::Flip(const int& pos, bool X) {
 	auto CPD = CompressedPathData(*this);
@@ -1167,13 +1268,23 @@ void VisualPathData::Flip(const int& pos, bool X) {
 
 	(*this) = VisualPathData(CPD, Block);
 }
+//
+//void VisualPathData::FlipX(const int& pos) {
+//	Flip(pos, true);
+//}
+//
+//void VisualPathData::FlipY(const int& pos) {
+//	Flip(pos, false);
+//}
 
-void VisualPathData::FlipX(const int& pos) {
-	Flip(pos, true);
-}
+void VisualPathData::Move(const PointType& Off) {
+	auto CPD = CompressedPathData(*this);
 
-void VisualPathData::FlipY(const int& pos) {
-	Flip(pos, false);
+	for (PointType& Point : CPD.Points) {
+		Point += Off;
+	}
+
+	(*this) = VisualPathData(CPD, Block);
 }
 
 void VisualPathData::SetLastAdded(const PointIndex& pIndex) {
@@ -1405,6 +1516,99 @@ bool VisualPathData::AbsorbIfIntercept(VisualPathData& Other) {
 	return true;
 }
 
+std::pair<std::vector<CompressedPathData>, std::vector<CompressedPathData>> VisualPathData::Split(const std::unordered_set<LineIndex>& ToBecome) {
+	PROFILE_FUNKTION;
+	assert(!ToBecome.empty());
+	std::vector<std::unordered_set<std::pair<PointType, PointType>>> EdgesOfCCMarked;
+	std::vector<std::unordered_set<std::pair<PointType, PointType>>> EdgesOfCCUnmarked;
+
+	std::unordered_set<PointType> MarkedPoints;
+	std::vector<bool> Visited(Points.size(), false);
+
+	//auto hr = toHumanReadable();
+
+	//EdgesOfCC.push_back({});
+	for (const LineIndex& li : ToBecome) {
+		assert(li.A < Points.size() && li.B < Points.size());
+		assert(!Points[li.A].IsFree() && !Points[li.B].IsFree());
+		MarkedPoints.emplace(Points[li.A].Pos);
+		MarkedPoints.emplace(Points[li.B].Pos);
+	}
+
+	for (PointIndex i = 0; i < Points.size(); i++) {
+		if (Points[i].IsFree()) continue;
+		if (Visited[i]) continue;
+		if (!MarkedPoints.contains(Points[i].Pos)) continue;
+		Visited[i] = true;
+		EdgesOfCCMarked.push_back({});
+		std::queue<PointIndex> PointsToVisit;
+		PointsToVisit.push(i);
+		while (!PointsToVisit.empty()) {
+			PointIndex curr = PointsToVisit.front();
+			PointsToVisit.pop();
+			for (LineIndexInPoint j = 0; j < 4; j++) {
+				if (Points[curr].IsFree()) break;
+				if (Points[curr].Connections[j] == InvalidPointIndex
+					|| Points[curr].Connections[j] == ReservedPointIndex) continue;
+				if (!ToBecome.contains({ curr, Points[curr].Connections[j] })) continue;
+				if (Visited[Points[curr].Connections[j]]) continue;
+				Visited[Points[curr].Connections[j]] = true;
+				PointsToVisit.push(Points[curr].Connections[j]);
+				EdgesOfCCMarked.back().emplace(std::make_pair(Points[curr].Pos, Points[Points[curr].Connections[j]].Pos));
+				RemoveLineBetweenDeleteLonlyPoints(LineIndex{ curr,Points[curr].Connections[j] });
+				//hr = toHumanReadable();
+			}
+		}
+		if (!EdgesOfCCMarked.back().empty()) continue;
+		EdgesOfCCMarked.pop_back();
+	}
+
+	std::fill(begin(Visited), end(Visited), false);
+
+	for (PointIndex i = 0; i < Points.size(); i++) {
+		if (Points[i].IsFree()) continue;
+		if (Visited[i]) continue;
+		Visited[i] = true;
+		EdgesOfCCUnmarked.push_back({});
+		std::queue<PointIndex> PointsToVisit;
+		PointsToVisit.push(i);
+		while (!PointsToVisit.empty()) {
+			PointIndex curr = PointsToVisit.front();
+			PointsToVisit.pop();
+			for (LineIndexInPoint j = 0; j < 4; j++) {
+				if (Points[curr].IsFree()) break;
+				if (Points[curr].Connections[j] == InvalidPointIndex
+					|| Points[curr].Connections[j] == ReservedPointIndex) continue;
+				if (Visited[Points[curr].Connections[j]]) continue;
+				Visited[Points[curr].Connections[j]] = true;
+				PointsToVisit.push(Points[curr].Connections[j]);
+				EdgesOfCCUnmarked.back().emplace(std::make_pair(Points[curr].Pos, Points[Points[curr].Connections[j]].Pos));
+				RemoveLineBetweenDeleteLonlyPoints(LineIndex{ curr,Points[curr].Connections[j] });
+				//hr = toHumanReadable();
+			}
+		}
+		if (!EdgesOfCCUnmarked.back().empty()) continue;
+		EdgesOfCCUnmarked.pop_back();
+	}
+
+	auto& DataThis = EdgesOfCCMarked[0];
+
+	(*this) = VisualPathData(CompressedPathData(std::move(DataThis), true), Block);
+
+
+	std::vector<CompressedPathData> CCsUnmarked;
+	for (auto CC : EdgesOfCCUnmarked) {
+		CCsUnmarked.emplace_back(std::move(CC), true);
+	}
+
+	std::vector<CompressedPathData> CCsMarked;
+	for (size_t i = 1; i < EdgesOfCCMarked.size(); i++) {
+		auto& CC = EdgesOfCCMarked[i];
+		CCsMarked.emplace_back(std::move(CC), true);
+	}
+
+	return { CCsMarked,CCsUnmarked };
+}
 
 std::string VisualPathData::PointConnectionToString(const PointIndex& p) const {
 	switch (p) {
@@ -1651,6 +1855,27 @@ CompressedPathData::CompressedPathData(const VisualPathData& pd)
 			if (i > val) continue;
 			Lines.emplace_back(IndexInSelf[i], IndexInSelf[val]);
 		}
+	}
+}
+
+CompressedPathData::CompressedPathData(std::unordered_set<std::pair<PointType, PointType>>&& Lines, bool NeedsToBeSanitized)
+	:LastAddedLine(0), NeedsToBeSanitized(NeedsToBeSanitized)
+{
+	std::unordered_map<PointType, PointIndex> Pointindex;
+	auto GetPointIndex = [this, &Pointindex](const PointType& p) -> PointIndex {
+		auto it = Pointindex.find(p);
+		if (it != Pointindex.end()) {
+			return it->second;
+		}
+		Points.push_back(p);
+		Pointindex.emplace(p, Points.size() - 1);
+		return Points.size() - 1;
+		};
+
+	for (const auto& [p1, p2] : Lines) {
+		const PointIndex pi1 = GetPointIndex(p1);
+		const PointIndex pi2 = GetPointIndex(p2);
+		this->Lines.emplace_back(pi1, pi2);
 	}
 }
 
