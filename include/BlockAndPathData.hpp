@@ -92,7 +92,7 @@ public:
 
 namespace std {
 	template<>
-	struct std::hash<BlockIdentifiyer> {
+	struct hash<BlockIdentifiyer> {
 		std::size_t operator()(const BlockIdentifiyer& Ident) const noexcept {
 			return std::hash<std::string>{}(Ident.GetCombined());
 		}

@@ -138,7 +138,7 @@ void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, Buf
 
 		//Buff.Dirty = true;
 		Buff.Emplace(
-			Cursor.Point + Cursor.Offset + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor
+			Cursor.Pos + Cursor.Offset + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor
 		);
 
 		OFF += ci.Advance * Right * Scale;
@@ -150,7 +150,7 @@ void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, Buf
 }
 
 void RenderTextUtility::AddText(const std::string& Text, const Point<float>& Pos, BufferedVertexVec<TextVertex>& Buff, int TextPlacmentFlag, const bool& Bold, const bool& Italic, const float& Scale, MyDirection::Direction d, const ColourType& ForgroundColor, const ColourType& BackgroundColor) {
-	CursorData Cursor{ .Offset = {0,0}, .Point = Pos};
+	CursorData Cursor{ .Offset = {0,0}, .Pos = Pos};
 	AddText(Text, Cursor, Buff, TextPlacmentFlag, Bold, Italic, Scale, d, ForgroundColor, BackgroundColor);
 }
 

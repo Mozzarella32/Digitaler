@@ -137,7 +137,7 @@ bool MyApp::OnInit() {
 		PROFILE_SCOPE("Request Context");
 		cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
 		//Init Context - for wxGlCanvas
-		Initlisier = new GLEWFrameIndependentInitiliser(cxtAttrs, [=]() {OnOGLInit(); });
+		Initlisier = new GLEWFrameIndependentInitiliser(cxtAttrs, [this]() {OnOGLInit(); });
 	}
 	return true;
 }

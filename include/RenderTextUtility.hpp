@@ -56,10 +56,10 @@ public:
 	};
 
 	static TextInfo GetTextExtend(const std::string& Text, const bool& Bold = false, const bool& Italic = false, const float& Scale = 1);
-
+	
 	struct CursorData {
 		Point<float> Offset;
-		Point<float> Point;
+		Point<float> Pos;
 	};
 
 	//Pos acts as a cursor

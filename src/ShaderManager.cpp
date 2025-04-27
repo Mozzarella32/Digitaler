@@ -69,7 +69,9 @@ void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::p
 		 FragTime = std::filesystem::last_write_time(Frag);
 	}
 	catch (...) {
+#ifdef _WIN32
 		Beep(200, 200);
+#endif
 		return;
 	}
 	bool Update = false;

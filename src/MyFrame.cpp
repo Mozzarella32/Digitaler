@@ -69,7 +69,7 @@ MyFrame::MyFrame(MyApp* App)
 
 	wxMenu* SimulateMenu = new wxMenu();
 	/*ToggelSimulationMenu =*/ AddMenu(SimulateMenu, Menus::ToggelSimulataion, "&Start\tSPACE", &MyFrame::OnStartStopButton);
-	AddMenu(SimulateMenu, Menus::SingleStep, "&Step\tÖ", &MyFrame::OnSingleStepButton, PngManager::GetPng(PngManager::SingleStep).Scale(12, 12));
+	AddMenu(SimulateMenu, Menus::SingleStep, "&Step\tï¿½", &MyFrame::OnSingleStepButton, PngManager::GetPng(PngManager::SingleStep).Scale(12, 12));
 
 	MenuBar->Append(SimulateMenu, "&Simulate");
 
@@ -190,26 +190,26 @@ MyFrame::MyFrame(MyApp* App)
 	//auto Child0 = AppendChild(Tree->GetRootItem(), "Child0", "HI", "Zwei");
 	//auto Child1 = AppendChild(Tree->GetRootItem(), "Child1", "Ne", "Drei");
 
-	//auto Child00 = AppendChild(Child0, "Child00", "Ich", "Fünf");
+	//auto Child00 = AppendChild(Child0, "Child00", "Ich", "Fï¿½nf");
 
-	//auto Child000 = AppendChild(Child00, "Child000", "Ich", "Fünf");
-	//auto Child001 = AppendChild(Child00, "Child001", "Ich", "Fünf");
+	//auto Child000 = AppendChild(Child00, "Child000", "Ich", "Fï¿½nf");
+	//auto Child001 = AppendChild(Child00, "Child001", "Ich", "Fï¿½nf");
 
-	//auto Child01 = AppendChild(Child0, "Child01", "Weiß", "Sieben");
+	//auto Child01 = AppendChild(Child0, "Child01", "Weiï¿½", "Sieben");
 
-	//auto Child010 = AppendChild(Child01, "Child010", "Ich", "Fünf");
-	//auto Child011 = AppendChild(Child01, "Child011", "Ich", "Fünf");
+	//auto Child010 = AppendChild(Child01, "Child010", "Ich", "Fï¿½nf");
+	//auto Child011 = AppendChild(Child01, "Child011", "Ich", "Fï¿½nf");
 
 
 	//auto Child10 = AppendChild(Child1, "Child10", "Nicht", "Dreizen");
 
-	//auto Child100 = AppendChild(Child10, "Child100", "Ich", "Fünf");
-	//auto Child101 = AppendChild(Child10, "Child101", "Ich", "Fünf");
+	//auto Child100 = AppendChild(Child10, "Child100", "Ich", "Fï¿½nf");
+	//auto Child101 = AppendChild(Child10, "Child101", "Ich", "Fï¿½nf");
 
 	//auto Child11 = AppendChild(Child1, "Child11", "weiter", "Neun");
 
-	//auto Child110 = AppendChild(Child11, "Child110", "Ich", "Fünf");
-	//auto Child111 = AppendChild(Child11, "Child111", "Ich", "Fünf");
+	//auto Child110 = AppendChild(Child11, "Child110", "Ich", "Fï¿½nf");
+	//auto Child111 = AppendChild(Child11, "Child111", "Ich", "Fï¿½nf");
 
 	////Tree->Bind(wxEVT_TREELIST_ITEM_EXPANDING, [Tree,AppendChild](wxTreeListEvent& evt) {
 	////	evt.Skip();

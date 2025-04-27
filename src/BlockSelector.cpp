@@ -73,7 +73,7 @@ void BlockSelector::UpdateExtendsAndText() {
 
 	const auto& CanvasSize = renderer->CanvasSize;
 
-	RenderTextUtility::CursorData Cursor = { .Offset = {0,0}, .Point = { -0.01f * CanvasSize.x() / 2.0f + 0.1f,0.01f * CanvasSize.y() / 2.0f - 0.1f } };
+	RenderTextUtility::CursorData Cursor = { .Offset = {0,0}, .Pos = { -0.01f * CanvasSize.x() / 2.0f + 0.1f,0.01f * CanvasSize.y() / 2.0f - 0.1f } };
 
 	Eigen::Affine2f transform = GetTransform(CanvasSize);
 
@@ -88,7 +88,7 @@ void BlockSelector::UpdateExtendsAndText() {
 
 
 		auto TextExtend = RenderTextUtility::GetTextExtend(Text, i <= HoverIndex, false, FontSize);
-		Eigen::Vector2f TopLeft = { Cursor.Point.x + Cursor.Offset.x, Cursor.Point.y + Cursor.Offset.y };
+		Eigen::Vector2f TopLeft = { Cursor.Pos.x + Cursor.Offset.x, Cursor.Pos.y + Cursor.Offset.y };
 		Eigen::Vector2f BottomRight = { TopLeft.x() + TextExtend.Width , TopLeft.y() - TextExtend.EvendentHeight };
 
 		TopLeft = transform * TopLeft;
@@ -153,7 +153,7 @@ void BlockSelector::Update() {
 	//
 	//Eigen::Affine2f transform = GetTransform(CanvasSize);
 
-	//Eigen::Vector2f Pos = transform * Eigen::Vector2f{ Cursor.Point.x, Cursor.Point.y };
+	//Eigen::Vector2f Pos = transform * Eigen::Vector2f{ Cursor.Pos.x, Cursor.Pos.y };
 
 	//ToDisplay.clear();
 	//ToDisplay.append(std::to_string(Pos.x()) + ", " + std::to_string(Pos.y()));
