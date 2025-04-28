@@ -113,6 +113,54 @@ MessageCallback(GLenum source,
 		cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
 */
 
+
+#ifndef __APPLE__
+
+#if defined(_WIN32) || defined(__WIN32__)
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN 1
+        #define LE_ME_ISDEF
+    #endif
+
+    #undef APIENTRY
+    #include <windows.h>  // Für wglGetProcAddress
+    #ifdef LE_ME_ISDEF
+        #undef WIN32_LEAN_AND_MEAN
+        #undef LE_ME_ISDEF
+    #endif
+    #define MyGetProcAddress(name) wglGetProcAddress((LPCSTR)name)
+
+#else // Linux (inkl. Wayland und X11)
+    #ifdef __cplusplus
+        extern "C" {
+    #endif
+    #include <EGL/egl.h>
+    #include <GL/gl.h>
+    
+    // Wir deklarieren hier nicht die eglGetProcAddress-Funktion, weil sie bereits in EGL definiert ist!
+    #ifdef __cplusplus
+        }
+    #endif
+
+    // Für Wayland und X11 verwenden wir eglGetProcAddress direkt
+    #define MyGetProcAddress(name) eglGetProcAddress(name)
+
+#endif // End of Linux part
+
+#endif // End of __APPLE__ check
+
+// Die Funktion, um die Funktionszeiger zu bekommen
+void* MyGetGLFuncAddress(const char* fname)
+{
+    void* pret = (void*) MyGetProcAddress(fname);
+
+    // Einige Treiber geben -1, 1, 2 oder 3 statt 0 zurück, also behandeln wir das hier.
+    if (pret == (void*)-1 || pret == (void*)1 || pret == (void*)2 || pret == (void*)3)
+        pret = nullptr;
+
+    return pret;
+}
+
 bool MyApp::OnInit() {
 	PROFILE_FUNKTION;
 #ifdef _WIN32
@@ -123,9 +171,9 @@ bool MyApp::OnInit() {
 
 	{
 		PROFILE_SCOPE("Set WD");
-	wxFileName exePath(wxStandardPaths::Get().GetExecutablePath());
-	wxFileName exeDir = exePath.GetPath();
-	wxSetWorkingDirectory(exeDir.GetFullPath());
+		wxFileName exePath(wxStandardPaths::Get().GetExecutablePath());
+		wxFileName exeDir = exePath.GetPath();
+		wxSetWorkingDirectory(exeDir.GetFullPath());
 	}
 
 	{
@@ -137,7 +185,14 @@ bool MyApp::OnInit() {
 		PROFILE_SCOPE("Request Context");
 		cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
 		//Init Context - for wxGlCanvas
-		Initlisier = new GLEWFrameIndependentInitiliser(cxtAttrs, [this]() {OnOGLInit(); });
+		Initlisier = new GLFrameIndependentInitiliser(cxtAttrs,
+		[this](){
+			if (!gladLoadGL((GLADloadfunc)MyGetGLFuncAddress)) {
+					std::cout << "GLAD could not be initilised\n";
+				return;
+			}		
+		},
+		[this]() {OnOGLInit(); });
 	}
 	return true;
 }

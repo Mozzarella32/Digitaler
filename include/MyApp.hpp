@@ -13,7 +13,7 @@ public:
 	std::unique_ptr<VertexArrayObject> HoleScreenVAO;
 
 	wxGLContextAttrs cxtAttrs;
-	GLEWFrameIndependentInitiliser* Initlisier;
+	GLFrameIndependentInitiliser* Initlisier;
 
 public:
 	bool OnInit() override;

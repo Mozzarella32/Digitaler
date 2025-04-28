@@ -9,7 +9,10 @@
 
 //#include <vld.h>
 
-#include <GLEWInitialiser.hpp>
+#include <glad/gl.h>
+#include <GL/glu.h>
+
+#include <GLInitialiser.hpp>
 #include <GLContextBinder.hpp>
 #include <Utility.hpp>
 //#include <MyWxWidgets/ElementLayerer.h>
