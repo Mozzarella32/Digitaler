@@ -9,8 +9,10 @@
 
 //#include <vld.h>
 
+
 #include <glad/gl.h>
 #include <GL/glu.h>
+#include <GLFW/glfw3.h>
 
 #include <GLInitialiser.hpp>
 #include <GLContextBinder.hpp>

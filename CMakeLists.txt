@@ -61,6 +61,26 @@ endif()
 #     message(STATUS "GLEW Found")
 # endif()
 
+# GLFW
+
+message(STATUS "Fetching glfw")
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_WAYLAND On CACHE BOOL "" FORCE)
+set(GLFW_BUILD_COCOA OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_WIN32 OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_OSMESA OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_VULKAN_STATIC OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  glfw
+  GIT_REPOSITORY https://github.com/glfw/glfw.git
+  GIT_TAG        3.3.8  # oder die gewünschte Version
+)
+FetchContent_MakeAvailable(glfw)
+
 # STB - Header-only-Bibliothek
 message(STATUS "Fetching stb...")
 
@@ -274,6 +294,9 @@ else()
     set(ShadersToCharArray_EXECUTABLE "ShadersToCharArray")
     set(PreparePngs_EXECUTABLE "PreparePngs")
 endif()
+
+# GLFW linking
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 add_dependencies(${PROJECT_NAME} ShadersToCharArray PreparePngs)
 
