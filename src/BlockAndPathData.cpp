@@ -231,7 +231,7 @@ void VisualPathData::AddLineCorrectReserve(const PointIndex& a, const PointIndex
 }
 
 LineIndex VisualPathData::LineExists(const PointIndex& a, const PointIndex& b) const {
-#ifdef _DEBUG 
+#ifndef NDEBUG 
 	IsValidCaller __vc(this);
 #endif
 	assert(a < Points.size());
@@ -267,7 +267,7 @@ return InvalidLineIndex;*/
 }
 
 PointIndex VisualPathData::PointExists(const PointType& p) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(p != InvalidPoint);
@@ -281,7 +281,7 @@ PointIndex VisualPathData::PointExists(const PointType& p) const {
 }
 
 //bool VisualPathData::PointIsDeleted(const PointIndex& p) const {
-//	//#ifdef _DEBUG IsValidCaller __vc(this); #endif
+//	//#ifndef NDEBUG IsValidCaller __vc(this); #endif
 //	assert(p < Points.size());
 //
 //	int ret = GetPCAIC(p);
@@ -290,7 +290,7 @@ PointIndex VisualPathData::PointExists(const PointType& p) const {
 //}
 
 //bool VisualPathData::PointIsRejoining(const PointIndex& p) const {
-//#ifdef _DEBUG
+//#ifndef NDEBUG
 //	IsValidCaller __vc(this);
 //#endif
 //
@@ -302,7 +302,7 @@ PointIndex VisualPathData::PointExists(const PointType& p) const {
 //}
 
 PointIndex VisualPathData::GetNearFromOutside(const LineIndex& l, const PointType& p) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -323,7 +323,7 @@ PointIndex VisualPathData::GetNearFromOutside(const LineIndex& l, const PointTyp
 }
 
 PointIndex VisualPathData::GetFarFromOutside(const LineIndex& l, const PointType& p) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -338,7 +338,7 @@ PointIndex VisualPathData::GetFarFromOutside(const LineIndex& l, const PointType
 }
 
 void VisualPathData::AddLineIntegrateInsides(const PointIndex& a, const PointIndex& b, bool aHasReserved, bool bHasReserved) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(a < Points.size());
@@ -451,7 +451,7 @@ void VisualPathData::AddLineIntegrateInsides(const PointIndex& a, const PointInd
 }
 
 LineIndex VisualPathData::AddLineRemoveIfUnnecesary(const PointIndex& aIndex, const PointType& b, bool aHasReserved) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(aIndex < Points.size());
@@ -464,7 +464,7 @@ LineIndex VisualPathData::AddLineRemoveIfUnnecesary(const PointIndex& aIndex, co
 }
 
 PointIndex VisualPathData::AddLine(const PointIndex& aIndex, const PointType& p, bool aHasReserved) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(aIndex < Points.size());
@@ -539,7 +539,7 @@ PointIndex VisualPathData::AddLine(const PointIndex& aIndex, const PointType& p,
 //
 ////returnes index of created line
 //LineIndex VisualPathData::AddLine(const PointIndex& aIndex, const PointIndex& bIndex) {
-//#ifdef _DEBUG 
+//#ifndef NDEBUG 
 //	IsValidCaller __vc(this);
 //#endif
 //	assert(aIndex < Points.size());
@@ -560,7 +560,7 @@ PointIndex VisualPathData::AddLine(const PointIndex& aIndex, const PointType& p,
 //}
 
 PointIndex VisualPathData::MoveEndPointAlongItsOnlyLine(const LineIndex& l, bool first, const PointType& newPos) {
-#ifdef _DEBUG 
+#ifndef NDEBUG 
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -604,7 +604,7 @@ PointIndex VisualPathData::MoveEndPointAlongItsOnlyLine(const LineIndex& l, bool
 }
 
 void VisualPathData::RemovePoint(const PointIndex& p) {
-#ifdef _DEBUG 
+#ifndef NDEBUG 
 	IsValidCaller __vc(this);
 #endif
 	assert(p < Points.size());
@@ -622,7 +622,7 @@ void VisualPathData::RemovePoint(const PointIndex& p) {
 
 
 void VisualPathData::RemoveLineBetweenNoDelete(const LineIndex& l) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -643,7 +643,7 @@ void VisualPathData::RemoveLineBetweenNoDelete(const LineIndex& l) {
 }
 
 std::pair<PointIndex, PointIndex> VisualPathData::RemoveLineBetween(const LineIndex& l) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -692,7 +692,7 @@ std::pair<PointIndex, PointIndex> VisualPathData::RemoveLineBetween(const LineIn
 
 
 void VisualPathData::RemoveLineBetweenDeleteLonlyPoints(const LineIndex& l) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -730,7 +730,7 @@ void VisualPathData::RemoveLineBetweenDeleteLonlyPoints(const LineIndex& l) {
 }
 
 PointIndex VisualPathData::RemoveLineBetweenDeleteIndex(const LineIndex& l, const PointIndex& End) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -762,7 +762,7 @@ PointIndex VisualPathData::RemoveLineBetweenDeleteIndex(const LineIndex& l, cons
 }
 
 PointIndex VisualPathData::BreakUpLineAndInsert(const LineIndex& l, const PointType& contained) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -862,7 +862,7 @@ bool VisualPathData::IsValidPd() const {
 }
 
 LineIndex VisualPathData::StreightLineMiddelRemove(const PointIndex& p) {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(p < Points.size());
@@ -925,7 +925,7 @@ LineIndex VisualPathData::StreightLineMiddelRemove(const PointIndex& p) {
 }
 
 void VisualPathData::Sanitize() {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	//Start:
@@ -1028,7 +1028,7 @@ bool VisualPathData::PointsMakeStreightLine(const PointType& a, const PointType&
 //}
 //
 //std::vector<LineIndex> VisualPathData::LinesWithPoint(const PointIndex& p) const {
-//#ifdef _DEBUG
+//#ifndef NDEBUG
 //	IsValidCaller __vc(this);
 //#endif
 //	assert(p < Points.size());
@@ -1075,7 +1075,7 @@ bool VisualPathData::PointStrictelyOnLine(const PointType& a, const PointType& b
 }
 
 bool VisualPathData::PointStrictelyOnLine(const LineIndex& l, const PointType& p) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -1091,7 +1091,7 @@ bool VisualPathData::PointStrictelyOnLine(const LineIndex& l, const PointType& p
 }
 
 bool VisualPathData::PointAllignedWithLine(const LineIndex& l, const PointType& p) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -1106,7 +1106,7 @@ bool VisualPathData::PointAllignedWithLine(const LineIndex& l, const PointType& 
 }
 
 bool VisualPathData::LineAllignedWithLine(const LineIndex& l, const PointType& a, const PointType& b) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -1119,7 +1119,7 @@ bool VisualPathData::LineAllignedWithLine(const LineIndex& l, const PointType& a
 }
 
 PointIndex VisualPathData::PointIsEndOfLine(const LineIndex& l, const PointType& p) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -1134,7 +1134,7 @@ PointIndex VisualPathData::PointIsEndOfLine(const LineIndex& l, const PointType&
 }
 
 bool VisualPathData::LineIsHorizontal(const LineIndex& l) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -1152,7 +1152,7 @@ bool VisualPathData::LineIsHorizontal(const PointType& a, const PointType& b) {
 }
 
 PointType VisualPathData::GetProjectionOnLine(const LineIndex& l, const PointType& p) const {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l != InvalidLineIndex);
@@ -1192,7 +1192,7 @@ void VisualPathData::Clear() noexcept {
 
 LineIndex VisualPathData::Intercept(const PointType& pos) const {
 	PROFILE_FUNKTION;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(pos != InvalidPoint);
@@ -1305,7 +1305,7 @@ void VisualPathData::SetLastAdded(const LineIndex& pIndex) {
 
 //
 //bool VisualPathData::addTo(const LineIndex& l, const PointType& p) {
-//#ifdef _DEBUG
+//#ifndef NDEBUG
 //	IsValidCaller __vc(this);
 //#endif
 //	assert(!Points[l.A].IsFree());
@@ -1318,7 +1318,7 @@ void VisualPathData::SetLastAdded(const LineIndex& pIndex) {
 
 bool VisualPathData::addTo(const LineIndex& l, const PointType& p) {
 	PROFILE_FUNKTION;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(l.A < Points.size());
@@ -1385,7 +1385,7 @@ bool VisualPathData::addTo(const LineIndex& l, const PointType& p) {
 //addToEnd
 bool VisualPathData::addTo(const PointType& p) {
 	PROFILE_FUNKTION;
-#ifdef _DEBUG
+#ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
 	assert(p != InvalidPoint);
@@ -1635,7 +1635,7 @@ std::string VisualPathData::PointConnectionToString(const PointIndex& p) const {
 //}
 
 std::string VisualPathData::toHumanReadable() const {
-	//#ifdef _DEBUG IsValidCaller __vc(this); #endif
+	//#ifndef NDEBUG IsValidCaller __vc(this); #endif
 	std::stringstream ss;
 
 	ss << "LastAdded:\t";
@@ -1759,7 +1759,7 @@ PointIndex PointNode::Init(const PointType& p) {
 void PointNode::Free(const PointIndex& head) {
 	assert(Connections[0] != FreePointIndex);
 	Connections = std::array{ FreePointIndex,head,InvalidPointIndex,InvalidPointIndex };
-#ifdef _DEBUG
+#ifndef NDEBUG
 	Pos = InvalidPoint;
 #endif
 }
