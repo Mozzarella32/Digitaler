@@ -9,10 +9,15 @@
 
 //#include <vld.h>
 
+#ifndef GLEW_STATIC
+#define GLEW_STATIC
+#endif
 
-#include <glad/gl.h>
-#include <GL/glu.h>
-#include <GLFW/glfw3.h>
+#include <GL/glew.h>
+
+// #include <glad/gl.h>
+// #include <GL/glu.h>
+// #include <GLFW/glfw3.h>
 
 #include <GLInitialiser.hpp>
 #include <GLContextBinder.hpp>

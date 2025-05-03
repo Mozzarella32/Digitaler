@@ -138,38 +138,47 @@ bool MyApp::OnInit() {
 		PROFILE_SCOPE("Request Context");
 		cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
 		//Init Context - for wxGlCanvas
-		Initlisier = new GLFrameIndependentInitiliser(cxtAttrs,
-		[this](){
-			GLFWwindow* window;
+	// 	Initlisier = new GLFrameIndependentInitiliser(cxtAttrs,
+	// 	[this](){
+	// 		GLFWwindow* window;
 
-			if(!glfwInit()){
-					std::cout << "Faild to initilize glfw\n";
-					return;
-			}
+	// 		if(!glfwInit()){
+	// 				std::cout << "Faild to initilize glfw\n";
+	// 				return;
+	// 		}
 
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	// 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	// 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-			window = glfwCreateWindow(1, 1, "GLFW context init", NULL, NULL);
-			if (!window)
-			{
-				glfwTerminate();
-				exit(EXIT_FAILURE);
-			}
+	// 		window = glfwCreateWindow(1, 1, "GLFW context init", NULL, NULL);
+	// 		if (!window)
+	// 		{
+	// 			glfwTerminate();
+	// 			exit(EXIT_FAILURE);
+	// 		}
 
-			glfwMakeContextCurrent(window);
+	// 		glfwMakeContextCurrent(window);
 
-			if (!gladLoadGL(glfwGetProcAddress)) {
-					std::cout << "GLAD could not be initilised\n";
-					return;
-			}	
+	// 		if (!gladLoadGL(glfwGetProcAddress)) {
+	// 				std::cout << "GLAD could not be initilised\n";
+	// 				return;
+	// 		}	
 			
-			glfwDestroyWindow(window);
+	// 		glfwDestroyWindow(window);
  
-			glfwTerminate();
-		},
-		[this]() {OnOGLInit(); });
+	// 		glfwTerminate();
+	// 	},
+	// 	[this]() {OnOGLInit(); });
 	}
+	Initlisier = new GLFrameIndependentInitiliser(cxtAttrs,
+	  [this](){
+			GLenum glewInitResult = glewInit();
+			if (glewInitResult != GLEW_OK) {
+					const GLubyte* errorString = glewGetErrorString(glewInitResult);
+					std::cout << "GLEW-Fehler: " << errorString << std::endl;
+					wxASSERT_MSG(false, wxString::Format("GLEW-Fehler: %s", errorString));
+			}},
+		[this]() {OnOGLInit(); });
 	return true;
 }
 

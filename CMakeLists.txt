@@ -39,47 +39,47 @@ else()
     message(STATUS "wxWidgets Found")
 endif()
 
-# # GLEW
-# find_package(GLEW QUIET)
+# GLEW
+find_package(GLEW QUIET)
 
-# if (NOT GLEW_FOUND)
-#     message(STATUS "GLEW not found")
-#     message(STATUS "Fetching GLEW...")
+if (NOT GLEW_FOUND)
+    message(STATUS "GLEW not found")
+    message(STATUS "Fetching GLEW...")
 
-#     set(glew-cmake_BUILD_SHARED OFF)
-#     set(USE_GLU ON)
-#     # https://github.com/Perlmint/glew-cmake/blob/master/glew-cmake/fetch-content.cmake
-#     FetchContent_Declare(
-#        GLEW
-#        GIT_REPOSITORY https://github.com/Perlmint/glew-cmake
-#        GIT_SHALLOW ON
-#     )
-#     FetchContent_MakeAvailable(glew)
+    set(glew-cmake_BUILD_SHARED OFF)
+    set(USE_GLU ON)
+    # https://github.com/Perlmint/glew-cmake/blob/master/glew-cmake/fetch-content.cmake
+    FetchContent_Declare(
+       GLEW
+       GIT_REPOSITORY https://github.com/Perlmint/glew-cmake
+       GIT_SHALLOW ON
+    )
+    FetchContent_MakeAvailable(glew)
 
-#     #add_subdirectory(${glew_SOURCE_DIR} ${glew_BINARY_DIR} EXCLUDE_FROM_ALL)
-# else()
-#     message(STATUS "GLEW Found")
-# endif()
+    #add_subdirectory(${glew_SOURCE_DIR} ${glew_BINARY_DIR} EXCLUDE_FROM_ALL)
+else()
+    message(STATUS "GLEW Found")
+endif()
 
-# GLFW
+# # GLFW
 
-message(STATUS "Fetching glfw")
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_WAYLAND On CACHE BOOL "" FORCE)
-set(GLFW_BUILD_COCOA OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_WIN32 OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_OSMESA OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_VULKAN_STATIC OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(
-  glfw
-  GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG        3.3.8  # oder die gewünschte Version
-)
-FetchContent_MakeAvailable(glfw)
+# message(STATUS "Fetching glfw")
+# set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_WAYLAND On CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_COCOA OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_WIN32 OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_OSMESA OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_VULKAN_STATIC OFF CACHE BOOL "" FORCE)
+# set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+# FetchContent_Declare(
+#   glfw
+#   GIT_REPOSITORY https://github.com/glfw/glfw.git
+#   GIT_TAG        3.3.8  # oder die gewünschte Version
+# )
+# FetchContent_MakeAvailable(glfw)
 
 # STB - Header-only-Bibliothek
 message(STATUS "Fetching stb...")
@@ -274,11 +274,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC wx::base wx::core wx::gl)
 #target_link_libraries(${PROJECT_NAME} PUBLIC wx::base wx::core wx::gl wx::net wx::adv wx::html wx::qa wx::xml wx::xrc)
 
 # GLEW Linking
-# if (NOT GLEW_FOUND)
-    # target_link_libraries(${PROJECT_NAME} PRIVATE libglew_static)
-# else()
-    # target_link_libraries(${PROJECT_NAME} PUBLIC GLEW::glew_s)
-# endif()
+if (NOT GLEW_FOUND)
+  target_link_libraries(${PROJECT_NAME} PRIVATE libglew_static)
+else()
+  target_link_libraries(${PROJECT_NAME} PUBLIC GLEW::glew_s)
+endif()
 
 # MyOpenGl Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC MyOpenGl)
@@ -296,7 +296,7 @@ else()
 endif()
 
 # GLFW linking
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+# target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 add_dependencies(${PROJECT_NAME} ShadersToCharArray PreparePngs)
 
