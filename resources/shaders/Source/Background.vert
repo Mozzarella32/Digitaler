@@ -1,6 +1,6 @@
 //Background.vert
 
-#version 330 core
+#version 420 core
 
 //In
 layout(location = 0) in vec2 InPosition;

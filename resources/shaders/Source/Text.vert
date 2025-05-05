@@ -1,6 +1,6 @@
 //CopyTexture.vert
 
-#version 330 core
+#version 420 core
 
 
 //In

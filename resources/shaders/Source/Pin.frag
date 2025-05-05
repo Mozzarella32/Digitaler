@@ -1,6 +1,6 @@
 //Pin.frag
 
-#version 330 core
+#version 420 core
 
 //In
 in vec2 PosInWorld;
