@@ -91,7 +91,7 @@ void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::p
 	}
 
 	if (!Update) return;
-	LastUpdate[shader] = std::make_tuple(VertTime, FragTime);
+	LastUpdate[shader] = std::make_pair(VertTime, FragTime);
 	std::unique_lock ul(QueueMutex);
 	Queue.emplace_back(shader, Vert, Frag);
 }
