@@ -69,7 +69,7 @@ MyFrame::MyFrame(MyApp* App)
 
 	wxMenu* SimulateMenu = new wxMenu();
 	/*ToggelSimulationMenu =*/ AddMenu(SimulateMenu, Menus::ToggelSimulataion, "&Start\tSPACE", &MyFrame::OnStartStopButton);
-	AddMenu(SimulateMenu, Menus::SingleStep, "&Step\t�", &MyFrame::OnSingleStepButton, PngManager::GetPng(PngManager::SingleStep).Scale(12, 12));
+	AddMenu(SimulateMenu, Menus::SingleStep, "&Step\ts", &MyFrame::OnSingleStepButton, PngManager::GetPng(PngManager::SingleStep).Scale(12, 12));
 
 	MenuBar->Append(SimulateMenu, "&Simulate");
 

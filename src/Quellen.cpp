@@ -176,7 +176,7 @@ bool MyApp::OnInit() {
 			if (glewInitResult != GLEW_OK) {
 					const GLubyte* errorString = glewGetErrorString(glewInitResult);
 					std::cout << "GLEW-Fehler: " << errorString << std::endl;
-					wxASSERT_MSG(false, wxString::Format("GLEW-Fehler: %s", errorString));
+					//wxASSERT_MSG(false, wxString::Format("GLEW-Fehler: %s", errorString));
 			}},
 		[this]() {OnOGLInit(); });
 	return true;
