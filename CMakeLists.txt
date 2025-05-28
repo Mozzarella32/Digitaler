@@ -17,10 +17,10 @@ endif()
 
 
 # WxWidgets
-find_package(wxWidgets QUIET)
+# find_package(wxWidgets QUIET)
 
-if (NOT wxWidgets_FOUND)
-    message(STATUS "wxWidgets not found")
+# if (NOT wxWidgets_FOUND)
+    # message(STATUS "F")
     set(wxBUILD_SHARED OFF)
     set(wxBUILD_TESTS OFF)
     set(wxBUILD_DEMOS OFF)
@@ -37,16 +37,16 @@ if (NOT wxWidgets_FOUND)
             -DwxUSE_STD=0
     )
     FetchContent_MakeAvailable(wxWidgets)
-else()
-    message(STATUS "wxWidgets Found")
-endif()
+# else()
+    # message(STATUS "wxWidgets Found")
+# endif()
 
 # GLEW
-find_package(GLEW QUIET)
+# find_package(GLEW QUIET)
 
-if (NOT GLEW_FOUND)
-    message(STATUS "GLEW not found")
-    message(STATUS "Fetching GLEW...")
+# if (NOT GLEW_FOUND)
+    # message(STATUS "GLEW not found")
+    # message(STATUS "Fetching GLEW...")
 
     set(glew-cmake_BUILD_SHARED OFF)
     set(USE_GLU ON)
@@ -63,9 +63,9 @@ if (NOT GLEW_FOUND)
     FetchContent_MakeAvailable(glew)
 
     #add_subdirectory(${glew_SOURCE_DIR} ${glew_BINARY_DIR} EXCLUDE_FROM_ALL)
-else()
-    message(STATUS "GLEW Found")
-endif()
+# else()
+    # message(STATUS "GLEW Found")
+# endif()
 
 # # GLFW
 
@@ -138,9 +138,9 @@ set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
 #endif()
 
 # Eigen
-find_package(Eigen3 QUIET)
+# find_package(Eigen3 QUIET)
 
-if (NOT Eigen3_FOUND)
+# if (NOT Eigen3_FOUND)
     message(STATUS "Eigen3 not found")
     message(STATUS "Fetching Eigen3...")
     FetchContent_Declare(
@@ -149,9 +149,9 @@ if (NOT Eigen3_FOUND)
        GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(Eigen3)
-else()
-    message(STATUS "Eigen3 Found")
-endif()
+# else()
+    # message(STATUS "Eigen3 Found")
+# endif()
 
 
 # MyWxWidgets
@@ -181,7 +181,7 @@ message(STATUS "Fetching PreparePngs...")
 
 FetchContent_Declare(
     PreparePngs
-    GIT_REPOSITORY git@github.com:Mozzarella32/PreparePngs.git
+    GIT_REPOSITORY https://github.com/Mozzarella32/PreparePngs.git
     GIT_TAG main
 )
 FetchContent_MakeAvailable(PreparePngs)
@@ -191,7 +191,7 @@ message(STATUS "Fetching ShadersToCharArray...")
 
 FetchContent_Declare(
     ShadersToCharArray
-    GIT_REPOSITORY git@github.com:Mozzarella32/ShadersToCharArray.git
+    GIT_REPOSITORY https://github.com/Mozzarella32/ShadersToCharArray.git
     GIT_TAG main
 )
 FetchContent_MakeAvailable(ShadersToCharArray)
@@ -304,16 +304,17 @@ endif()
 # GLFW linking
 # target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
-add_dependencies(${PROJECT_NAME} ShadersToCharArray PreparePngs)
-
-add_custom_command(
-    TARGET ${PROJECT_NAME} PRE_BUILD
+add_custom_target(
+    ShadersToCharArray
     COMMAND ${PROJECT_SOURCE_DIR}/resources/shaders/${ShadersToCharArray_EXECUTABLE}
     COMMENT "Calling ${ShadersToCharArray_EXECUTABLE}"
 )
 
 add_custom_command(
-    TARGET ${PROJECT_NAME} PRE_BUILD
+    PreparePngs
     COMMAND ${PROJECT_SOURCE_DIR}/resources/art/${PreparePngs_EXECUTABLE}
     COMMENT "Calling ${PreparePngs_EXECUTABLE}"
 )
+
+add_dependencies(${PROJECT_NAME} ShadersToCharArray PreparePngs)
+
