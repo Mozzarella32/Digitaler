@@ -6,5 +6,5 @@ if [ ! -d "../build" ]; then
   cmake ../
   cd ../app
 fi
-cmake --build ../build -j8
+cmake --build ../build -j$(nproc) || cmkae -S ../ -B ../build && cmake --build ../build -j$(nproc) 
 ./Digitaler
