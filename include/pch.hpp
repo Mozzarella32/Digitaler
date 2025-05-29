@@ -30,9 +30,9 @@
 #include <Utilities.hpp>
 #include <VertexBuffer.hpp>
 
-#include <../submodules/Visitor/Visitor.hpp>
+#include "../submodules/Visitor/Visitor.hpp"
 
-#include <../submodules/LinearAlgebra/Point.hpp>
+#include "../submodules/LinearAlgebra/Point.hpp"
 
 #include <wx/wx.h>
 #include <wx/image.h>
@@ -73,7 +73,7 @@
 
 //#include <nlohmann/json.hpp>
 
-#include <Eigen/Dense>
+#include "Eigen/Dense"
 ////
 //#define MSDFGEN_PUBLIC
 ////

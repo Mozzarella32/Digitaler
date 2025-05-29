@@ -21,22 +21,22 @@ endif()
 
 # if (NOT wxWidgets_FOUND)
     # message(STATUS "F")
-    set(wxBUILD_SHARED OFF)
-    set(wxBUILD_TESTS OFF)
-    set(wxBUILD_DEMOS OFF)
-    set(wxBUILD_EXAMPLES OFF)
-    set(wxUSE_EXCEPTIONS 0)
-    set(wxBUILD_CXX_STANDARD 20)
+    # set(wxBUILD_SHARED OFF)
+    # set(wxBUILD_TESTS OFF)
+    # set(wxBUILD_DEMOS OFF)
+    # set(wxBUILD_EXAMPLES OFF)
+    # set(wxUSE_EXCEPTIONS 0)
+    # set(wxBUILD_CXX_STANDARD 20)
 
-    message(STATUS "Fetching wxWidgets...")
-    FetchContent_Declare(
-       wxWidgets
-       GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-       GIT_SHALLOW ON
-       CMAKE_ARGS
-            -DwxUSE_STD=0
-    )
-    FetchContent_MakeAvailable(wxWidgets)
+    # message(STATUS "Fetching wxWidgets...")
+    # FetchContent_Declare(
+    #    wxWidgets
+    #    GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
+    #    GIT_SHALLOW ON
+    #    CMAKE_ARGS
+    #         -DwxUSE_STD=0
+    # )
+    # FetchContent_MakeAvailable(wxWidgets)
 # else()
     # message(STATUS "wxWidgets Found")
 # endif()
@@ -48,19 +48,19 @@ endif()
     # message(STATUS "GLEW not found")
     # message(STATUS "Fetching GLEW...")
 
-    set(glew-cmake_BUILD_SHARED OFF)
-    set(USE_GLU ON)
-    # https://github.com/Perlmint/glew-cmake/blob/master/glew-cmake/fetch-content.cmake
-    FetchContent_Declare(
-       GLEW
-       GIT_REPOSITORY https://github.com/Perlmint/glew-cmake
-       GIT_SHALLOW ON
-    )
+    # set(glew-cmake_BUILD_SHARED OFF)
+    # set(USE_GLU ON)
+    # # https://github.com/Perlmint/glew-cmake/blob/master/glew-cmake/fetch-content.cmake
+    # FetchContent_Declare(
+    #    GLEW
+    #    GIT_REPOSITORY https://github.com/Perlmint/glew-cmake
+    #    GIT_SHALLOW ON
+    # )
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGLEW_EGL")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_EGL")    
+    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGLEW_EGL")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_EGL")    
 
-    FetchContent_MakeAvailable(glew)
+    # FetchContent_MakeAvailable(glew)
 
     #add_subdirectory(${glew_SOURCE_DIR} ${glew_BINARY_DIR} EXCLUDE_FROM_ALL)
 # else()
@@ -88,17 +88,17 @@ endif()
 # FetchContent_MakeAvailable(glfw)
 
 # STB - Header-only-Bibliothek
-message(STATUS "Fetching stb...")
+# message(STATUS "Fetching stb...")
 
-FetchContent_Declare(
-    stb
-    GIT_REPOSITORY https://github.com/nothings/stb.git
-    GIT_SHALLOW ON
-)
+# FetchContent_Declare(
+    # stb
+    # GIT_REPOSITORY https://github.com/nothings/stb.git
+    # GIT_SHALLOW ON
+# )
 
-FetchContent_MakeAvailable(stb)
+# FetchContent_MakeAvailable(stb)
 
-set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
+# set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
 
 
 # nlohmannjson - Header-only-Bibliothek
@@ -141,61 +141,72 @@ set(STB_INCLUDE_DIR ${stb_SOURCE_DIR})
 # find_package(Eigen3 QUIET)
 
 # if (NOT Eigen3_FOUND)
-    message(STATUS "Eigen3 not found")
-    message(STATUS "Fetching Eigen3...")
-    FetchContent_Declare(
-       Eigen3
-       GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-       GIT_SHALLOW ON
-    )
-    FetchContent_MakeAvailable(Eigen3)
+# message(STATUS "Eigen3 not found")
+# message(STATUS "Fetching Eigen3...")
+# FetchContent_Declare(
+   # Eigen3
+   # GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+   # GIT_SHALLOW ON
+# )
+# FetchContent_MakeAvailable(Eigen3)
 # else()
     # message(STATUS "Eigen3 Found")
 # endif()
+# 
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/eigen)
+
+set(Eigen3_SOURCE_DIR ${PROJECT_SOURCE_DIR}/submodules/eigen)
 
 # MyWxWidgets
-message(STATUS "Fetching MyWxWidgets...")
+# message(STATUS "Fetching MyWxWidgets...")
 
-FetchContent_Declare(
-       MyWxWidgets
-       GIT_REPOSITORY https://github.com/Mozzarella32/MyWxWidgets.git
-       GIT_SHALLOW ON
-       GIT_TAG main
-)
-FetchContent_MakeAvailable(MyWxWidgets)
+# FetchContent_Declare(
+#        MyWxWidgets
+#        GIT_REPOSITORY https://github.com/Mozzarella32/MyWxWidgets.git
+#        GIT_SHALLOW ON
+#        GIT_TAG main
+# )
+# FetchContent_MakeAvailable(MyWxWidgets)
 
-# MyOpenGl
-message(STATUS "Fetching MyOpenGl...")
+add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/MyWxWidgets)
 
-FetchContent_Declare(
-       MyOpenGl
-       GIT_REPOSITORY https://github.com/Mozzarella32/MyOpenGl.git
-       GIT_SHALLOW ON
-       GIT_TAG main
-)
-FetchContent_MakeAvailable(MyOpenGl)
+# # MyOpenGl
+# message(STATUS "Fetching MyOpenGl...")
+
+# FetchContent_Declare(
+#        MyOpenGl
+#        GIT_REPOSITORY https://github.com/Mozzarella32/MyOpenGl.git
+#        GIT_SHALLOW ON
+#        GIT_TAG main
+# )
+# FetchContent_MakeAvailable(MyOpenGl)
 
 # PreparePngs
-message(STATUS "Fetching PreparePngs...")
+# message(STATUS "Fetching PreparePngs...")
 
-FetchContent_Declare(
-    PreparePngs
-    GIT_REPOSITORY https://github.com/Mozzarella32/PreparePngs.git
-    GIT_TAG main
-)
-FetchContent_MakeAvailable(PreparePngs)
+# FetchContent_Declare(
+#     PreparePngs
+#     GIT_REPOSITORY https://github.com/Mozzarella32/PreparePngs.git
+#     GIT_TAG main
+# )
+# FetchContent_MakeAvailable(PreparePngs)
+
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/PreparePngs)
+
 
 # ShadersToCharArray
-message(STATUS "Fetching ShadersToCharArray...")
+# message(STATUS "Fetching ShadersToCharArray...")
 
-FetchContent_Declare(
-    ShadersToCharArray
-    GIT_REPOSITORY https://github.com/Mozzarella32/ShadersToCharArray.git
-    GIT_TAG main
-)
-FetchContent_MakeAvailable(ShadersToCharArray)
+# FetchContent_Declare(
+#     ShadersToCharArray
+#     GIT_REPOSITORY https://github.com/Mozzarella32/ShadersToCharArray.git
+#     GIT_TAG main
+# )
+# FetchContent_MakeAvailable(ShadersToCharArray)
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/ShadersToCharArray)
 
 ## Freetype
 #message(STATUS "Fetching Freetype...")
@@ -273,18 +284,18 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH_HEADERS})
 
 # Include-Direktiven
 #target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR} ${STB_INCLUDE_DIR} ${Eigen3_SOURCE_DIR} ${nlohmannjson_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR} ${STB_INCLUDE_DIR} ${Eigen3_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR} ${Eigen3_SOURCE_DIR})
 
 # wxWidgets Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC wx::base wx::core wx::gl)
 #target_link_libraries(${PROJECT_NAME} PUBLIC wx::base wx::core wx::gl wx::net wx::adv wx::html wx::qa wx::xml wx::xrc)
 
 # GLEW Linking
-if (NOT GLEW_FOUND)
+# if (NOT GLEW_FOUND)
   target_link_libraries(${PROJECT_NAME} PRIVATE libglew_static)
-else()
-  target_link_libraries(${PROJECT_NAME} PUBLIC GLEW::glew_s)
-endif()
+# else()
+  # target_link_libraries(${PROJECT_NAME} PUBLIC GLEW::glew_s)
+# endif()
 
 # MyOpenGl Linking
 target_link_libraries(${PROJECT_NAME} PUBLIC MyOpenGl)
@@ -305,16 +316,18 @@ endif()
 # target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 add_custom_target(
-    ShadersToCharArray
+    Invoke_ShadersToCharArray
     COMMAND ${PROJECT_SOURCE_DIR}/resources/shaders/${ShadersToCharArray_EXECUTABLE}
     COMMENT "Calling ${ShadersToCharArray_EXECUTABLE}"
 )
+add_dependencies(Invoke_ShadersToCharArray ShadersToCharArray)
 
-add_custom_command(
-    PreparePngs
+add_custom_target(
+    Invoke_PreparePngs
     COMMAND ${PROJECT_SOURCE_DIR}/resources/art/${PreparePngs_EXECUTABLE}
     COMMENT "Calling ${PreparePngs_EXECUTABLE}"
 )
+add_dependencies(Invoke_PreparePngs PreparePngs)
 
-add_dependencies(${PROJECT_NAME} ShadersToCharArray PreparePngs)
+add_dependencies(${PROJECT_NAME} Invoke_ShadersToCharArray Invoke_PreparePngs)
 
