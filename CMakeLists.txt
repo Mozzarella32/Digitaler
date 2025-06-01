@@ -304,28 +304,43 @@ target_link_libraries(${PROJECT_NAME} PUBLIC MyOpenGl)
 target_link_libraries(${PROJECT_NAME} PUBLIC MyWxWidgets)
 
 # PRE BUILD
-if(WIN32)
-    set(ShadersToCharArray_EXECUTABLE "ShadersToCharArray.exe")
-    set(PreparePngs_EXECUTABLE "PreparePngs.exe")
-else()
-    set(ShadersToCharArray_EXECUTABLE "ShadersToCharArray")
-    set(PreparePngs_EXECUTABLE "PreparePngs")
-endif()
+# if(WIN32)
+#     set(ShadersToCharArray_EXECUTABLE "ShadersToCharArray.exe")
+#     set(PreparePngs_EXECUTABLE "PreparePngs.exe")
+# else()
+#     set(ShadersToCharArray_EXECUTABLE "ShadersToCharArray")
+#     set(PreparePngs_EXECUTABLE "PreparePngs")
+# endif()
+
+# get_filename_component(ShadersToCharArray_EXECUTABLE $<TARGET_FILE:ShadersToCharArray> NAME)
+# get_filename_component(PreparePngs_EXECUTABLE $<TARGET_FILE:PreparePngs> NAME)
 
 # GLFW linking
 # target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
+# add_custom_target(
+#     Invoke_ShadersToCharArray
+#     COMMAND ${PROJECT_SOURCE_DIR}/resources/shaders/${ShadersToCharArray_EXECUTABLE}
+#     COMMENT "Calling ${ShadersToCharArray_EXECUTABLE}"
+# )
+ 
 add_custom_target(
     Invoke_ShadersToCharArray
-    COMMAND ${PROJECT_SOURCE_DIR}/resources/shaders/${ShadersToCharArray_EXECUTABLE}
-    COMMENT "Calling ${ShadersToCharArray_EXECUTABLE}"
+    COMMAND ${PROJECT_SOURCE_DIR}/resources/shaders/$<TARGET_FILE_NAME:ShadersToCharArray>
+    COMMENT "Calling ShadersToCharArray"
 )
 add_dependencies(Invoke_ShadersToCharArray ShadersToCharArray)
 
+# add_custom_target(
+#     Invoke_PreparePngs
+#     COMMAND ${PROJECT_SOURCE_DIR}/resources/art/${PreparePngs_EXECUTABLE}
+#     COMMENT "Calling ${PreparePngs_EXECUTABLE}"
+# )
+
 add_custom_target(
     Invoke_PreparePngs
-    COMMAND ${PROJECT_SOURCE_DIR}/resources/art/${PreparePngs_EXECUTABLE}
-    COMMENT "Calling ${PreparePngs_EXECUTABLE}"
+    COMMAND ${PROJECT_SOURCE_DIR}/resources/art/$<TARGET_FILE_NAME:PreparePngs>
+    COMMENT "Calling PreparePngs"
 )
 add_dependencies(Invoke_PreparePngs PreparePngs)
 
