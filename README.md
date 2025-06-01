@@ -18,13 +18,13 @@ git submodule update --recursive --init --remote
 Go to the app directory and run buildandstart.sh
 ```bash
 cd app
-./buildandrun.sh
+./buildandstart.sh
 ```
 # Windows
-Go to the app directory and run buildandstart.sh
+Go to the app directory and run buildandstart.bat
 ```bash
 cd app
-./buildandrun.bat
+./buildandstart.bat
 ```
 
 ## Running
