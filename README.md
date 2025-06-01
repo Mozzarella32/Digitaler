@@ -8,7 +8,7 @@ You must install cmake, a c++ compiler and have accas to a stl implementation.
 ## Downloading 
 Don't forget the submodules
 ```bash
-git clone git@github.com:Mozzarella32/Digitaler.git
+git clone https://github.com/Mozzarella32/Digitaler.git
 cd Digitaler
 git submodule update --recursive --init --remote
 ```
