@@ -262,7 +262,8 @@ MyFrame::MyFrame(MyApp* App)
 	Canvas->Bind(wxEVT_MOUSEWHEEL, [this](wxMouseEvent& evt) {
 		evt.Skip();
 		if (!Initilized) return;
-		IO->OnMouseWheel(evt.GetPosition(), evt.GetWheelRotation());
+		const double scale = GetContentScaleFactor();
+		IO->OnMouseWheel({scale*evt.GetPosition().x,scale*evt.GetPosition().y}, evt.GetWheelRotation());
 		});
 	/*Canvas->Bind(wxEVT_GESTURE_ZOOM, [this](wxZoomGestureEvent& evt) {
 		evt.Skip();
@@ -271,27 +272,32 @@ MyFrame::MyFrame(MyApp* App)
 	Canvas->Bind(wxEVT_MOTION, [this](wxMouseEvent& evt) {
 		evt.Skip();
 		if (!Initilized) return;
-		IO->OnMouseMove(evt.GetPosition());
+		const double scale = GetContentScaleFactor();
+		IO->OnMouseMove({scale*evt.GetPosition().x,scale*evt.GetPosition().y});
 		});
 	Canvas->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& evt) {
 		evt.Skip();
 		if (!Initilized) return;
-		IO->OnMouseDown(evt.GetPosition());
+		const double scale = GetContentScaleFactor();
+		IO->OnMouseDown({scale*evt.GetPosition().x,scale*evt.GetPosition().y});
 		});
 	Canvas->Bind(wxEVT_LEFT_DCLICK, [this](wxMouseEvent& evt) {
 		evt.Skip();
 		if (!Initilized) return;
-		IO->OnDClick(evt.GetPosition());
+		const double scale = GetContentScaleFactor();
+		IO->OnDClick({scale*evt.GetPosition().x,scale*evt.GetPosition().y});
 		});
 	Canvas->Bind(wxEVT_LEFT_UP, [this](wxMouseEvent& evt) {
 		evt.Skip();
 		if (!Initilized) return;
-		IO->OnMouseUp(evt.GetPosition());
+		const double scale = GetContentScaleFactor();
+		IO->OnMouseUp({scale*evt.GetPosition().x,scale*evt.GetPosition().y});
 		});
 	Canvas->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent& evt) {
 		evt.Skip();
 		if (!Initilized) return;
-		IO->OnRightMouseDown(evt.GetPosition());
+		const double scale = GetContentScaleFactor();
+		IO->OnRightMouseDown({scale*evt.GetPosition().x,scale*evt.GetPosition().y});
 		});
 	Canvas->Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent& evt) {
 		evt.Skip();

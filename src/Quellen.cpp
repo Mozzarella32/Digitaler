@@ -125,6 +125,11 @@ bool MyApp::OnInit() {
 #else
 	std::cout << "NonEGL\n";
 #endif
+#ifdef GLEW_GLX
+	std::cout << "GLX\n";
+#else
+	std::cout << "NonGLX\n";
+#endif
 	//wxSystemOptions::SetOption(_T("msw.remap"), 0);
 	srand((unsigned int)time(NULL));
 

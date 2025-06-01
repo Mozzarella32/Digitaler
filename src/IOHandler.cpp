@@ -54,12 +54,12 @@ void IOHandler::OnDelete() {
 	}
 }
 
-Eigen::Vector2f IOHandler::PixelToScreenCoord(const wxPoint& Pos) {
+Eigen::Vector2f IOHandler::PixelToScreenCoord(const Eigen::Vector2f& Pos) {
 	Renderer& r = *Frame->renderer;
 
 	Eigen::Vector3f NormalizedMouse{
-	(Pos.x / r.CanvasSize.x() - 0.5f) * 2.0f,
-	((r.CanvasSize.y() - Pos.y) / r.CanvasSize.y() - 0.5f) * 2.0f,
+	(Pos.x() / r.CanvasSize.x() - 0.5f) * 2.0f,
+	((r.CanvasSize.y() - Pos.y()) / r.CanvasSize.y() - 0.5f) * 2.0f,
 	1.0 };
 
 	Eigen::Vector3f Product = r.ViewProjectionMatrix * NormalizedMouse;
@@ -68,7 +68,7 @@ Eigen::Vector2f IOHandler::PixelToScreenCoord(const wxPoint& Pos) {
 }
 
 //Returnes if the index changed
-bool IOHandler::UpdateMouseIndex(const wxPoint& Pos) {
+bool IOHandler::UpdateMouseIndex(const Eigen::Vector2f& Pos) {
 
 	Renderer& r = *Frame->renderer;
 
@@ -212,11 +212,10 @@ void IOHandler::DoLoop() {
 	r.Render();
 }
 
-void IOHandler::OnMouseWheel(const wxPoint& wxPos, double Rotation) {
+void IOHandler::OnMouseWheel(const Eigen::Vector2f& Pos, double Rotation) {
 
 	Renderer& r = *Frame->renderer;
 
-	Eigen::Vector2f Pos = { wxPos.x,wxPos.y };
 	Eigen::Vector2f Centre = r.CanvasSize / 2.0;
 
 	Eigen::Vector2f PosD = Centre - Pos;
@@ -238,7 +237,7 @@ void IOHandler::OnMouseWheel(const wxPoint& wxPos, double Rotation) {
 	r.Render();
 }
 
-void IOHandler::OnMouseMove(const wxPoint& wxPos) {
+void IOHandler::OnMouseMove(const Eigen::Vector2f& Pos) {
 	/*
 	{ -1.0, -1.0 },
 	{ -1.0,1.0 },
@@ -250,10 +249,10 @@ void IOHandler::OnMouseMove(const wxPoint& wxPos) {
 	VisualBlockInterior& b = Frame->BlockManager->Interior;
 	Renderer& r = *Frame->renderer;
 
-	Keyboarddata.MousePosition = { wxPos.x,wxPos.y };
+	Keyboarddata.MousePosition = Pos;
 	//SetTitle(ss.str());
 
-	if (Frame->Blockselector->Hover({ wxPos.x, wxPos.y })) {
+	if (Frame->Blockselector->Hover(Pos.cast<int>())) {
 		r.Dirty = true;
 		r.Render();
 	}
@@ -279,7 +278,7 @@ void IOHandler::OnMouseMove(const wxPoint& wxPos) {
 
 	if (state == State::AreaFirstPoint) {
 
-		AreaSecondPoint = PixelToScreenCoord(wxPos);
+		AreaSecondPoint = PixelToScreenCoord(Pos);
 
 		//buff.Emplace(AreaI.Position.cast<float>() + Eigen::Vector2f(0.1f, 0.1f), (AreaI.Position + AreaI.Size).cast<float>() - Eigen::Vector2f(0.1f, 0.1f), ColourType{ (float)hasAnyIntPoint,0.5f,1.0f,0.1f });
 
@@ -295,12 +294,12 @@ void IOHandler::OnMouseMove(const wxPoint& wxPos) {
 
 	if (state == State::Dragging || state == State::DraggingWhilePlacingLine || state == State::DraggingWithMarking || state == State::DraggingWhileAreaFistPoint) {
 		Click = false;
-		wxPoint LastOrigin = DraggingOrigin;
-		DraggingOrigin = wxPos;
+		auto LastOrigin = DraggingOrigin;
+		DraggingOrigin = Pos;
 
-		wxPoint Diff = DraggingOrigin - LastOrigin;
-		r.Offset.x() += 2.0 * Diff.x * r.Zoom;
-		r.Offset.y() -= 2.0 * Diff.y * r.Zoom;
+		auto Diff = DraggingOrigin - LastOrigin;
+		r.Offset.x() += 2.0 * Diff.x() * r.Zoom;
+		r.Offset.y() -= 2.0 * Diff.y() * r.Zoom;
 
 		r.UpdateViewProjectionMatrix();
 		UpdateMouseIndex({ (int)Keyboarddata.MousePosition.x(),(int)Keyboarddata.MousePosition.y() });
@@ -309,10 +308,10 @@ void IOHandler::OnMouseMove(const wxPoint& wxPos) {
 		return;
 	}
 
-	UpdateMouseIndex(wxPos);
+	UpdateMouseIndex(Pos);
 }
 
-void IOHandler::OnMouseDown(const wxPoint& wxPos) {
+void IOHandler::OnMouseDown(const Eigen::Vector2f& Pos) {
 	//Beep(200, 200);
 
 	//if (ClickMenu(wxPos))return;
@@ -320,7 +319,7 @@ void IOHandler::OnMouseDown(const wxPoint& wxPos) {
 	//PlaceNextPlaceBuilding();
 	//DeleteUnderCursor();
 
-	UpdateMouseIndex(wxPos);
+	UpdateMouseIndex(Pos);
 	if (state == State::PlacingLine) {
 		SetState(State::DraggingWhilePlacingLine);
 	}
@@ -342,10 +341,10 @@ void IOHandler::OnMouseDown(const wxPoint& wxPos) {
 		SetState(State::Dragging);
 	}
 	Click = true;
-	DraggingOrigin = wxPos;
+	DraggingOrigin = Pos;
 }
 
-void IOHandler::OnMouseUp(const wxPoint& wxPos) {
+void IOHandler::OnMouseUp(const Eigen::Vector2f& Pos) {
 	StoppDragg();
 	if (Click) {
 		Click = false;
@@ -353,7 +352,7 @@ void IOHandler::OnMouseUp(const wxPoint& wxPos) {
 		Renderer& r = *Frame->renderer;
 		VisualBlockInterior& b = Frame->BlockManager->Interior;
 
-		auto InfoOpt = Frame->Blockselector->Click(Eigen::Vector2i{ wxPos.x,wxPos.y });
+		auto InfoOpt = Frame->Blockselector->Click(Eigen::Vector2i{ Pos.x(),Pos.y() });
 
 		if (InfoOpt) {
 			SetState(State::Normal);
@@ -396,7 +395,7 @@ void IOHandler::OnMouseUp(const wxPoint& wxPos) {
 			return;
 		}
 		if (state == State::AreaFirstPoint) {
-			AreaSecondPoint = PixelToScreenCoord(wxPos);
+			AreaSecondPoint = PixelToScreenCoord(Pos);
 			b.MarkArea(MyRectF::FromCorners(AreaFirstPoint, AreaSecondPoint));
 
 			if (!b.HasAnythingMarked()) {
@@ -425,8 +424,8 @@ void IOHandler::OnMouseUp(const wxPoint& wxPos) {
 }
 
 
-void IOHandler::OnRightMouseDown(const wxPoint& wxPos) {
-	UpdateMouseIndex(wxPos);
+void IOHandler::OnRightMouseDown(const Eigen::Vector2f& Pos) {
+	UpdateMouseIndex(Pos);
 	Renderer& r = *Frame->renderer;
 	VisualBlockInterior& b = Frame->BlockManager->Interior;
 	if (state == State::Marking || state == State::DraggingMarked || state == State::DraggingWithMarking) {
@@ -437,7 +436,7 @@ void IOHandler::OnRightMouseDown(const wxPoint& wxPos) {
 	}
 	DraggingOrigin = { 0,0 };
 	SetState(State::AreaFirstPoint);
-	AreaFirstPoint = PixelToScreenCoord(wxPos);
+	AreaFirstPoint = PixelToScreenCoord(Pos);
 	/*if (state == State::PlacingLine) {
 		SetState(State::DraggingWhilePlacingLine);
 	}
@@ -456,10 +455,10 @@ void IOHandler::OnRightMouseDown(const wxPoint& wxPos) {
 		SetState(State::Dragging);
 	}*/
 	Click = true;
-	DraggingOrigin = wxPos;
+	DraggingOrigin = Pos;
 }
 
-void IOHandler::OnDClick(const wxPoint& wxPos) {
+void IOHandler::OnDClick(const Eigen::Vector2f& Pos) {
 	VisualBlockInterior& b = Frame->BlockManager->Interior;
 	Renderer& r = *Frame->renderer;
 

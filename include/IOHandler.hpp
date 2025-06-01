@@ -41,9 +41,9 @@ private:
 	//std::unique_ptr<Board> board;
 
 	//Returnes if the index changed
-	bool UpdateMouseIndex(const wxPoint& Pos);
+	bool UpdateMouseIndex(const Eigen::Vector2f& Pos);
 
-	Eigen::Vector2f PixelToScreenCoord(const wxPoint& Pos);
+	Eigen::Vector2f PixelToScreenCoord(const Eigen::Vector2f& Pos);
 
 	//bool ClickMenu(wxPoint Mouse);
 
@@ -109,17 +109,17 @@ public:
 
 private:
 	bool Click = false;
-	wxPoint DraggingOrigin;
+	Eigen::Vector2f DraggingOrigin;
 	Eigen::Vector2f AreaFirstPoint;
 	Eigen::Vector2f AreaSecondPoint;
 public:
 
-	void OnMouseWheel(const wxPoint& wxPos, double Rotation);
-	void OnMouseMove(const wxPoint& wxPos);
-	void OnMouseDown(const wxPoint& wxPos);
-	void OnMouseUp(const wxPoint& wxPos);
-	void OnRightMouseDown(const wxPoint& wxPos);
-	void OnDClick(const wxPoint& wxPos);
+	void OnMouseWheel(const Eigen::Vector2f& pos, double Rotation);
+	void OnMouseMove(const Eigen::Vector2f& pos);
+	void OnMouseDown(const Eigen::Vector2f& pos);
+	void OnMouseUp(const Eigen::Vector2f& pos);
+	void OnRightMouseDown(const Eigen::Vector2f& pos);
+	void OnDClick(const Eigen::Vector2f& pos);
 	void StoppDragg();
 
 	void OnKeyDown(wxKeyEvent& evt);
