@@ -14,15 +14,21 @@ git submodule update --recursive --init --remote
 ```
 
 ## Building
-Go to the root of this Project and run these commands the -j8 flag is for faster compilation and can be omitted
+# Linux
+Go to the app directory and run buildandstart.sh
 ```bash
-mkdir build
-cd build
-cmake ../ && cmake --build . -j8
+cd app
+./buildandrun.sh
+```
+# Windows
+Go to the app directory and run buildandstart.sh
+```bash
+cd app
+./buildandrun.bat
 ```
 
 ## Running
 The executable is moved to the app directory
 
 ## State of development
-This (should) compile on Windows however ther is no gui and simulation yet, you can play around with the DataResourceManager.cpp to insert blocks. You also have the ability to place wires.
+This builds on Windows and Linux(testet with Ubuntu and Arch) and runes normaly on Windows. But on Arch it fails with GLEW_Fehler: MissingGL version and on Ubuntu it starts but there are still many bugs.
