@@ -50,12 +50,14 @@ build/*
 Png_Includes.hpp
 Png_X_List.hpp
 PngHeaders
-xxd
+resources/art/PreparePngs
+resources/art/PreparePngs.exe
 
 Shader_Includes.hpp
 Shader_X_List.hpp
 CharArrays
-
+resources/shaders/ShadersToCharArray
+resources/shaders/ShadersToCharArray.exe
 .hash
 
 Digitaler
