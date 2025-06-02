@@ -34,9 +34,11 @@
 
 *.log
 
-.cache
+# CMake
+build/
 
-build/*
+# clangd
+.cache/
 
 # Visual Studio
 .vs/*
