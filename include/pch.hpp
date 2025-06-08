@@ -9,11 +9,15 @@
 
 //#include <vld.h>
 
-#ifndef GLEW_STATIC
-#define GLEW_STATIC
-#endif
+// #ifndef GLEW_STATIC
+// #define GLEW_STATIC
+// #endif
 
-#include <GL/glew.h>
+// #include <GL/glew.h>
+
+#include <glad/glad.h>
+#include <EGL/egl.h>
+
 
 // #include <glad/gl.h>
 // #include <GL/glu.h>
