@@ -143,10 +143,11 @@ bool MyApp::OnInit() {
 
   {
     PROFILE_SCOPE("Request Context");
-
+#ifndef _WIN32
     if (!eglBindAPI(EGL_OPENGL_API)) {
         wxLogError("Konnte EGL_OPENGL_API nicht binden!");
     }
+#endif
     
     cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
     // Init Context - for wxGlCanvas
@@ -197,11 +198,16 @@ bool MyApp::OnInit() {
         // gladLoadGLLoader((GLADloadproc)GlContext.get()->GetProcAddress);
 
 		lol();
-
+#ifdef _WIN32
+        if (!gladLoadGL()) {
+            wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
+        }
+#else
         if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
           wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
           return;
         }
+#endif
       },
       [this]() { OnOGLInit(); });
   return true;

@@ -1,23 +1,24 @@
 #pragma once
 
+#include <glad/glad.h>
+
+#ifdef _WIN32
+
 #ifndef _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
 #define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
 #endif
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 
-//#include <vld.h>
-
-// #ifndef GLEW_STATIC
-// #define GLEW_STATIC
-// #endif
-
-// #include <GL/glew.h>
-
-#include <glad/glad.h>
-#include <EGL/egl.h>
-
+#define _CRT_SECURE_NO_WARNINGS
+#include <Windows.h>
+#include <GL/gl.h>
+#endif
+#include <GL/glu.h>
 
 // #include <glad/gl.h>
 // #include <GL/glu.h>
