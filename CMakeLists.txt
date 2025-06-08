@@ -169,11 +169,11 @@ set(Eigen3_SOURCE_DIR ${PROJECT_SOURCE_DIR}/submodules/eigen)
 # )
 # FetchContent_MakeAvailable(MyWxWidgets)
 
-set(USE_GLU ON)
-if(UNIX AND NOT APPLE) # Nur Linux, nicht macOS
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGLEW_EGL")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_EGL")
-endif()
+# set(USE_GLU ON)
+# if(UNIX AND NOT APPLE) # Nur Linux, nicht macOS
+  # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGLEW_EGL")
+  # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_EGL")
+# endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/MyWxWidgets)
 

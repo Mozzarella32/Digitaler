@@ -116,16 +116,16 @@ bool MyApp::OnInit() {
   SetProcessDPIAware();
 #endif
 
-#ifdef GLEW_EGL
-  std::cout << "EGL\n";
-#else
-  std::cout << "NonEGL\n";
-#endif
-#ifdef GLEW_GLX
-  std::cout << "GLX\n";
-#else
-  std::cout << "NonGLX\n";
-#endif
+// #ifdef GLEW_EGL
+//   std::cout << "EGL\n";
+// #else
+//   std::cout << "NonEGL\n";
+// #endif
+// #ifdef GLEW_GLX
+//   std::cout << "GLX\n";
+// #else
+//   std::cout << "NonGLX\n";
+// #endif
   // wxSystemOptions::SetOption(_T("msw.remap"), 0);
   srand((unsigned int)time(NULL));
 
