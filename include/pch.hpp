@@ -20,7 +20,9 @@
 #endif
 #include <GL/glu.h>
 
+#ifdef __linux__
 #include <EGL/egl.h>
+#endif
 
 // #include <glad/gl.h>
 // #include <GL/glu.h>

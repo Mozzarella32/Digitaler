@@ -7,271 +7,272 @@
 wxIMPLEMENT_APP(MyApp);
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
-                                GLenum severity, GLsizei length,
-                                const GLchar *message, const void *userParam) {
-  // Beep(200, 1000);
-  // DebugBreak();
-  std::ofstream o("Error.log", std::ios::app);
-  o << "[OpenGL ErrorCallback] ";
-  o << "Source: ";
-  switch (source) {
-  case GL_DEBUG_SOURCE_API:
-    o << "API";
-    break;
-  case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-    o << "Window System";
-    break;
-  case GL_DEBUG_SOURCE_SHADER_COMPILER:
-    o << "Shader Compiler";
-    break;
-  case GL_DEBUG_SOURCE_THIRD_PARTY:
-    o << "Third Party";
-    break;
-  case GL_DEBUG_SOURCE_APPLICATION:
-    o << "Application";
-    break;
-  case GL_DEBUG_SOURCE_OTHER:
-    o << "Other";
-    break;
-  default:
-    o << "Unknown";
-    break;
-  }
-  o << " Type: ";
-  switch (type) {
-  case GL_DEBUG_TYPE_ERROR:
-    o << "Error";
-    break;
-  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-    o << "Deprecated Behavior";
-    break;
-  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-    o << "Undefined Behavior";
-    break;
-  case GL_DEBUG_TYPE_PORTABILITY:
-    o << "Portability";
-    break;
-  case GL_DEBUG_TYPE_PERFORMANCE:
-    o << "Performance";
-    break;
-  case GL_DEBUG_TYPE_MARKER:
-    o << "Marker";
-    break;
-  case GL_DEBUG_TYPE_PUSH_GROUP:
-    o << "Push Group";
-    break;
-  case GL_DEBUG_TYPE_POP_GROUP:
-    o << "Pop Group";
-    break;
-  case GL_DEBUG_TYPE_OTHER:
-    o << "Other";
-    break;
-  default:
-    o << "Unknown";
-    break;
-  }
-  o << " ID: " << id;
-  auto error = gluErrorString(id);
-  if (error == nullptr) {
-    o << " as Error: " << "gluErrorString returned nullptr";
-  } else {
-    o << " as Error: " << error;
-  }
+	GLenum severity, GLsizei length,
+	const GLchar* message, const void* userParam) {
+	// Beep(200, 1000);
+	// DebugBreak();
+	std::ofstream o("Error.log", std::ios::app);
+	o << "[OpenGL ErrorCallback] ";
+	o << "Source: ";
+	switch (source) {
+	case GL_DEBUG_SOURCE_API:
+		o << "API";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		o << "Window System";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		o << "Shader Compiler";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		o << "Third Party";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION:
+		o << "Application";
+		break;
+	case GL_DEBUG_SOURCE_OTHER:
+		o << "Other";
+		break;
+	default:
+		o << "Unknown";
+		break;
+	}
+	o << " Type: ";
+	switch (type) {
+	case GL_DEBUG_TYPE_ERROR:
+		o << "Error";
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		o << "Deprecated Behavior";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		o << "Undefined Behavior";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		o << "Portability";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		o << "Performance";
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		o << "Marker";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		o << "Push Group";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		o << "Pop Group";
+		break;
+	case GL_DEBUG_TYPE_OTHER:
+		o << "Other";
+		break;
+	default:
+		o << "Unknown";
+		break;
+	}
+	o << " ID: " << id;
+	auto error = gluErrorString(id);
+	if (error == nullptr) {
+		o << " as Error: " << "gluErrorString returned nullptr";
+	}
+	else {
+		o << " as Error: " << error;
+	}
 
-  o << " Severity: ";
-  switch (severity) {
-  case GL_DEBUG_SEVERITY_HIGH:
-    o << "High";
-    break;
-  case GL_DEBUG_SEVERITY_MEDIUM:
-    o << "Medium";
-    break;
-  case GL_DEBUG_SEVERITY_LOW:
-    o << "Low";
-    break;
-  case GL_DEBUG_SEVERITY_NOTIFICATION:
-    o << "Notification";
-    break;
-  default:
-    o << "Unknown";
-    break;
-  }
-  o << "\n";
+	o << " Severity: ";
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_HIGH:
+		o << "High";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		o << "Medium";
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		o << "Low";
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		o << "Notification";
+		break;
+	default:
+		o << "Unknown";
+		break;
+	}
+	o << "\n";
 
-  o << "Message: " << message;
-  o << std::endl;
+	o << "Message: " << message;
+	o << std::endl;
 }
 
 /*1
 ;
-                cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
+				cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
 */
 
 void lol() { std::cout << "lol"; }
 
 bool MyApp::OnInit() {
-  PROFILE_FUNKTION;
+	PROFILE_FUNKTION;
 #ifdef _WIN32
-  SetProcessDPIAware();
+	SetProcessDPIAware();
 #endif
 
-  // #ifdef GLEW_EGL
-  //   std::cout << "EGL\n";
-  // #else
-  //   std::cout << "NonEGL\n";
-  // #endif
-  // #ifdef GLEW_GLX
-  //   std::cout << "GLX\n";
-  // #else
-  //   std::cout << "NonGLX\n";
-  // #endif
-  // wxSystemOptions::SetOption(_T("msw.remap"), 0);
-  srand((unsigned int)time(NULL));
+	// #ifdef GLEW_EGL
+	//   std::cout << "EGL\n";
+	// #else
+	//   std::cout << "NonEGL\n";
+	// #endif
+	// #ifdef GLEW_GLX
+	//   std::cout << "GLX\n";
+	// #else
+	//   std::cout << "NonGLX\n";
+	// #endif
+	// wxSystemOptions::SetOption(_T("msw.remap"), 0);
+	srand((unsigned int)time(NULL));
 
-  {
-    PROFILE_SCOPE("Set WD");
-    wxFileName exePath(wxStandardPaths::Get().GetExecutablePath());
-    wxFileName exeDir = exePath.GetPath();
-    wxSetWorkingDirectory(exeDir.GetFullPath());
-  }
+	{
+		PROFILE_SCOPE("Set WD");
+		wxFileName exePath(wxStandardPaths::Get().GetExecutablePath());
+		wxFileName exeDir = exePath.GetPath();
+		wxSetWorkingDirectory(exeDir.GetFullPath());
+	}
 
-  {
-    PROFILE_SCOPE("Init Image Handlers");
-    wxInitAllImageHandlers();
-  }
+	{
+		PROFILE_SCOPE("Init Image Handlers");
+		wxInitAllImageHandlers();
+	}
 
-  wxGLAttributes glAttrs;
-  {
-    PROFILE_SCOPE("Request Context");
-    // #ifndef _WIN32
-    //  if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-    //   wxLogError("Konnte EGL_OPENGL_ES_API nicht binden!");
-    //  }
-    // #endif
+	wxGLAttributes glAttrs;
+	{
+		PROFILE_SCOPE("Request Context");
+		// #ifndef _WIN32
+		//  if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+		//   wxLogError("Konnte EGL_OPENGL_ES_API nicht binden!");
+		//  }
+		// #endif
 
-    glAttrs.PlatformDefaults().Defaults().EndList();
-    cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
-    // Init Context - for wxGlCanvas
-    // 	Initlisier = new GLFrameIndependentInitiliser(cxtAttrs,
-    // 	[this](){
-    // 		GLFWwindow* window;
+		glAttrs.PlatformDefaults().Defaults().EndList();
+		cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
+		// Init Context - for wxGlCanvas
+		// 	Initlisier = new GLFrameIndependentInitiliser(cxtAttrs,
+		// 	[this](){
+		// 		GLFWwindow* window;
 
-    // 		if(!glfwInit()){
-    // 				std::cout << "Faild to initilize glfw\n";
-    // 				return;
-    // 		}
+		// 		if(!glfwInit()){
+		// 				std::cout << "Faild to initilize glfw\n";
+		// 				return;
+		// 		}
 
-    // 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    // 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+		// 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		// 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-    // 		window = glfwCreateWindow(1, 1, "GLFW context init", NULL,
-    // NULL); 		if (!window)
-    // 		{
-    // 			glfwTerminate();
-    // 			exit(EXIT_FAILURE);
-    // 		}
+		// 		window = glfwCreateWindow(1, 1, "GLFW context init", NULL,
+		// NULL); 		if (!window)
+		// 		{
+		// 			glfwTerminate();
+		// 			exit(EXIT_FAILURE);
+		// 		}
 
-    // 		glfwMakeContextCurrent(window);
+		// 		glfwMakeContextCurrent(window);
 
-    // 		if (!gladLoadGL(glfwGetProcAddress)) {
-    // 				std::cout << "GLAD could not be initilised\n";
-    // 				return;
-    // 		}
+		// 		if (!gladLoadGL(glfwGetProcAddress)) {
+		// 				std::cout << "GLAD could not be initilised\n";
+		// 				return;
+		// 		}
 
-    // 		glfwDestroyWindow(window);
+		// 		glfwDestroyWindow(window);
 
-    // 		glfwTerminate();
-    // 	},
-    // 	[this]() {OnOGLInit(); });
-  }
-  Initlisier = new GLFrameIndependentInitiliser(
-      glAttrs, cxtAttrs,
-      [this]() {
-        // GLenum glewInitResult = glewInit();
-        // if (glewInitResult != GLEW_OK) {
-        // 		const GLubyte* errorString =
-        // glewGetErrorString(glewInitResult); 		std::cout <<
-        // "GLEW-Fehler: " << errorString << std::endl;
-        // 		// wxASSERT_MSG(false, wxString::Format("GLEW-Fehler:
-        // %s", errorString));
-        // }
+		// 		glfwTerminate();
+		// 	},
+		// 	[this]() {OnOGLInit(); });
+	}
+	Initlisier = new GLFrameIndependentInitiliser(
+		glAttrs, cxtAttrs,
+		[this]() {
+			// GLenum glewInitResult = glewInit();
+			// if (glewInitResult != GLEW_OK) {
+			// 		const GLubyte* errorString =
+			// glewGetErrorString(glewInitResult); 		std::cout <<
+			// "GLEW-Fehler: " << errorString << std::endl;
+			// 		// wxASSERT_MSG(false, wxString::Format("GLEW-Fehler:
+			// %s", errorString));
+			// }
 
-        // gladLoadGLLoader((GLADloadproc)GlContext.get()->GetProcAddress);
+			// gladLoadGLLoader((GLADloadproc)GlContext.get()->GetProcAddress);
 
-        lol();
-        // #ifdef _WIN32
-        // if (!gladLoadGL()) {
-        // wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
-        // }
-        // #else
-        if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
-          wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
-          return;
-        }
-        // #endif
-      },
-      [this]() { OnOGLInit(); });
-  return true;
+			lol();
+#ifndef __linux__
+			if (!gladLoadGL()) {
+				wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
+			}
+#else
+			if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
+				wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
+				return;
+			}
+#endif
+		},
+		[this]() { OnOGLInit(); });
+	return true;
 }
 
 void MyApp::OnOGLInit() {
-  PROFILE_FUNKTION;
-  {
-    PROFILE_SCOPE("Retrive Context");
-    GlContext.reset(Initlisier->RetriveContextAndClose());
-  }
+	PROFILE_FUNKTION;
+	{
+		PROFILE_SCOPE("Retrive Context");
+		GlContext.reset(Initlisier->RetriveContextAndClose());
+	}
 
-  {
-    PROFILE_SCOPE("Create Context Binder");
-    // Create ContextBinder
-    ContextBinder = new GLContextBinder();
-    ContextBinder->BindContext(GlContext.get());
-  }
+	{
+		PROFILE_SCOPE("Create Context Binder");
+		// Create ContextBinder
+		ContextBinder = new GLContextBinder();
+		ContextBinder->BindContext(GlContext.get());
+	}
 
-  {
-    PROFILE_SCOPE("Create HoleScreenVAO");
-    // Create Static VAO
-    HoleScreenVAO = std::make_unique<VertexArrayObject>(
-        std::vector<VertexBufferObjectDescriptor>{
-            {GLenum(GL_STATIC_DRAW), CoordVertex()}});
+	{
+		PROFILE_SCOPE("Create HoleScreenVAO");
+		// Create Static VAO
+		HoleScreenVAO = std::make_unique<VertexArrayObject>(
+			std::vector<VertexBufferObjectDescriptor>{
+				{GLenum(GL_STATIC_DRAW), CoordVertex()}});
 
-    HoleScreenVAO->ReplaceVertexBuffer(
-        std::vector<CoordVertex>{
-            {-1.0, -1.0},
-            {-1.0, 1.0},
-            {1.0, -1.0},
-            {1.0, 1.0},
-        },
-        0);
-  }
+		HoleScreenVAO->ReplaceVertexBuffer(
+			std::vector<CoordVertex>{
+				{-1.0, -1.0},
+				{ -1.0, 1.0 },
+				{ 1.0, -1.0 },
+				{ 1.0, 1.0 },
+		},
+			0);
+	}
 
-  {
-    PROFILE_SCOPE("Setting up Opengl");
-    // Init Opengl
+	{
+		PROFILE_SCOPE("Setting up Opengl");
+		// Init Opengl
 #ifdef _DEBUG
-    {
-      std::ofstream o("Error.log");
-    }
+		{
+			std::ofstream o("Error.log");
+		}
 
-    GLCALL(glEnable(GL_DEBUG_OUTPUT));
-    GLCALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-    GLCALL(glDebugMessageCallback(MessageCallback, 0));
+		GLCALL(glEnable(GL_DEBUG_OUTPUT));
+		GLCALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+		GLCALL(glDebugMessageCallback(MessageCallback, 0));
 #endif
 
-    // wxImage
-    // I("C:\\Users\\valen\\Desktop\\Atlas-From-wxwidgets.png",wxBITMAP_TYPE_PNG);
+		// wxImage
+		// I("C:\\Users\\valen\\Desktop\\Atlas-From-wxwidgets.png",wxBITMAP_TYPE_PNG);
 
-    GLCALL(glEnable(GL_BLEND));
-    GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		GLCALL(glEnable(GL_BLEND));
+		GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-    GLCALL(glEnable(GL_STENCIL_TEST));
-    GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-    GLCALL(glStencilMask(0x00));
-  }
-  {
-    PROFILE_SCOPE("Creating Frame");
-    new MyFrame(this);
-  }
+		GLCALL(glEnable(GL_STENCIL_TEST));
+		GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
+		GLCALL(glStencilMask(0x00));
+	}
+	{
+		PROFILE_SCOPE("Creating Frame");
+		new MyFrame(this);
+	}
 }
 
 //
