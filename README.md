@@ -5,24 +5,18 @@ A logic Simulator
 ## Prerequisites
 You must install cmake, a c++ compiler and have accas to a stl implementation.
 
-## Downloading 
-Don't forget the submodules
-```bash
-git clone https://github.com/Mozzarella32/Digitaler.git
-cd Digitaler
-git submodule update --recursive --init --remote
-```
-
-## Building
+## Building and Downloading
 ### Linux
-Go to the app directory and run buildandstart.sh
 ```bash
+git clone --recurse-submodules --shallow-submodules --jobs 8 https://github.com/Mozzarella32/Digitaler.git
+cd Digitaler
 cd app
 ./buildandstart.sh
 ```
 ### Windows
-Go to the app directory and run buildandstart.bat
 ```bash
+git clone --recurse-submodules --shallow-submodules --jobs 8 https://github.com/Mozzarella32/Digitaler.git
+cd Digitaler
 cd app
 ./buildandstart.bat
 ```
