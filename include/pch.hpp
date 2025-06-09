@@ -15,23 +15,15 @@
 #endif
 
 #define _CRT_SECURE_NO_WARNINGS
-#include <Windows.h>
 #include <GL/gl.h>
+#include <Windows.h>
 #endif
 #include <GL/glu.h>
 
-#ifdef __linux__
-#include <EGL/egl.h>
-#endif
-
-// #include <glad/gl.h>
-// #include <GL/glu.h>
-// #include <GLFW/glfw3.h>
-
-#include <GLInitialiser.hpp>
 #include <GLContextBinder.hpp>
+#include <GLInitialiser.hpp>
 #include <Utility.hpp>
-//#include <MyWxWidgets/ElementLayerer.h>
+// #include <MyWxWidgets/ElementLayerer.h>
 #include <GameLoopTimer.hpp>
 
 #include <Shader.hpp>
@@ -43,49 +35,49 @@
 
 #include "../submodules/LinearAlgebra/Point.hpp"
 
-#include <wx/wx.h>
-#include <wx/image.h>
-#include <wx/sysopt.h>
-#include <wx/filename.h>
-#include <wx/stdpaths.h>
-#include <wx/gbsizer.h>
-#include <wx/wrapsizer.h>
-#include <wx/hyperlink.h>
-#include <wx/zipstrm.h>
-#include <wx/wfstream.h>
-#include <wx/mstream.h>
-#include <wx/splitter.h>
-#include <wx/treectrl.h>
 #include <wx/artprov.h>
 #include <wx/dnd.h>
-#include <wx/spinctrl.h>
+#include <wx/filename.h>
+#include <wx/gbsizer.h>
+#include <wx/hyperlink.h>
+#include <wx/image.h>
+#include <wx/mstream.h>
 #include <wx/popupwin.h>
+#include <wx/spinctrl.h>
+#include <wx/splitter.h>
+#include <wx/stdpaths.h>
+#include <wx/sysopt.h>
+#include <wx/treectrl.h>
+#include <wx/wfstream.h>
+#include <wx/wrapsizer.h>
+#include <wx/wx.h>
+#include <wx/zipstrm.h>
 
-#include <wx/treelist.h>
-#include <thread>
 #include <array>
-#include <vector>
-#include <string>
-#include <tuple>
+#include <queue>
+#include <ranges>
 #include <sstream>
+#include <string>
+#include <string_view>
+#include <strstream>
+#include <thread>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
-#include <ranges>
 #include <variant>
-#include <string_view>
-#include <queue>
-#include <strstream>
+#include <vector>
+#include <wx/treelist.h>
 
 #include <numbers>
 
 #include <ranges>
 
-//#include <nlohmann/json.hpp>
+// #include <nlohmann/json.hpp>
 
 #include "Eigen/Dense"
 ////
-//#define MSDFGEN_PUBLIC
+// #define MSDFGEN_PUBLIC
 ////
-//#include <msdfgen/core/base.h>
+// #include <msdfgen/core/base.h>
 //
-//#include <msdf-atlas-gen/msdf-atlas-gen.h>
+// #include <msdf-atlas-gen/msdf-atlas-gen.h>
