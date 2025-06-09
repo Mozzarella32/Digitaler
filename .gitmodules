@@ -1,21 +1,28 @@
 [submodule "submodules/Instrumentor"]
 	path = submodules/Instrumentor
 	url = https://github.com/Mozzarella32/Instrumentor.git
+	branch = main
 [submodule "submodules/LinearAlgebra"]
 	path = submodules/LinearAlgebra
 	url = https://github.com/Mozzarella32/LinearAlgebra.git
+	branch = main
 [submodule "submodules/Visitor"]
 	path = submodules/Visitor
 	url = https://github.com/Mozzarella32/Visitor.git
+	branch = main
 [submodule "submodules/eigen"]
 	path = submodules/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+	branch = master
 [submodule "submodules/MyWxWidgets"]
 	path = submodules/MyWxWidgets
 	url = https://github.com/Mozzarella32/MyWxWidgets.git
+	branch = main
 [submodule "submodules/PreparePngs"]
 	path = submodules/PreparePngs
 	url = https://github.com/Mozzarella32/PreparePngs.git
+	branch = main
 [submodule "submodules/ShadersToCharArray"]
 	path = submodules/ShadersToCharArray
 	url = https://github.com/Mozzarella32/ShadersToCharArray.git
+	branch = main
