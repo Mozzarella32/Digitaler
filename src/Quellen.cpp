@@ -2,6 +2,7 @@
 #include "MyFrame.hpp"
 #include "ShaderManager.hpp"
 #include "pch.hpp"
+// #include <EGL/egl.h>
 
 wxIMPLEMENT_APP(MyApp);
 
@@ -106,9 +107,7 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
                 cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
 */
 
-void lol(){
-	std::cout << "lol";
-}
+void lol() { std::cout << "lol"; }
 
 bool MyApp::OnInit() {
   PROFILE_FUNKTION;
@@ -116,16 +115,16 @@ bool MyApp::OnInit() {
   SetProcessDPIAware();
 #endif
 
-// #ifdef GLEW_EGL
-//   std::cout << "EGL\n";
-// #else
-//   std::cout << "NonEGL\n";
-// #endif
-// #ifdef GLEW_GLX
-//   std::cout << "GLX\n";
-// #else
-//   std::cout << "NonGLX\n";
-// #endif
+  // #ifdef GLEW_EGL
+  //   std::cout << "EGL\n";
+  // #else
+  //   std::cout << "NonEGL\n";
+  // #endif
+  // #ifdef GLEW_GLX
+  //   std::cout << "GLX\n";
+  // #else
+  //   std::cout << "NonGLX\n";
+  // #endif
   // wxSystemOptions::SetOption(_T("msw.remap"), 0);
   srand((unsigned int)time(NULL));
 
@@ -141,14 +140,16 @@ bool MyApp::OnInit() {
     wxInitAllImageHandlers();
   }
 
+  wxGLAttributes glAttrs;
   {
     PROFILE_SCOPE("Request Context");
-// #ifndef _WIN32
-    // if (!eglBindAPI(EGL_OPENGL_API)) {
-        // wxLogError("Konnte EGL_OPENGL_API nicht binden!");
-    // }
-// #endif
-    
+    // #ifndef _WIN32
+    //  if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+    //   wxLogError("Konnte EGL_OPENGL_ES_API nicht binden!");
+    //  }
+    // #endif
+
+    glAttrs.PlatformDefaults().Defaults().EndList();
     cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
     // Init Context - for wxGlCanvas
     // 	Initlisier = new GLFrameIndependentInitiliser(cxtAttrs,
@@ -184,30 +185,30 @@ bool MyApp::OnInit() {
     // 	[this]() {OnOGLInit(); });
   }
   Initlisier = new GLFrameIndependentInitiliser(
-      cxtAttrs,
+      glAttrs, cxtAttrs,
       [this]() {
         // GLenum glewInitResult = glewInit();
         // if (glewInitResult != GLEW_OK) {
         // 		const GLubyte* errorString =
-        // glewGetErrorString(glewInitResult); 		std::cout << "GLEW-Fehler: " <<
-        // errorString << std::endl;
+        // glewGetErrorString(glewInitResult); 		std::cout <<
+        // "GLEW-Fehler: " << errorString << std::endl;
         // 		// wxASSERT_MSG(false, wxString::Format("GLEW-Fehler:
         // %s", errorString));
         // }
 
         // gladLoadGLLoader((GLADloadproc)GlContext.get()->GetProcAddress);
 
-		lol();
-// #ifdef _WIN32
-        if (!gladLoadGL()) {
-            wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
+        lol();
+        // #ifdef _WIN32
+        // if (!gladLoadGL()) {
+        // wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
+        // }
+        // #else
+        if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
+          wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
+          return;
         }
-// #else
-//         if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
-//           wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
-//           return;
-//         }
-// #endif
+        // #endif
       },
       [this]() { OnOGLInit(); });
   return true;
