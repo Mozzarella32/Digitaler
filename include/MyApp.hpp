@@ -3,22 +3,25 @@
 
 #include "Include.hpp"
 
-class MyApp : public wxApp {
+class MyFrame;
+
+class MyApp : public wxApp{
 public:
-
-public:
-	GLContextBinder* ContextBinder;
-	std::unique_ptr<wxGLContext> GlContext;
-
-	std::unique_ptr<VertexArrayObject> HoleScreenVAO;
-
-	wxGLContextAttrs cxtAttrs;
-	GLFrameIndependentInitiliser* Initlisier;
+  MyFrame *Frame;
 
 public:
-	bool OnInit() override;
+  // GLContextBinder* ContextBinder;
+  // std::unique_ptr<wxGLContext> GlContext;
 
-	void OnOGLInit();
+  // std::unique_ptr<VertexArrayObject> HoleScreenVAO;
 
-	//bool OnExceptionInMainLoop() override;
+  // wxGLContextAttrs cxtAttrs;
+  // GLFrameIndependentInitiliser* Initlisier;
+
+public:
+  bool OnInit() override;
+
+  // void OnGLInit() override;
+
+  // bool OnExceptionInMainLoop() override;
 };

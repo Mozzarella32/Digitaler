@@ -2,105 +2,8 @@
 #include "MyFrame.hpp"
 #include "ShaderManager.hpp"
 #include "pch.hpp"
-// #include <EGL/egl.h>
 
 wxIMPLEMENT_APP(MyApp);
-
-void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
-                                GLenum severity, GLsizei length,
-                                const GLchar *message, const void *userParam) {
-  // Beep(200, 1000);
-  // DebugBreak();
-  std::ofstream o("Error.log", std::ios::app);
-  o << "[OpenGL ErrorCallback] ";
-  o << "Source: ";
-  switch (source) {
-  case GL_DEBUG_SOURCE_API:
-    o << "API";
-    break;
-  case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-    o << "Window System";
-    break;
-  case GL_DEBUG_SOURCE_SHADER_COMPILER:
-    o << "Shader Compiler";
-    break;
-  case GL_DEBUG_SOURCE_THIRD_PARTY:
-    o << "Third Party";
-    break;
-  case GL_DEBUG_SOURCE_APPLICATION:
-    o << "Application";
-    break;
-  case GL_DEBUG_SOURCE_OTHER:
-    o << "Other";
-    break;
-  default:
-    o << "Unknown";
-    break;
-  }
-  o << " Type: ";
-  switch (type) {
-  case GL_DEBUG_TYPE_ERROR:
-    o << "Error";
-    break;
-  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-    o << "Deprecated Behavior";
-    break;
-  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-    o << "Undefined Behavior";
-    break;
-  case GL_DEBUG_TYPE_PORTABILITY:
-    o << "Portability";
-    break;
-  case GL_DEBUG_TYPE_PERFORMANCE:
-    o << "Performance";
-    break;
-  case GL_DEBUG_TYPE_MARKER:
-    o << "Marker";
-    break;
-  case GL_DEBUG_TYPE_PUSH_GROUP:
-    o << "Push Group";
-    break;
-  case GL_DEBUG_TYPE_POP_GROUP:
-    o << "Pop Group";
-    break;
-  case GL_DEBUG_TYPE_OTHER:
-    o << "Other";
-    break;
-  default:
-    o << "Unknown";
-    break;
-  }
-  o << " ID: " << id;
-  auto error = gluErrorString(id);
-  if (error == nullptr) {
-    o << " as Error: " << "gluErrorString returned nullptr";
-  } else {
-    o << " as Error: " << error;
-  }
-
-  o << " Severity: ";
-  switch (severity) {
-  case GL_DEBUG_SEVERITY_HIGH:
-    o << "High";
-    break;
-  case GL_DEBUG_SEVERITY_MEDIUM:
-    o << "Medium";
-    break;
-  case GL_DEBUG_SEVERITY_LOW:
-    o << "Low";
-    break;
-  case GL_DEBUG_SEVERITY_NOTIFICATION:
-    o << "Notification";
-    break;
-  default:
-    o << "Unknown";
-    break;
-  }
-  o << "\n";
-
-  o << "Message: " << message;
-  o << std::endl;
-}
 
 bool MyApp::OnInit() {
   PROFILE_FUNKTION;
@@ -122,83 +25,43 @@ bool MyApp::OnInit() {
     wxInitAllImageHandlers();
   }
 
-  wxGLAttributes glAttrs;
-  {
-    PROFILE_SCOPE("Request Context");
+  // wxGLAttributes glAttrs;
+  // {
+  //   PROFILE_SCOPE("Request Context");
 
-    glAttrs.PlatformDefaults().Defaults().EndList();
-    cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
-  }
-  Initlisier = new GLFrameIndependentInitiliser(
-      glAttrs, cxtAttrs,
-      [this]() {
-        if (!gladLoadGL()) {
-          wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
-        }
-      },
-      [this]() { OnOGLInit(); });
+  //   glAttrs.PlatformDefaults().Defaults().EndList();
+  //   cxtAttrs.CoreProfile().OGLVersion(4, 5).EndList();
+  // }
+  // Initlisier = new GLFrameIndependentInitiliser(
+  //     glAttrs, cxtAttrs,
+  //     [this]() {
+  //       if (!gladLoadGL()) {
+  //         wxMessageBox("Failed to initialize GLAD!", "Error", wxICON_ERROR);
+  //       }
+  //     },
+  //     [this]() { OnOGLInit(); });
+  // return true;
+  MyFrame *Frame = new MyFrame(this);
+  Frame->Show();
   return true;
 }
 
-void MyApp::OnOGLInit() {
-  PROFILE_FUNKTION;
-  {
-    PROFILE_SCOPE("Retrive Context");
-    GlContext.reset(Initlisier->RetriveContextAndClose());
-  }
+// void MyApp::OnGLInit() {
+//   PROFILE_FUNKTION;
+//   // {
+//   //   PROFILE_SCOPE("Retrive Context");
+//   //   GlContext.reset(Initlisier->RetriveContextAndClose());
+//   // }
 
-  {
-    PROFILE_SCOPE("Create Context Binder");
-    // Create ContextBinder
-    ContextBinder = new GLContextBinder();
-    ContextBinder->BindContext(GlContext.get());
-  }
+//   // {
+//   //   PROFILE_SCOPE("Create Context Binder");
+//   //   // Create ContextBinder
+//   //   ContextBinder = new GLContextBinder();
+//   //   ContextBinder->BindContext(GlContext.get());
+//   // }
 
-  {
-    PROFILE_SCOPE("Create HoleScreenVAO");
-    // Create Static VAO
-    HoleScreenVAO = std::make_unique<VertexArrayObject>(
-        std::vector<VertexBufferObjectDescriptor>{
-            {GLenum(GL_STATIC_DRAW), CoordVertex()}});
-
-    HoleScreenVAO->ReplaceVertexBuffer(
-        std::vector<CoordVertex>{
-            {-1.0, -1.0},
-            {-1.0, 1.0},
-            {1.0, -1.0},
-            {1.0, 1.0},
-        },
-        0);
-  }
-
-  {
-    PROFILE_SCOPE("Setting up Opengl");
-    // Init Opengl
-#ifdef _DEBUG
-    {
-      std::ofstream o("Error.log");
-    }
-
-    GLCALL(glEnable(GL_DEBUG_OUTPUT));
-    GLCALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-    GLCALL(glDebugMessageCallback(MessageCallback, 0));
-#endif
-
-    // wxImage
-    // I("C:\\Users\\valen\\Desktop\\Atlas-From-wxwidgets.png",wxBITMAP_TYPE_PNG);
-
-    GLCALL(glEnable(GL_BLEND));
-    GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-    GLCALL(glEnable(GL_STENCIL_TEST));
-    GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-    GLCALL(glStencilMask(0x00));
-  }
-  {
-    PROFILE_SCOPE("Creating Frame");
-    new MyFrame(this);
-  }
-}
+//   Frame->OnGLInit();
+// }
 
 //
 // bool MyApp::OnExceptionInMainLoop() {

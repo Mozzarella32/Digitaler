@@ -1,4 +1,5 @@
 #include "pch.hpp"
+#include <chrono>
 #include "ShaderManager.hpp"
 
 #define DEFINE_MAKRO_UTILITIES
@@ -21,6 +22,7 @@ std::string(CONCAT(Frag, _frag)))\
 #ifdef HotShaderReload
 ShaderManager::~ShaderManager() {
 	Running = false;
+	WaitCV.notify_all();
 	Worker.join();
 }
 #endif
@@ -52,11 +54,14 @@ UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".
 void ShaderManager::Work() {
 	while (Running) {
 		XList_Shaders_Combined
-#ifdef _WIN32
-		Sleep(100);
-#else
-		sleep(16);
-#endif
+
+		std::unique_lock ulSleep(WaitCVMutex);
+		WaitCV.wait_for(ulSleep,std::chrono::milliseconds(16));
+// #ifdef _WIN32
+		// Sleep(100);
+// #else
+		// sleep(16);
+// #endif
 	}
 }
 
@@ -69,9 +74,6 @@ void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::p
 		 FragTime = std::filesystem::last_write_time(Frag);
 	}
 	catch (...) {
-#ifdef _WIN32
-		Beep(200, 200);
-#endif
 		return;
 	}
 	bool Update = false;

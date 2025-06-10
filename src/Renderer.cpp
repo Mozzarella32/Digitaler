@@ -18,7 +18,9 @@
 void Renderer::RenderBackground() {
   PROFILE_FUNKTION;
 
-  App->ContextBinder->BindContext(App->GlContext.get());
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
 
   FBOBackground.bind(FrameBufferObject::Draw);
 
@@ -31,11 +33,11 @@ void Renderer::RenderBackground() {
 
   BackgroundShader->bind();
 
-  App->HoleScreenVAO->bind();
+  Frame->HoleScreenVAO->bind();
 
-  App->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
 
-  App->HoleScreenVAO->unbind();
+  Frame->HoleScreenVAO->unbind();
 
   BackgroundShader->unbind();
 
@@ -57,7 +59,9 @@ void Renderer::UpdateViewProjectionMatrix(bool OnlyForUniforms) {
   ViewProjectionMatrix = translationMatrix * scaleMatrix;
   PROFILE_SCOPE_ID_END(0);
 
-  App->ContextBinder->BindContext(App->GlContext.get());
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
 
   PROFILE_SCOPE_ID_START("UZoom", 1);
   for (const auto &[shader, Location] :
@@ -113,7 +117,7 @@ void Renderer::UpdateViewProjectionMatrix(bool OnlyForUniforms) {
 
   BoundingBox = MyRectF::FromCorners(Corner1, Corner2);
 
-    PROFILE_SCOPE_ID_END(5);
+  PROFILE_SCOPE_ID_END(5);
 
   RenderBackground();
 }
@@ -145,9 +149,12 @@ void Renderer::RenderIDMap() {
   if (!IdMapDirty) {
     return;
   }
-  IdMapDirty = false;
 
-  App->ContextBinder->BindContext(App->GlContext.get());
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
+
+  IdMapDirty = false;
 
   FBOID.bind(FrameBufferObject::Draw);
 
@@ -454,7 +461,10 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_START("Blit Background", 0);
 
-  Frame->Canvas->SetCurrent(*App->GlContext.get());
+  // Frame->Canvas->SetCurrent(*App->GlContext.get());
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
 
   if (UIDRun) {
     UIDRun = false;
@@ -687,8 +697,9 @@ void Renderer::Render() {
           std::to_string(Offset.y());
 
   // AreaSelectVerts.Clear();
-  // AreaSelectVerts.Emplace(BoundingBox.Position,BoundingBox.Position + BoundingBox.Size,ColourType{1.0,1.0,0.0,0.0});
-	// PointFRGBVertex(const Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& c)
+  // AreaSelectVerts.Emplace(BoundingBox.Position,BoundingBox.Position +
+  // BoundingBox.Size,ColourType{1.0,1.0,0.0,0.0}); PointFRGBVertex(const
+  // Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& c)
 
   if (!AreaSelectVerts.Empty()) {
 
@@ -744,7 +755,9 @@ void Renderer::CheckZoomDots() {
   if (!Update)
     return;
 
-  App->ContextBinder->BindContext(App->GlContext.get());
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
 
   const auto &BackgroundShader =
       ShaderManager::GetShader(ShaderManager::Background);
@@ -757,7 +770,9 @@ void Renderer::CheckZoomDots() {
 void Renderer::RenderPlacholder() {
   PROFILE_FUNKTION;
 
-  Frame->Canvas->SetCurrent(*App->GlContext.get());
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
 
   GLCALL(glClear(GL_COLOR_BUFFER_BIT));
 
@@ -767,9 +782,9 @@ void Renderer::RenderPlacholder() {
   Shader->bind();
   GLCALL(glUniform2f(Shader->GetLocation("USize"), CanvasSize.x() / 100.0,
                      CanvasSize.y() / 100.0));
-  App->HoleScreenVAO->bind();
-  App->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-  App->HoleScreenVAO->unbind();
+  Frame->HoleScreenVAO->bind();
+  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+  Frame->HoleScreenVAO->unbind();
   Shader->unbind();
 
   Frame->Canvas->SwapBuffers();
@@ -881,7 +896,10 @@ BufferedVertexVec<PointFRGBVertex> &Renderer::GetAreaSelectVerts() {
 }
 
 void Renderer::UpdateMouseIndex(const PointType &MouseIndex) {
-  App->ContextBinder->BindContext(App->GlContext.get());
+
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
 
   const auto &BackgroundShader =
       ShaderManager::GetShader(ShaderManager::Background);
@@ -899,7 +917,10 @@ void Renderer::UpdateMouseIndex(const PointType &MouseIndex) {
 }
 
 unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
-  App->ContextBinder->BindContext(App->GlContext.get());
+
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
 
   RenderIDMap();
 

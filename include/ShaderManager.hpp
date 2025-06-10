@@ -4,6 +4,7 @@
 
 #include "Include.hpp"
 #include "../resources/shaders/Shader_X_List.hpp"
+#include <condition_variable>
 
 //Singilton
 class ShaderManager {
@@ -34,6 +35,9 @@ private:
 	std::thread Worker;
 
 	std::mutex QueueMutex;
+
+	std::mutex WaitCVMutex;
+	std::condition_variable WaitCV;
 	std::vector<std::tuple<Shaders, std::filesystem::path, std::filesystem::path>> Queue;
 
 	bool Running = true;

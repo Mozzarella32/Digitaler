@@ -15,9 +15,106 @@
 
 #include "BlockSelector.hpp"
 
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
+                                GLenum severity, GLsizei length,
+                                const GLchar *message, const void *userParam) {
+  // Beep(200, 1000);
+  // DebugBreak();
+  std::ofstream o("Error.log", std::ios::app);
+  o << "[OpenGL ErrorCallback] ";
+  o << "Source: ";
+  switch (source) {
+  case GL_DEBUG_SOURCE_API:
+    o << "API";
+    break;
+  case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+    o << "Window System";
+    break;
+  case GL_DEBUG_SOURCE_SHADER_COMPILER:
+    o << "Shader Compiler";
+    break;
+  case GL_DEBUG_SOURCE_THIRD_PARTY:
+    o << "Third Party";
+    break;
+  case GL_DEBUG_SOURCE_APPLICATION:
+    o << "Application";
+    break;
+  case GL_DEBUG_SOURCE_OTHER:
+    o << "Other";
+    break;
+  default:
+    o << "Unknown";
+    break;
+  }
+  o << " Type: ";
+  switch (type) {
+  case GL_DEBUG_TYPE_ERROR:
+    o << "Error";
+    break;
+  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+    o << "Deprecated Behavior";
+    break;
+  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+    o << "Undefined Behavior";
+    break;
+  case GL_DEBUG_TYPE_PORTABILITY:
+    o << "Portability";
+    break;
+  case GL_DEBUG_TYPE_PERFORMANCE:
+    o << "Performance";
+    break;
+  case GL_DEBUG_TYPE_MARKER:
+    o << "Marker";
+    break;
+  case GL_DEBUG_TYPE_PUSH_GROUP:
+    o << "Push Group";
+    break;
+  case GL_DEBUG_TYPE_POP_GROUP:
+    o << "Pop Group";
+    break;
+  case GL_DEBUG_TYPE_OTHER:
+    o << "Other";
+    break;
+  default:
+    o << "Unknown";
+    break;
+  }
+  o << " ID: " << id;
+  auto error = gluErrorString(id);
+  if (error == nullptr) {
+    o << " as Error: " << "gluErrorString returned nullptr";
+  } else {
+    o << " as Error: " << error;
+  }
+
+  o << " Severity: ";
+  switch (severity) {
+  case GL_DEBUG_SEVERITY_HIGH:
+    o << "High";
+    break;
+  case GL_DEBUG_SEVERITY_MEDIUM:
+    o << "Medium";
+    break;
+  case GL_DEBUG_SEVERITY_LOW:
+    o << "Low";
+    break;
+  case GL_DEBUG_SEVERITY_NOTIFICATION:
+    o << "Notification";
+    break;
+  default:
+    o << "Unknown";
+    break;
+  }
+  o << "\n";
+
+  o << "Message: " << message;
+  o << std::endl;
+}
+
 MyFrame::MyFrame(MyApp *App)
-    : wxFrame(nullptr, wxID_ANY, "MyFrame", wxDefaultPosition, wxDefaultSize,
-              wxDEFAULT_FRAME_STYLE | wxFULL_REPAINT_ON_RESIZE),
+    : FrameWithGlContext(nullptr, wxID_ANY, "MyFrame", wxDefaultPosition,
+                         wxDefaultSize,
+                         wxDEFAULT_FRAME_STYLE | wxFULL_REPAINT_ON_RESIZE),
       // #ifdef HotShaderReload
       App(App),
       // #endif
@@ -26,7 +123,6 @@ MyFrame::MyFrame(MyApp *App)
   Bind(wxEVT_CLOSE_WINDOW, [App, this](wxCloseEvent &evt) {
     evt.Skip();
     LoopTimer.Stop();
-    // Destroy();
   });
 
   wxIcon Icon;
@@ -287,9 +383,9 @@ MyFrame::MyFrame(MyApp *App)
   MenuBarPanel->SetSizerAndFit(MenuBarPanelSizer);
   Sizer->Add(MenuBarPanel, 0, wxEXPAND | wxALL, 0);
 
-  Canvas = new wxGLCanvas(this);
+  Canvas = new wxGLCanvasWithFrameContext(this, this);
 
-  Canvas->Bind(wxEVT_SIZE, [this](wxSizeEvent &evt) {
+  Canvas->SetOnSize([this](wxSizeEvent &evt) {
     evt.Skip();
     if (!IO)
       return;
@@ -395,53 +491,101 @@ MyFrame::MyFrame(MyApp *App)
   SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
   CallAfter([this]() {
-    PROFILE_SCOPE("Initilizing");
 
-    this->App->ContextBinder->BindContext(this->App->GlContext.get());
-
-    /*	InitilizeDescriptor = "Loaing Shaders";
-            SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
-
-            ShaderManager::Initilise();*/
-
-    IO = std::make_unique<IOHandler>(this);
-    {
-      PROFILE_SCOPE("Creating Renderer");
-      renderer = std::make_unique<Renderer>(this->App, this);
-    }
-
-    IO->OnCanvasSizeChange();
-
-    InitilizeDescriptor = "Loaing Block Data";
-    SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
-
-    // CurrentBlock = std::make_unique<VisualBlockInterior>(0);
-    BlockManager = std::make_unique<DataResourceManager>(renderer.get());
-
-    Blockselector =
-        std::make_unique<BlockSelector>(BlockManager.get(), renderer.get());
-
-    BlockManager->Blockselector = Blockselector.get();
-
-    BlockManager->SetCurrent(
-        BlockManager->GetBlockIndex(
-            BlockIdentifiyer::ParsePredefined("Testing:MainBlock")),
-        0.01f, {0, 0}, true);
-
-    InitilizeDescriptor =
-        "Resizing Textures, Creating BoundingBoxes and Initial Render";
-    SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
-
-    Initilized = true;
-    IO->SetState(IOHandler::State::Normal);
-    IO->OnCanvasSizeChange();
-    SetTitle("Ready");
   });
 }
 
 MyFrame::~MyFrame() {
   PROFILE_SESSION_END;
   LoopTimer.Stop();
+}
+
+void MyFrame::OnGLInit() {
+
+  {
+    PROFILE_SCOPE("Create HoleScreenVAO");
+    // Create Static VAO
+    HoleScreenVAO = std::make_unique<VertexArrayObject>(
+        std::vector<VertexBufferObjectDescriptor>{
+            {GLenum(GL_STATIC_DRAW), CoordVertex()}});
+
+    HoleScreenVAO->ReplaceVertexBuffer(
+        std::vector<CoordVertex>{
+            {-1.0, -1.0},
+            {-1.0, 1.0},
+            {1.0, -1.0},
+            {1.0, 1.0},
+        },
+        0);
+  }
+
+  {
+    PROFILE_SCOPE("Setting up Opengl");
+    // Init Opengl
+#ifdef _DEBUG
+    {
+      std::ofstream o("Error.log");
+    }
+
+    GLCALL(glEnable(GL_DEBUG_OUTPUT));
+    GLCALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
+    GLCALL(glDebugMessageCallback(MessageCallback, 0));
+#endif
+
+    // wxImage
+    // I("C:\\Users\\valen\\Desktop\\Atlas-From-wxwidgets.png",wxBITMAP_TYPE_PNG);
+
+    GLCALL(glEnable(GL_BLEND));
+    GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+    GLCALL(glEnable(GL_STENCIL_TEST));
+    GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
+    GLCALL(glStencilMask(0x00));
+  }
+
+  PROFILE_SCOPE("Initilizing");
+
+  // this->App->ContextBinder->BindContext(this->App->GlContext.get());
+  bool Bound = Canvas->BindContext();
+  assert(Bound == true);
+
+  /*	InitilizeDescriptor = "Loaing Shaders";
+          SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
+
+          ShaderManager::Initilise();*/
+
+  IO = std::make_unique<IOHandler>(this);
+  {
+    PROFILE_SCOPE("Creating Renderer");
+    renderer = std::make_unique<Renderer>(this->App, this);
+  }
+
+  IO->OnCanvasSizeChange();
+
+  InitilizeDescriptor = "Loaing Block Data";
+  SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
+
+  // CurrentBlock = std::make_unique<VisualBlockInterior>(0);
+  BlockManager = std::make_unique<DataResourceManager>(renderer.get());
+
+  Blockselector =
+      std::make_unique<BlockSelector>(BlockManager.get(), renderer.get());
+
+  BlockManager->Blockselector = Blockselector.get();
+
+  BlockManager->SetCurrent(
+      BlockManager->GetBlockIndex(
+          BlockIdentifiyer::ParsePredefined("Testing:MainBlock")),
+      0.01f, {0, 0}, true);
+
+  InitilizeDescriptor =
+      "Resizing Textures, Creating BoundingBoxes and Initial Render";
+  SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
+
+  Initilized = true;
+  IO->SetState(IOHandler::State::Normal);
+  IO->OnCanvasSizeChange();
+  SetTitle("Ready");
 }
 
 void MyFrame::Loop() {
@@ -468,7 +612,9 @@ void MyFrame::Loop() {
   renderer->Dirty = true;
 #endif
 #ifdef HotShaderReload
-  Canvas->SetCurrent(*App->GlContext.get());
+  if (!Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
   ShaderManager::GetShader(ShaderManager::Background); // To Reload
   if (ShaderManager::IsDirty) {
     renderer->Dirty = true;

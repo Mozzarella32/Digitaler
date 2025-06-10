@@ -8,7 +8,7 @@ class VisualBlockInterior;
 class DataResourceManager;
 class BlockSelector;
 
-class MyFrame : public wxFrame {
+class MyFrame : public FrameWithGlContext {
   GameLoopTimer LoopTimer;
 
   // #ifdef HotShaderReload
@@ -21,10 +21,12 @@ public:
   std::unique_ptr<Renderer> renderer;
   std::unique_ptr<DataResourceManager> BlockManager;
 
+  std::unique_ptr<VertexArrayObject> HoleScreenVAO;
+
   // GUI
   std::unique_ptr<BlockSelector> Blockselector;
 
-  wxGLCanvas *Canvas;
+  wxGLCanvasWithFrameContext*Canvas;
   // std::unique_ptr<Board> board;
 
   std::string InitilizeDescriptor = "none";
@@ -78,6 +80,8 @@ private:
 
 public:
   MyFrame(MyApp *App);
+
+  void OnGLInit() override;
 
   ~MyFrame();
 

@@ -20,7 +20,6 @@
 #endif
 #include <GL/glu.h>
 
-#include <GLContextBinder.hpp>
 #include <GLInitialiser.hpp>
 #include <Utility.hpp>
 // #include <MyWxWidgets/ElementLayerer.h>
@@ -52,6 +51,7 @@
 #include <wx/wrapsizer.h>
 #include <wx/wx.h>
 #include <wx/zipstrm.h>
+#include <wx/glcanvas.h>
 
 #include <array>
 #include <queue>
