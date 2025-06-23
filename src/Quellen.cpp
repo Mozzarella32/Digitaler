@@ -7,6 +7,13 @@ wxIMPLEMENT_APP(MyApp);
 
 bool MyApp::OnInit() {
   PROFILE_FUNKTION;
+
+   #ifndef NDEBUG
+  std::cout << "Target: RELEASE\n";
+#else
+  std::cout << "Target: DEBUG\n";
+#endif
+
 #ifdef _WIN32
   SetProcessDPIAware();
 #endif
