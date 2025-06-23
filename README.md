@@ -11,7 +11,7 @@ Cmake, c++23, a c++/c compiler, some mesa stuff(on linux)
 git clone --recurse-submodules --shallow-submodules --jobs 8 https://github.com/Mozzarella32/Digitaler.git
 cd Digitaler
 cd app
-./buildreleasandstart.sh
+./buildreleaseandstart.sh
 ```
 ### Windows
 ```bash
