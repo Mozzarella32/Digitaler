@@ -504,8 +504,8 @@ void MyFrame::OnGLInit() {
 
   {
     int64_t components;
-    glGetInteger64v(GL_MAX_VERTEX_OUTPUT_COMPONENTS,&components);
-    std::cout << "GL_MAX_VERTEX_OUTPUT_COMPONENTS: " << components<< "\n"; 
+    glGetInteger64v(GL_MAX_VARYING_COMPONENTS,&components);
+    std::cout << "GL_MAX_VARYING_COMPONENTS: " << components<< "\n"; 
 
     PROFILE_SCOPE("Create HoleScreenVAO");
     // Create Static VAO
