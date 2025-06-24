@@ -18,7 +18,12 @@
 #include <GL/gl.h>
 #include <Windows.h>
 #endif
+
+#ifdef __APPLE__
+#include <OpenGL/glu.h>
+#else
 #include <GL/glu.h>
+#endif
 
 #include <GLInitialiser.hpp>
 #include <Utility.hpp>
