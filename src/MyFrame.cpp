@@ -503,6 +503,10 @@ MyFrame::~MyFrame() {
 void MyFrame::OnGLInit() {
 
   {
+    int64_t components;
+    glGetInteger64v(GL_MAX_VERTEX_OUTPUT_COMPONENTS,&components);
+    std::cout << "GL_MAX_VERTEX_OUTPUT_COMPONENTS: " << components<< "\n"; 
+
     PROFILE_SCOPE("Create HoleScreenVAO");
     // Create Static VAO
     HoleScreenVAO = std::make_unique<VertexArrayObject>(
