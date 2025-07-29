@@ -488,6 +488,7 @@ MyFrame::MyFrame(MyApp *App)
 
   InitilizeDescriptor = "Waiting for Opengl initilisation";
 
+  std::cout << std::string("Initilizing: ") << InitilizeDescriptor << "\n";
   SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
   CallAfter([this]() {
@@ -567,6 +568,7 @@ void MyFrame::OnGLInit() {
   IO->OnCanvasSizeChange();
 
   InitilizeDescriptor = "Loaing Block Data";
+  std::cout << "Initilizing: " << InitilizeDescriptor << "\n";
   SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
   // CurrentBlock = std::make_unique<VisualBlockInterior>(0);
@@ -584,11 +586,13 @@ void MyFrame::OnGLInit() {
 
   InitilizeDescriptor =
       "Resizing Textures, Creating BoundingBoxes and Initial Render";
+  std::cout << "Initilizing: " << InitilizeDescriptor << "\n";
   SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
   Initilized = true;
   IO->SetState(IOHandler::State::Normal);
   IO->OnCanvasSizeChange();
+  std::cout << "Ready\n";
   SetTitle("Ready");
 }
 
@@ -596,6 +600,7 @@ void MyFrame::Loop() {
   PROFILE_FUNKTION;
 
   if (!Initilized) {
+    std::cout << "Initilizing: " << InitilizeDescriptor << "\n";
     SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
     return;
   }
@@ -692,7 +697,7 @@ void MyFrame::Loop() {
   //<< " Sleep: " << std::setw(10) <<
   // std::chrono::duration_cast<std::chrono::microseconds>(Info.Sleep).count() /
   // 1000.0 << "ms";
-
+  // std::cout << IO->GetStateString() << "\n";
   s << IO->GetStateString();
   // SetTitle(s.str());
 }
