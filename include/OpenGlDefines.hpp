@@ -873,7 +873,7 @@ struct MuxIDVertex {
 
 
 	//Number must be between 0 and F(15)
-	MuxIDVertex(unsigned int id, const BlockMetadata& meta, int size, int selceted, const ColourType& c/*, const int& flags = 0*/)
+	MuxIDVertex(unsigned int id, const BlockMetadata& meta, int size, int selected, const ColourType& c/*, const int& flags = 0*/)
 		:
 		id(id),
 		x(meta.Pos.x()),

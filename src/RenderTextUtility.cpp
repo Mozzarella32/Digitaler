@@ -127,7 +127,7 @@ void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, Buf
 
 
 		CharInfo ci = This.CharMap.contains(GetCharMapIndex(c, Bold, Italic)) ?
-			ci = This.CharMap.at(GetCharMapIndex(c, Bold, Italic))
+			This.CharMap.at(GetCharMapIndex(c, Bold, Italic))
 			: ciQuestion;
 
 

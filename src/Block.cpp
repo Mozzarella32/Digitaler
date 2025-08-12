@@ -7,6 +7,7 @@
 #include "Renderer.hpp"
 
 #include "RenderTextUtility.hpp"
+#include <utility>
 
 #ifdef UseCollisionGrid
 int VisualBlockInterior::BoxSize = 5;
@@ -265,6 +266,8 @@ PointType VisualBlockInterior::GetPositionDiff(const BlockMetadata& Meta, const 
 	case Left:
 		Off -= PointType{ 0,-BlockSize.x() };
 		break;
+	default:
+		std::unreachable();
 	}
 
 
@@ -1114,7 +1117,6 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 	PointType Flip = { 1 - 2 * Meta.xflip,1 - 2 * Meta.yflip };
 	PointType FlipOff = { Meta.xflip * BlockSize.x(),-int(Meta.yflip) * BlockSize.y() };
 	if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
-		//TopLeft = Meta.Off + FlipOff;
 		TopLeft = Meta.Pos + FlipOff + PointType{ Meta.xflip * (BlockSize.y() - BlockSize.x()), Meta.yflip * (BlockSize.y() - BlockSize.x()) };
 		BottomLeft = TopLeft - PointType{ 0,BlockSize.x() }.cwiseProduct(Flip);
 		TopRight = TopLeft + PointType{ BlockSize.y(),0 }.cwiseProduct(Flip);
@@ -1134,8 +1136,9 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		case Right: return TopRight + PointType{ Expoltion,-Pin.Offset }.cwiseProduct(Flip);
 		case Down: return BottomRight + PointType{ -Pin.Offset,-Expoltion }.cwiseProduct(Flip);
 		case Left: return BottomLeft + PointType{ -Expoltion,Pin.Offset }.cwiseProduct(Flip);
+		default:
+			std::unreachable();
 		}
-		assert(false);
 
 	case Right:
 		switch (Rotation) {
@@ -1143,8 +1146,9 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		case Right: return BottomRight + PointType{ -Pin.Offset,-Expoltion }.cwiseProduct(Flip);
 		case Down: return BottomLeft + PointType{ -Expoltion,Pin.Offset }.cwiseProduct(Flip);
 		case Left: return TopLeft + PointType{ Pin.Offset,Expoltion }.cwiseProduct(Flip);
+		default:
+			std::unreachable();
 		}
-		assert(false);
 
 	case Down:
 		switch (Rotation) {
@@ -1152,20 +1156,23 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		case Right: return TopLeft + PointType{ -Expoltion,-Pin.Offset }.cwiseProduct(Flip);
 		case Down: return TopRight + PointType{ -Pin.Offset,Expoltion }.cwiseProduct(Flip);
 		case Left: return BottomRight + PointType{ Expoltion,Pin.Offset }.cwiseProduct(Flip);
+		default:
+			std::unreachable();
 		}
-		assert(false);
-
+		
 	case Left:
 		switch (Rotation) {
 		case Up: return TopLeft + PointType{ -Expoltion,-Pin.Offset }.cwiseProduct(Flip);
 		case Right: return TopRight + PointType{ -Pin.Offset,Expoltion }.cwiseProduct(Flip);
 		case Down: return BottomRight + PointType{ Expoltion,Pin.Offset }.cwiseProduct(Flip);
 		case Left: return BottomLeft + PointType{ Pin.Offset,-Expoltion }.cwiseProduct(Flip);
+		default:
+			std::unreachable();
 		}
-		assert(false);
 
+	default:
+		std::unreachable();
 	}
-	assert(false);
 	return {};
 }
 
@@ -1196,7 +1203,7 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 	}
 	std::string Text;
 	if (Pin.Multiplicity == CompressedBlockData::BlockExteriorData::Pin::VariableMultiplicity) {
-		Text = "¤";
+		Text = "ï¿½";//Broken fix it! Todo
 	}
 	else {
 		Text = std::to_string(Pin.Multiplicity);
