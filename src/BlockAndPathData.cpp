@@ -1,7 +1,7 @@
 #include "pch.hpp"
 #include "BlockAndPathData.hpp"
 
-#include "OpenGlDefines.hpp"
+// #include "OpenGlDefines.hpp"
 
 #include "Block.hpp"
 
@@ -414,7 +414,7 @@ void VisualPathData::AddLineIntegrateInsides(const PointIndex& a, const PointInd
 
 		//Find Other in PointsWithLinesToRemove becaus of A   I---O   B and both have to be removed
 		auto it = std::find_if(PointsWithLinesToRemove.begin() + i, PointsWithLinesToRemove.end(),
-			[this, &Other](const auto& pair) {
+			[&Other](const auto& pair) {
 				return pair.first == Other;
 			});
 		if (it != PointsWithLinesToRemove.end()) {
@@ -959,7 +959,7 @@ void VisualPathData::Sanitize() {
 }
 
 VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlockInterior* Block)
-	: Block(Block), Id(KlassInstanceCounter++), LineCount(0)
+	: LineCount(0), Block(Block), Id(KlassInstanceCounter++)
 {
 	assert(PointsMakeStreightLine(a, b));
 	assert(a != b);
@@ -973,7 +973,7 @@ VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlo
 }
 
 VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block)
-	:LastAddedLine(pd.LastAddedLine), LineCount(0)/*, BoundingBox(pd.BoundingBox)*/, Block(Block), Id(KlassInstanceCounter++) {
+	:LineCount(0), Block(Block)/*, BoundingBox(pd.BoundingBox)*/, Id(KlassInstanceCounter++), LastAddedLine(pd.LastAddedLine) {
 
 	for (const PointType& p : pd.Points) {
 		AddPoint(p);
@@ -988,10 +988,10 @@ VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior
 }
 
 VisualPathData::VisualPathData(VisualPathData&& other) noexcept
-	:LineCount(std::exchange(other.LineCount, 0)),
+	:Head(std::exchange(other.Head, FreeListEndPointIndex)),
 	Points(std::move(other.Points)),
-	Head(std::exchange(other.Head, FreeListEndPointIndex)),
 	BoundingBox(std::exchange(other.BoundingBox, {})),
+	LineCount(std::exchange(other.LineCount, 0)),
 	Block(std::exchange(other.Block, nullptr)),
 	Id(std::exchange(other.Id, InvalidId)),
 	LastAddedLine(std::exchange(other.LastAddedLine, InvalidLineIndex)) {
@@ -1334,8 +1334,6 @@ bool VisualPathData::addTo(const LineIndex& l, const PointType& p) {
 
 	const bool IsHorizontal = LineIsHorizontal(l);
 
-	const int coord = IsHorizontal;//0 = x, 1 = y
-
 	const PointType Projection = GetProjectionOnLine(l, p);
 
 	if (Projection == InvalidPoint)return false;
@@ -1353,6 +1351,7 @@ bool VisualPathData::addTo(const LineIndex& l, const PointType& p) {
 		SetLastAdded(AddLineRemoveIfUnnecesary(FirstOfAOrBFromOutside, p, false));
 		return true;
 	}
+
 	//not same direction
 	if ((!IsHorizontal && p.x() == A.x()) || (IsHorizontal && p.y() == A.y())) {//trivial extention on A
 		SetLastAdded(AddLineRemoveIfUnnecesary(l.A, p, false));
@@ -1367,6 +1366,7 @@ bool VisualPathData::addTo(const LineIndex& l, const PointType& p) {
 		SetLastAdded(AddLineRemoveIfUnnecesary(ProjIndex, p, false));
 		return true;
 	}
+
 	//Place Projection Simmularely to Point with same direciton
 	if (Points[FirstOfAOrBFromOutside].ConnectionCount() == 1) {
 
@@ -1882,11 +1882,11 @@ CompressedPathData::CompressedPathData(std::unordered_set<std::pair<PointType, P
 std::string CompressedPathData::toHumanReadable() const {
 	std::stringstream ss;
 	ss << "Points: \n";
-	int i = 0;
-	for (int i = 0; i < Points.size(); i++) {
+	size_t i = 0;
+	for (i = 0; i < Points.size(); i++) {
 		const auto& p = Points[i];
 		std::vector<LineIndex> Conn;
-		for (int j = 0; j < Lines.size(); j++) {
+		for (size_t j = 0; j < Lines.size(); j++) {
 			const auto& l = Lines[j];
 			if ((l.first == i || l.second == i)) {
 				Conn.push_back(l.first == i ? l.second : l.first);
@@ -1898,7 +1898,7 @@ std::string CompressedPathData::toHumanReadable() const {
 			<< Conn.size() << " ";
 		if (Conn.size() > 0) {
 			ss << "(";
-			for (int i = 0; i < Conn.size(); i++) {
+			for (size_t i = 0; i < Conn.size(); i++) {
 				ss << Conn[i];
 				if (i != Conn.size() - 1)ss << ", ";
 			}

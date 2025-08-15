@@ -63,7 +63,7 @@ BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetConflictPoi
 //}
 
 //Returns if need is to redraw
-bool VisualBlockInterior::SetHighlited(unsigned int Highlited) {
+bool VisualBlockInterior::SetHighlited(int Highlited) {
 	if (this->Highlited == Highlited)return false;
 	this->Highlited = Highlited;
 	Dirty = true;
@@ -82,7 +82,7 @@ bool VisualBlockInterior::HasHighlited() const {
 std::optional<CompressedBlockDataIndex> VisualBlockInterior::GetBlockIdByStencil(unsigned int Id) const {
 	unsigned int id = 0;
 	for (auto& [type, vec] : Blocks) {
-		for (auto& block : vec) {
+		for (auto& _ : vec) { // block
 			id++;
 			if (id != Id) continue;
 			return type;
@@ -349,18 +349,18 @@ Eigen::Vector2f VisualBlockInterior::GetMarkedMean() const {
 	return Mean;
 }
 
-void VisualBlockInterior::MarkArea(const MyRectF& Area/*, BlockBoundingBoxCallback bbbc*/) {
+void VisualBlockInterior::MarkArea(const MyRectF& Area) {
 	ClearMarked();
 	int id = 0;
 
 	for (const auto& [Index, MetaVec] : Blocks) {
-		std::array<MyRectF, 4> BBS = renderer->GetBlockBoundingBoxes(Index);
+		const auto& BBS = renderer->GetBlockBoundingBoxes(Index);
 		for (const auto& Meta : MetaVec) {
 			id++;
 			MyRectF BB = BBS[Meta.Rotation];
-			if (BB != MyRectF::FromCorners({ 1,1 }, { 1,1 })) {
-				int a = 0;
-			}
+			// if (BB != MyRectF::FromCorners({ 1,1 }, { 1,1 })) {
+			// 	int a = 0;
+			// }
 			BB.Position += Eigen::Vector2f{ Meta.Pos.x(), Meta.Pos.y() };
 			if (!BB.IsContainedIn(Area))continue;
 			SetMarked(id, true);
@@ -411,7 +411,7 @@ bool VisualBlockInterior::RotateMarked(bool CW) {
 			const PointType Base = GetBasePosition(meta, BlockSize);
 
 			//Update Rotateion
-			if ((meta.xflip && !meta.yflip) || !meta.xflip && meta.yflip) {
+			if ((meta.xflip && !meta.yflip) || (!meta.xflip && meta.yflip)) {
 				meta.Rotation = CW ? MyDirection::RotateCW(meta.Rotation) : MyDirection::RotateCCW(meta.Rotation);
 			}
 			else {
@@ -475,7 +475,7 @@ bool VisualBlockInterior::FlipMarked(bool X) {
 
 void VisualBlockInterior::MoveMarked(const PointType& Diff) {
 	ApplyToMarked(
-		[Diff](BlockMetadata& meta, const PointType& BlockSize) {meta.Pos += Diff; },
+		[Diff](BlockMetadata& meta, const PointType&) {meta.Pos += Diff; },
 		[Diff](VisualPath& p) {p.Move(Diff); }
 	);
 }
@@ -1247,9 +1247,9 @@ void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSiz
 
 	float Scale = 0.4f;
 
-	auto ext = RenderTextUtility::GetTextExtend(Pin.Name, false, false, Scale);
+	const auto& ext = RenderTextUtility::GetTextExtend(Pin.Name, false, false, Scale);
 
-	float Hightmul = Scale * RenderTextUtility::LineHeight;
+	// float Hightmul = Scale * RenderTextUtility::LineHeight;
 
 	MyDirection::Direction d = GetPinRotation(Meta, Pin);
 	switch (d) {
@@ -1323,7 +1323,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	BasePositionVerts.Clear();
 #endif
 
-	int id = 0;
+	ssize_t id = 0;
 
 	for (const auto& [IndexContained, MetaVec] : Blocks) {
 		const auto& ContainedExteriorOpt = ResourceManager->GetCompressedBlockData(IndexContained);
@@ -1364,15 +1364,15 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			PointType Flip = { 1 - 2 * Meta.xflip,1 - 2 * Meta.yflip };
 			PointType FlipOff = { Meta.xflip * BlockSize.x(),-int(Meta.yflip) * BlockSize.y() };
 			if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
-				TopLeft = Meta.Pos + FlipOff + PointType{ Meta.xflip * (BlockSize.y() - BlockSize.x()), Meta.yflip * (BlockSize.y() - BlockSize.x()) };
+				TopLeft = Pos + FlipOff + PointType{ Meta.xflip * (BlockSize.y() - BlockSize.x()), Meta.yflip * (BlockSize.y() - BlockSize.x()) };
 				BottomRight = TopLeft + PointType{ BlockSize.y(), -BlockSize.x() }.cwiseProduct(Flip);
 			}
 			else {
-				TopLeft = Meta.Pos + FlipOff;
+				TopLeft = Pos + FlipOff;
 				BottomRight = TopLeft + PointType{ BlockSize.x(), -BlockSize.y() }.cwiseProduct(Flip);
 			}
 
-			assert(MarkedBlocks.size() > id);
+			assert((ssize_t)MarkedBlocks.size() > id);
 			ColourType Color{};
 			if (MarkedBlocks[id]) {
 				Color = ColourType{ 1.0f,0.0f,1.0f,1.0f };

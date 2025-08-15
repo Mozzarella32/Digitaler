@@ -17,8 +17,8 @@ class MyFrame;
 
 class Renderer {
 public:
-	MyFrame* Frame;
 	MyApp* App;
+	MyFrame* Frame;
 
 public:
 	double Zoom = 0.01;
@@ -175,7 +175,7 @@ private:
 	void BBUpdaterWork();
 
 public:
-	const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbdi, bool TheOneIWant = false);
+	const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbdi);
 
 private:
 	double GoHomeZoom = 0.01;

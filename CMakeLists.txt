@@ -291,7 +291,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${PROJECT_SOURCE_DIR}/app)
 if (MSVC)
     add_compile_options(/W4)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Wno-missing-designated-field-initializers)
 endif()
 
 add_executable(${PROJECT_NAME} ${MY_SOURCE})

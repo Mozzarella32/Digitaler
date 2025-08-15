@@ -17,12 +17,12 @@ int RenderTextUtility::GetCharMapIndex(const char& c, const bool& bold, const bo
 
 RenderTextUtility::RenderTextUtility()
 	:
-	CharMap([this]() {
+	CharMap([]() {
 	std::map<int, CharInfo> CharMap;
 	//         0  1  2   3 4 5 6 7 8 9 10
 	//bolditallic id adv l t r b l t r b
 	//                   plain   atlas
-	for (int i = 0; i < (sizeof(atlasMap) / sizeof(atlasMap[0]) / 11); i++) {
+	for (ssize_t i = 0; i < (ssize_t)(sizeof(atlasMap) / sizeof(atlasMap[0]) / 11); i++) {
 		CharMap[(10000 * atlasMap[i * 11]) + atlasMap[i * 11 + 1]] = {
 			(float)atlasMap[i * 11 + 2],{
 				(float)atlasMap[i * 11 + 3], (float)atlasMap[i * 11 + 4],

@@ -34,9 +34,21 @@ public:
 
 	MyRect() {};
 
+	MyRect(const MyRect& other)
+		:Position(other.Position), Size(other.Size){}
+
+	MyRect(MyRect&& other)
+		:Position(std::move(other.Position)), Size(std::move(other.Size)){}
+
 	MyRect& operator=(const MyRect& other) {
 		Position = other.Position;
 		Size = other.Size;
+		return *this;
+	}
+
+	MyRect& operator=(MyRect&& other) {
+		Position = std::move(other.Position);
+		Size = std::move(other.Size);
 		return *this;
 	}
 

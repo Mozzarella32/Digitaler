@@ -1,7 +1,8 @@
+#include "pch.hpp"
+
 #include "MyApp.hpp"
 #include "MyFrame.hpp"
-#include "ShaderManager.hpp"
-#include "pch.hpp"
+// #include "ShaderManager.hpp"
 
 wxIMPLEMENT_APP(MyApp);
 

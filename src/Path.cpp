@@ -7,7 +7,7 @@ VisualPath::VisualPath(VisualPathData&& Data)
 	:Data(std::move(Data)) {
 }
 
-static const std::vector<TwoPointIRGBRHGHBHVertex> EmptyVerts;
+// static const std::vector<TwoPointIRGBRHGHBHVertex> EmptyVerts;
 
 void VisualPath::SetHover(bool Hover) {
 	if (this->Hover == Hover) return;

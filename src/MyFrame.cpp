@@ -16,8 +16,10 @@
 #include "BlockSelector.hpp"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
-                                GLenum severity, GLsizei length,
-                                const GLchar *message, const void *userParam) {
+                                GLenum severity,
+                                [[maybe_unused]] GLsizei length,
+                                const GLchar *message,
+                                [[maybe_unused]] const void *userParam) {
   // Beep(200, 1000);
   // DebugBreak();
   std::ofstream o("Error.log", std::ios::app);
@@ -116,11 +118,11 @@ MyFrame::MyFrame(MyApp *App)
                          wxDefaultSize,
                          wxDEFAULT_FRAME_STYLE | wxFULL_REPAINT_ON_RESIZE),
       // #ifdef HotShaderReload
-      App(App),
       // #endif
-      LoopTimer(this, [this]() { Loop(); }) {
+      LoopTimer(this, [this]() { Loop(); }),
+      App(App) {
   PROFILE_FUNKTION;
-  Bind(wxEVT_CLOSE_WINDOW, [App, this](wxCloseEvent &evt) {
+  Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent &evt) {
     evt.Skip();
     LoopTimer.Stop();
   });
@@ -201,29 +203,29 @@ MyFrame::MyFrame(MyApp *App)
   MenuBarPanel->SetDoubleBuffered(true);
   auto *MenuBarPanelSizer = new wxBoxSizer(wxHORIZONTAL);
 
-  auto AddButton = [Frame = this](wxWindow *Parent, wxSizer *Sizer,
-                                  const wxImage &Bitmap,
-                                  void (MyFrame::*Func)(wxCommandEvent &)) {
-    auto *Button =
-        new wxButton(Parent, wxID_ANY, wxEmptyString, wxDefaultPosition,
-                     wxDefaultSize, wxBU_EXACTFIT | wxBORDER_NONE);
-    Button->SetBitmap(Bitmap.Scale(24, 24));
-    Frame->CallAfter(
-        [Frame, Func, Button]() { Button->Bind(wxEVT_BUTTON, Func, Frame); });
-    Button->SetBackgroundColour(wxColour(70, 70, 70));
-    Button->SetForegroundColour("White");
-    Button->DisableFocusFromKeyboard();
-    Sizer->Add(Button, 0, wxALL, 5);
-    Button->Disable();
-    Frame->CallAfter([Button]() { Button->Enable(); });
-    return Button;
-  };
+  // auto AddButton = [Frame = this](wxWindow *Parent, wxSizer *Sizer,
+  //                                 const wxImage &Bitmap,
+  //                                 void (MyFrame::*Func)(wxCommandEvent &)) {
+  //   auto *Button =
+  //       new wxButton(Parent, wxID_ANY, wxEmptyString, wxDefaultPosition,
+  //                    wxDefaultSize, wxBU_EXACTFIT | wxBORDER_NONE);
+  //   Button->SetBitmap(Bitmap.Scale(24, 24));
+  //   Frame->CallAfter(
+  //       [Frame, Func, Button]() { Button->Bind(wxEVT_BUTTON, Func, Frame); });
+  //   Button->SetBackgroundColour(wxColour(70, 70, 70));
+  //   Button->SetForegroundColour("White");
+  //   Button->DisableFocusFromKeyboard();
+  //   Sizer->Add(Button, 0, wxALL, 5);
+  //   Button->Disable();
+  //   Frame->CallAfter([Button]() { Button->Enable(); });
+  //   return Button;
+  // };
 
-  auto AddTrenner = [](wxWindow *Parent, wxSizer *Sizer) {
-    auto *Trenner = new wxPanel(Parent, wxID_ANY, wxDefaultPosition, {2, -1});
-    Trenner->SetBackgroundColour(wxColour(120, 120, 120));
-    Sizer->Add(Trenner, 0, wxEXPAND | wxALL, 5);
-  };
+  // auto AddTrenner = [](wxWindow *Parent, wxSizer *Sizer) {
+  //   auto *Trenner = new wxPanel(Parent, wxID_ANY, wxDefaultPosition, {2, -1});
+  //   Trenner->SetBackgroundColour(wxColour(120, 120, 120));
+  //   Sizer->Add(Trenner, 0, wxEXPAND | wxALL, 5);
+  // };
 
   // AddButton(MenuBarPanel, MenuBarPanelSizer,
   // PngManager::GetPng(PngManager::Home), &MyFrame::OnHomeButton);
@@ -491,9 +493,9 @@ MyFrame::MyFrame(MyApp *App)
   std::cout << std::string("Initilizing: ") << InitilizeDescriptor << "\n";
   SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
-  CallAfter([this]() {
+  // CallAfter([this]() {
 
-  });
+  // });
 }
 
 MyFrame::~MyFrame() {
@@ -551,8 +553,8 @@ void MyFrame::OnGLInit() {
   PROFILE_SCOPE("Initilizing");
 
   // this->App->ContextBinder->BindContext(this->App->GlContext.get());
-  bool Bound = Canvas->BindContext();
-  assert(Bound == true);
+  // Canvas->BindContext();
+  // assert(Bound == true);
 
   /*	InitilizeDescriptor = "Loaing Shaders";
           SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
@@ -605,7 +607,7 @@ void MyFrame::Loop() {
     return;
   }
 
-  auto start = std::chrono::high_resolution_clock::now();
+  // auto start = std::chrono::high_resolution_clock::now();
 
   /*auto MousePosition = wxGetMousePosition();
   IO->Keyboarddata.MousePosition = { MousePosition.x,MousePosition.y };
@@ -639,9 +641,9 @@ void MyFrame::Loop() {
   // s << IO->GetStateString() + " " << IO->Keyboarddata.MousePosition.x() << ",
   // " << IO->Keyboarddata.MousePosition.y(); SetTitle(IO->GetStateString());
 
-  std::chrono::microseconds dur =
-      std::chrono::duration_cast<std::chrono::microseconds>(
-          std::chrono::high_resolution_clock::now() - start);
+  // std::chrono::microseconds dur =
+  //     std::chrono::duration_cast<std::chrono::microseconds>(
+  //         std::chrono::high_resolution_clock::now() - start);
 
   // static std::vector<std::chrono::microseconds> history;
   // static constexpr size_t maxHistorySize = 60; // Memory size
@@ -683,7 +685,7 @@ void MyFrame::Loop() {
 
   // VisualBlockInterior::BoxSize = boxFloat;
 
-  auto Info = LoopTimer.GetInfo();
+  // auto Info = LoopTimer.GetInfo();
 
   std::stringstream s;
 

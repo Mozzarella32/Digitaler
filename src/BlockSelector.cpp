@@ -7,6 +7,7 @@
 #include "DataResourceManager.hpp"
 
 #include "MyFrame.hpp"
+#include <sys/types.h>
 
 BlockSelector::BlockSelector(DataResourceManager* ResourceManager, Renderer* renderer)
 	: ResourceManager(ResourceManager), renderer(renderer)
@@ -23,7 +24,7 @@ void BlockSelector::PushInfo(const BlockInfo& Block) {
 
 bool BlockSelector::Hover(const Eigen::Vector2i& Mouse) {
 
-	const auto& CanvasSize = renderer->CanvasSize;
+	// const auto& CanvasSize = renderer->CanvasSize;
 
 	int OldHoverIndex = HoverIndex;
 	HoverIndex = -1;
@@ -41,7 +42,7 @@ bool BlockSelector::Hover(const Eigen::Vector2i& Mouse) {
 	return true;
 }
 std::optional<BlockSelector::BlockInfo> BlockSelector::Click(const Eigen::Vector2i& Mouse) {
-	int ClickIndex = -1;
+	ssize_t ClickIndex = -1;
 	for (size_t i = 0; i < ClipRects.size(); i++) {
 		const auto& Rect = ClipRects[i];
 		if (!Rect.Contains(Mouse)) continue;
@@ -49,7 +50,7 @@ std::optional<BlockSelector::BlockInfo> BlockSelector::Click(const Eigen::Vector
 		break;
 	}
 	if (ClickIndex == -1) return std::nullopt;
-	assert(ClickIndex < Blocks.size());
+	assert(ClickIndex < (ssize_t)Blocks.size());
 	auto it = Blocks.begin();
 	std::advance(it, ClickIndex + 1);
 	Blocks.erase(it, Blocks.end());
@@ -77,7 +78,7 @@ void BlockSelector::UpdateExtendsAndText() {
 
 	Eigen::Affine2f transform = GetTransform(CanvasSize);
 
-	for (int i = 0; i < Blocks.size(); i++) {
+	for (ssize_t i = 0; i < (ssize_t)Blocks.size(); i++) {
 		const auto& Info = Blocks[i];
 		const auto& Ident = Info.Ident;
 		std::string Text;

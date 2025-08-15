@@ -1,5 +1,8 @@
-#include "Include.hpp"
+#pragma once
+
 #include "pch.hpp"
+
+#include "Include.hpp"
 
 class MyApp;
 class IOHandler;
@@ -26,7 +29,7 @@ public:
   // GUI
   std::unique_ptr<BlockSelector> Blockselector;
 
-  wxGLCanvasWithFrameContext*Canvas;
+  wxGLCanvasWithFrameContext *Canvas;
   // std::unique_ptr<Board> board;
 
   std::string InitilizeDescriptor = "none";
@@ -49,21 +52,21 @@ private:
     GoHome
   };
 
-  void OnQuitMenu(wxCommandEvent &evt) {};
+  void OnQuitMenu([[maybe_unused]] wxCommandEvent &evt) {};
 
-  void OnNewMenu(wxCommandEvent &evt) {};
+  void OnNewMenu([[maybe_unused]] wxCommandEvent &evt) {};
 
-  void OnSaveMenu(wxCommandEvent &evt) {};
-  void OnOpenMenu(wxCommandEvent &evt) {};
+  void OnSaveMenu([[maybe_unused]] wxCommandEvent &evt) {};
+  void OnOpenMenu([[maybe_unused]] wxCommandEvent &evt) {};
 
-  void OnImportMenu(wxCommandEvent &evt) {};
-  void OnExportMenu(wxCommandEvent &evt) {};
+  void OnImportMenu([[maybe_unused]] wxCommandEvent &evt) {};
+  void OnExportMenu([[maybe_unused]] wxCommandEvent &evt) {};
 
-  void OnHelpMenu(wxCommandEvent &evt) {};
+  void OnHelpMenu([[maybe_unused]] wxCommandEvent &evt) {};
 
-  void OnCopyMenu(wxCommandEvent &evt) {};
-  void OnCutMenu(wxCommandEvent &evt) {};
-  void OnPasteMenu(wxCommandEvent &evt) {};
+  void OnCopyMenu([[maybe_unused]] wxCommandEvent &evt) {};
+  void OnCutMenu([[maybe_unused]] wxCommandEvent &evt) {};
+  void OnPasteMenu([[maybe_unused]] wxCommandEvent &evt) {};
 
   // void PostMoveUpdates(bool render);
 
@@ -73,9 +76,9 @@ private:
   wxSlider *SpeedSlider;
   wxButton *StartStopButton;
 
-  void OnSingleStepButton(wxCommandEvent &evt) {};
-  void OnStartStopButton(wxCommandEvent &evt) {};
-  void OnHomeButton(wxCommandEvent &evt) {};
+  void OnSingleStepButton([[maybe_unused]] wxCommandEvent &evt) {};
+  void OnStartStopButton([[maybe_unused]] wxCommandEvent &evt) {};
+  void OnHomeButton([[maybe_unused]] wxCommandEvent &evt) {};
   void OnSpeedSlider() {};
 
 public:
@@ -88,13 +91,13 @@ public:
 private:
   void Loop();
 
-  void OnMouseMove(wxMouseEvent &evt) {};
-  void OnMouseDown(wxMouseEvent &evt) {};
-  void OnMouseUp(wxMouseEvent &evt) {};
-  void OnLeaveWindow(wxMouseEvent &evt) {};
+  void OnMouseMove([[maybe_unused]] wxMouseEvent &evt) {};
+  void OnMouseDown([[maybe_unused]] wxMouseEvent &evt) {};
+  void OnMouseUp([[maybe_unused]] wxMouseEvent &evt) {};
+  void OnLeaveWindow([[maybe_unused]] wxMouseEvent &evt) {};
 
-  void OnKeyDown(wxKeyEvent &evt) {};
-  void OnKeyUp(wxKeyEvent &evt) {};
+  void OnKeyDown([[maybe_unused]] wxKeyEvent &evt) {};
+  void OnKeyUp([[maybe_unused]] wxKeyEvent &evt) {};
 
-  void OnChar(wxKeyEvent &evt);
+  void OnChar([[maybe_unused]] wxKeyEvent &evt);
 };

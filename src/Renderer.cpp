@@ -9,7 +9,7 @@
 #include "PngManager.hpp"
 #include "ShaderManager.hpp"
 
-#include "RenderTextUtility.hpp"
+// #include "RenderTextUtility.hpp"
 
 #include "DataResourceManager.hpp"
 
@@ -819,21 +819,6 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
 #ifdef RenderCollisionGrid
       CollisionGridVAO(CreateVAO<TwoPointIRGBAIDVertex>()),
 #endif
-      BlocksVAO(CreateVAO<TwoPointIRGBAIDVertex>()),
-      SevenSegVAO(CreateVAO<SevenSegVertex>()),
-      SixteenSegVAO(CreateVAO<SixteenSegVertex>()),
-      MuxVAO(CreateVAO<MuxIDVertex>()),
-      PinVAO(CreateVAO<PointIOrientationRGBRHGHBHIDVertex>()),
-      RoundPinVAO(CreateVAO<PointIRGBIDVertex>()),
-      AndVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
-      OrVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
-      XOrVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
-      /*NotTriangleVAO(CreatePointIOrientationVAO()),
-      NDotVAO(CreatePointIOrientationVAO()),*/
-      AreaSelectVAO(CreateVAO<PointFRGBVertex>()),
-#ifdef ShowBasePositionOfBlocks
-      BlockBasePotitionVAO(CreateVAO<PointFRGBVertex>()),
-#endif
       VAOsPath(PathVAOs{
           .EdgesVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
           .EdgesMarkedVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
@@ -850,6 +835,21 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
           .VertsVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
           .ConflictPointsVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
       }),
+      SevenSegVAO(CreateVAO<SevenSegVertex>()),
+      SixteenSegVAO(CreateVAO<SixteenSegVertex>()),
+      MuxVAO(CreateVAO<MuxIDVertex>()),
+      BlocksVAO(CreateVAO<TwoPointIRGBAIDVertex>()),
+      PinVAO(CreateVAO<PointIOrientationRGBRHGHBHIDVertex>()),
+      RoundPinVAO(CreateVAO<PointIRGBIDVertex>()),
+      AndVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
+      /*NotTriangleVAO(CreatePointIOrientationVAO()),
+      NDotVAO(CreatePointIOrientationVAO()),*/
+      OrVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
+#ifdef ShowBasePositionOfBlocks
+      XOrVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
+#endif
+      AreaSelectVAO(CreateVAO<PointFRGBVertex>()),
+      BlockBasePotitionVAO(CreateVAO<PointFRGBVertex>()),
       StaticTextVAO(CreateVAO<TextVertex>()),
       DynamicTextVAO(CreateVAO<TextVertex>()),
       TextAtlas(PngManager::GetPng(PngManager::atlas), []() {
@@ -951,14 +951,11 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
 }
 
 const std::array<MyRectF, 4> &
-Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi,
-                                bool TheOneIWant) {
+Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   PROFILE_FUNKTION;
-  // if (!TheOneIWant) {
   auto it = BlockBoundingBoxes.find(cbdi);
   if (it != BlockBoundingBoxes.end())
     return it->second;
-  //}
 
   auto AltZoom = Zoom;
   auto AltOffset = Offset;

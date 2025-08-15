@@ -90,7 +90,7 @@ private:
 	PointType MouseCachedPreview;
 	MyRectF CachedBoundingBoxPreview;
 
-	unsigned int Highlited;
+	ssize_t Highlited;
 
 	//Carefull index 0 is unused
 	std::vector<bool> MarkedBlocks;
@@ -110,7 +110,7 @@ public:
 
 
 	//Returns if need is to redraw
-	bool SetHighlited(unsigned int Highlited);
+	bool SetHighlited(int Highlited);
 
 	unsigned int GetHighlited() const;
 	//Renderer* renderer;
@@ -307,7 +307,6 @@ public:
 
 	static PointType GetPinPosition(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin, const int& Expoltion);
 	static MyDirection::Direction GetPinRotation(const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
-
 private:
 	void ShowMultiplicity(const float& Zoom, const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
 

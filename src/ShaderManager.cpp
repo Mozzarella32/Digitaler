@@ -128,7 +128,7 @@ const std::vector<std::pair<ShaderManager::Shaders, GLenum>>& ShaderManager::Get
 
 	for (int i = 0; i < ShadersSize; i++) {
 		auto& shader = This.Map.at((Shaders)i);
-		size_t Location = shader->GetLocation(uniform);
+		const auto& Location = shader->GetLocation(uniform);
 		if (Location != -1) {
 			shaders.emplace_back((Shaders)i, Location);
 		}

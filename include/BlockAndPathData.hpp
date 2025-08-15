@@ -48,7 +48,7 @@ struct BlockMetadata {
 	int Transform() const;
 };
 
-using CompressedBlockDataIndex = size_t;
+using CompressedBlockDataIndex = ssize_t;
 
 static const constexpr CompressedBlockDataIndex InvalidCompressedBlockDataIndex = -2;
 
@@ -185,8 +185,8 @@ struct LineIndex {
 	PointIndex B;
 
 	bool operator==(const LineIndex& other) const {
-		return other.A == A && other.B == B
-			|| other.A == B && other.B == A;
+		return (other.A == A && other.B == B)
+			|| (other.A == B && other.B == A);
 	}
 
 	bool operator!=(const LineIndex& other) const {
@@ -327,7 +327,7 @@ private:
 public:
 
 	//Is unusable until reassigned(every funktion fails assert)
-	VisualPathData(VisualBlockInterior* Block = nullptr) : Block(Block), Id(KlassInstanceCounter++), LineCount(0) {}
+	VisualPathData(VisualBlockInterior* Block = nullptr) : LineCount(0), Block(Block), Id(KlassInstanceCounter++) {}
 	VisualPathData(const PointType& p1, const PointType& p2, VisualBlockInterior* Block);
 	VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block);
 	VisualPathData(VisualPathData&& other) noexcept;

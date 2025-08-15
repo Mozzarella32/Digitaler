@@ -20,7 +20,7 @@ DataResourceManager::DataResourceManager(Renderer* renderer)
 				{.Rotation = MyDirection::Down, .Offset = 1,.Multiplicity = 7},
 				{.Rotation = MyDirection::Down, .Offset = 2},
 			},
-		}
+		},
 		});
 
 	SpecialBlocks.SixteenSeg = AddCompressedData(

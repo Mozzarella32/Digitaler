@@ -13,7 +13,7 @@ class Renderer;
 class BlockIdentifiyer;
 
 class BlockSelector {
-	DataResourceManager* ResourceManager;
+	[[maybe_unused]] DataResourceManager* ResourceManager;
 	Renderer* renderer;
 
 public:
@@ -26,7 +26,7 @@ public:
 	std::vector<BlockInfo> Blocks;
 	std::vector<MyRectI> ClipRects;
 
-	int HoverIndex = -1;//-1 is no hover
+	ssize_t HoverIndex = -1;//-1 is no hover
 
 	bool Dirty : 1 = true;
 

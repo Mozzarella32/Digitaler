@@ -4,11 +4,11 @@
 
 #include "MyApp.hpp"
 
-#include "ShaderManager.hpp"
+// #include "ShaderManager.hpp"
 #include "MyFrame.hpp"
 
 #include "Renderer.hpp"
-#include "RenderTextUtility.hpp"
+// #include "RenderTextUtility.hpp"
 
 #include "DataResourceManager.hpp"
 
@@ -426,7 +426,7 @@ void IOHandler::OnMouseUp(const Eigen::Vector2f& Pos) {
 
 void IOHandler::OnRightMouseDown(const Eigen::Vector2f& Pos) {
 	UpdateMouseIndex(Pos);
-	Renderer& r = *Frame->renderer;
+	// Renderer& r = *Frame->renderer;
 	VisualBlockInterior& b = Frame->BlockManager->Interior;
 	if (state == State::Marking || state == State::DraggingMarked || state == State::DraggingWithMarking) {
 		b.ClearMarked();
@@ -458,7 +458,7 @@ void IOHandler::OnRightMouseDown(const Eigen::Vector2f& Pos) {
 	DraggingOrigin = Pos;
 }
 
-void IOHandler::OnDClick(const Eigen::Vector2f& Pos) {
+void IOHandler::OnDClick([[maybe_unused]] const Eigen::Vector2f& pos) {
 	VisualBlockInterior& b = Frame->BlockManager->Interior;
 	Renderer& r = *Frame->renderer;
 
