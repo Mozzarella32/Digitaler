@@ -68,10 +68,8 @@ jobs:
       id: cache-wxwidgets
       uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}/build/submodules/MyWxWidgets/submodules/MyOpenGl/submodules/wxWidgets
+        path: ${{ github.workspace }}/build
         key: wxwidgets-${{ runner.os }}-${{ matrix.build_type }}-${{ steps.wxwidgets_commit.outputs.hash }}
-        restore-keys: |
-          wxwidgets-${{ runner.os }}-${{ matrix.build_type }}-
 
     - name: Install GTK3(Ubuntu)
       if: matrix.os == 'ubuntu-latest'
