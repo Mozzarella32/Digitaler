@@ -57,6 +57,22 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+    - name: Get wxWidgets commit hash
+      id: wxwidgets_commit
+      shell: bash
+      run: |
+        WXWIDGETS_PATH="${{ github.workspace }}/submodules/MyWxWidgets/submodules/MyOpenGl/submodules/wxWidgets"
+        echo "hash=$(git -C "$WXWIDGETS_PATH" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache wxWidgets build
+      id: cache-wxwidgets
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/build/submodules/MyWxWidgets/submodules/MyOpenGl/submodules/wxWidgets
+        key: wxwidgets-${{ runner.os }}-${{ matrix.build_type }}-${{ steps.wxwidgets_commit.outputs.hash }}
+        restore-keys: |
+          wxwidgets-${{ runner.os }}-${{ matrix.build_type }}-
+
     - name: Install GTK3(Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libglu1-mesa-dev build-essential clang g++
