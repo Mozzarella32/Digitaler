@@ -57,12 +57,12 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Cache build
-      id: cache-build
+    - name: Cache ccache
+      if: matrix.os == 'ubuntu-latest'
       uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}/build
-        key: build-${{ runner.os }}-${{ matrix.build_type }}-${{ matrix.c_compiler }}
+        path: ~/.ccache
+        key: ccache-${{ runner.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
 
     - name: Install GTK3(Ubuntu)
       if: matrix.os == 'ubuntu-latest'
