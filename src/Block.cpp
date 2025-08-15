@@ -82,7 +82,7 @@ bool VisualBlockInterior::HasHighlited() const {
 std::optional<CompressedBlockDataIndex> VisualBlockInterior::GetBlockIdByStencil(unsigned int Id) const {
 	unsigned int id = 0;
 	for (auto& [type, vec] : Blocks) {
-		for (auto& _ : vec) { // block
+		for ([[maybe_unused]] auto& block : vec) {
 			id++;
 			if (id != Id) continue;
 			return type;
