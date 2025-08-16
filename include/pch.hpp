@@ -2,8 +2,6 @@
 
 #include <glad/glad.h>
 
-#undef APIENTRY
-
 #include <wx/artprov.h>
 #include <wx/dnd.h>
 #include <wx/filename.h>
@@ -35,11 +33,9 @@
 #ifndef _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
 #define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
 #endif
-
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
-
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
