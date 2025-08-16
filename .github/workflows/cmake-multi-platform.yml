@@ -72,23 +72,25 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
-        export CC="ccache ${{ matrix.c_compiler }}"
-        export CXX="ccache ${{ matrix.cpp_compiler }}"
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-          -DCMAKE_C_COMPILER="$CC" \
-          -DCMAKE_CXX_COMPILER="$CXX" \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -S ${{ github.workspace }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -S ${{ github.workspace }}
+
 
     - name: Configure CMake (Windows, no ccache)
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} \
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -S ${{ github.workspace }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
+
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
