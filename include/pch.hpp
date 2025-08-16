@@ -2,6 +2,25 @@
 
 #include <glad/glad.h>
 
+#include <wx/artprov.h>
+#include <wx/dnd.h>
+#include <wx/filename.h>
+#include <wx/gbsizer.h>
+#include <wx/hyperlink.h>
+#include <wx/image.h>
+#include <wx/mstream.h>
+#include <wx/popupwin.h>
+#include <wx/spinctrl.h>
+#include <wx/splitter.h>
+#include <wx/stdpaths.h>
+#include <wx/sysopt.h>
+#include <wx/treectrl.h>
+#include <wx/wfstream.h>
+#include <wx/wrapsizer.h>
+#include <wx/wx.h>
+#include <wx/zipstrm.h>
+#include <wx/glcanvas.h>
+
 #ifdef _WIN32
 
 #undef APIENTRY
@@ -42,25 +61,6 @@
 #include "../submodules/Visitor/Visitor.hpp"
 
 #include "../submodules/LinearAlgebra/Point.hpp"
-
-#include <wx/artprov.h>
-#include <wx/dnd.h>
-#include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/hyperlink.h>
-#include <wx/image.h>
-#include <wx/mstream.h>
-#include <wx/popupwin.h>
-#include <wx/spinctrl.h>
-#include <wx/splitter.h>
-#include <wx/stdpaths.h>
-#include <wx/sysopt.h>
-#include <wx/treectrl.h>
-#include <wx/wfstream.h>
-#include <wx/wrapsizer.h>
-#include <wx/wx.h>
-#include <wx/zipstrm.h>
-#include <wx/glcanvas.h>
 
 #include <array>
 #include <queue>
