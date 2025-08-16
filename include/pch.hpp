@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-// #undef APIENTRY
+#undef APIENTRY
 
 #include <wx/artprov.h>
 #include <wx/dnd.h>
