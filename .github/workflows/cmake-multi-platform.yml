@@ -60,7 +60,7 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-            echo "sccache-dir=$LOCALAPPDATA/Mozilla/sccache" >> "$GITHUB_OUTPUT"
+            echo "sccache-dir=$LOCALAPPDATA\Mozilla\sccache\cache" >> "$GITHUB_OUTPUT"
         else
             echo "sccache-dir=$HOME/.cache/sccache" >> "$GITHUB_OUTPUT"
         fi
