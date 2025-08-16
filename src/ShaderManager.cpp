@@ -106,8 +106,8 @@ const std::unique_ptr<Shader>& ShaderManager::GetShader(const Shaders& shader) {
 	std::unique_lock ul(This.QueueMutex);
 	if (This.Queue.empty() && This.Map.contains(shader)) return This.Map.at(shader);
 	while (!This.Queue.empty()) {
-		const auto& [shader, Vert, Frag] = This.Queue.back();
-		This.Map[shader] = std::make_unique<Shader>(ErrorHandler, Vert, Frag);
+		const auto& [currShader, Vert, Frag] = This.Queue.back();
+		This.Map[currShader] = std::make_unique<Shader>(ErrorHandler, Vert, Frag);
 		This.Queue.pop_back();
 	}
 	This.IsDirty = true;

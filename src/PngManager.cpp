@@ -19,9 +19,9 @@ PngManager::PngManager()
 }
 #undef X
 {
-#define X(Name) Map.at(Name);
-	XList_Png_Images
-#undef X
+//#define X(Name) Map.at(Name);
+//	XList_Png_Images
+//#undef X
 }
 
 PngManager& PngManager::GetInstance() {

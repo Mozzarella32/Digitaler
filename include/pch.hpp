@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glad/glad.h>
+
 #ifdef _WIN32
 
 #undef APIENTRY
@@ -16,15 +18,18 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+//#pragma warning(push)
+//#pragma warning(disable : 4005)
+
 #include <winsock2.h>
 #include <Windows.h>
+
+//#pragma warning(pop)
 #endif
 
-#include <glad/glad.h>
-
-// #ifdef _WIN32
-// #include <GL/gl.h>
-// #endif
+ //#ifdef _WIN32
+ //#include <GL/gl.h>
+ //#endif
 
 #ifdef __APPLE__
 #include <OpenGL/glu.h>

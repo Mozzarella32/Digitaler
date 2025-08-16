@@ -9,9 +9,9 @@ VisualPath::VisualPath(VisualPathData&& Data)
 
 // static const std::vector<TwoPointIRGBRHGHBHVertex> EmptyVerts;
 
-void VisualPath::SetHover(bool Hover) {
-	if (this->Hover == Hover) return;
-	this->Hover = Hover;
+void VisualPath::SetHover(bool newHover) {
+	if (Hover == newHover) return;
+	Hover = newHover;
 	Dirty = true;
 }
 //
@@ -44,9 +44,9 @@ void VisualPath::MarkAll() {
 //	Dirty = true;
 //}
 
-void VisualPath::SetPreview(bool Preview) {
-	if (this->Preview == Preview) return;
-	this->Preview = Preview;
+void VisualPath::SetPreview(bool newPreview) {
+	if (Preview == newPreview) return;
+	Preview = newPreview;
 	Dirty = true;
 }
 

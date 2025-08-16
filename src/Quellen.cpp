@@ -49,8 +49,8 @@ bool MyApp::OnInit() {
   //     },
   //     [this]() { OnOGLInit(); });
   // return true;
-  MyFrame *Frame = new MyFrame(this);
-  Frame->Show();
+  frame = new MyFrame(this);
+  frame->Show();
   return true;
 }
 

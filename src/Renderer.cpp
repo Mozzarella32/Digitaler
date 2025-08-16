@@ -895,7 +895,7 @@ BufferedVertexVec<PointFRGBVertex> &Renderer::GetAreaSelectVerts() {
   return AreaSelectVerts;
 }
 
-void Renderer::UpdateMouseIndex(const PointType &MouseIndex) {
+void Renderer::UpdateMouseIndex(const PointType &newMouseIndex) {
 
   if (!Frame->Canvas->BindContext()) {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
@@ -905,12 +905,12 @@ void Renderer::UpdateMouseIndex(const PointType &MouseIndex) {
       ShaderManager::GetShader(ShaderManager::Background);
 
   BackgroundShader->bind();
-  GLCALL(glUniform2f(BackgroundShader->GetLocation("UMousePos"), MouseIndex.x(),
-                     MouseIndex.y()));
+  GLCALL(glUniform2f(BackgroundShader->GetLocation("UMousePos"), newMouseIndex.x(),
+                     newMouseIndex.y()));
 
   RenderBackground();
 
-  this->MouseIndex = MouseIndex;
+  MouseIndex = newMouseIndex;
 
   Dirty = true;
   Render();

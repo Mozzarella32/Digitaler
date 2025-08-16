@@ -1173,7 +1173,6 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 	default:
 		std::unreachable();
 	}
-	return {};
 }
 
 MyDirection::Direction VisualBlockInterior::GetPinRotation(const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {

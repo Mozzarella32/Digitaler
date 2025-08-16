@@ -7,7 +7,7 @@ class MyFrame;
 
 class MyApp : public wxApp{
 public:
-  MyFrame *Frame;
+  MyFrame *frame;
 
 public:
   // GLContextBinder* ContextBinder;

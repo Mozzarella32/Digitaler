@@ -15,7 +15,20 @@
 
 #include "BlockSelector.hpp"
 
-void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
+// EVIL
+#ifdef APIENTRY
+#undef APIENTRY
+#endif
+
+#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+#define APIENTRY __stdcall
+#endif
+
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+
+void APIENTRY MessageCallback(GLenum source, GLenum type, GLuint id,
                                 GLenum severity,
                                 [[maybe_unused]] GLsizei length,
                                 const GLchar *message,
