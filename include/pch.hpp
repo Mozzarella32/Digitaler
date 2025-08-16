@@ -1,6 +1,33 @@
 #pragma once
 
+#ifdef _WIN32
+
+#undef APIENTRY
+
+#ifndef _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
+#define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
+#endif
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <winsock2.h>
+#include <Windows.h>
+#include <GL/gl.h>
+#endif
+
 #include <glad/glad.h>
+
+#ifdef __APPLE__
+#include <OpenGL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
 
 #include <wx/artprov.h>
 #include <wx/dnd.h>
@@ -25,33 +52,6 @@
 #include <Utility.hpp>
 // #include <MyWxWidgets/ElementLayerer.h>
 #include <GameLoopTimer.hpp>
-
-#ifdef _WIN32
-
-#undef APIENTRY
-
-#ifndef _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
-#define _SILENCE_CXX23_DENORM_DEPRECATION_WARNING
-#endif
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-
-#define _CRT_SECURE_NO_WARNINGS
-
-#include <winsock2.h>
-#include <Windows.h>
-#include <GL/gl.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
 
 #include <Shader.hpp>
 #include <Texture.hpp>
