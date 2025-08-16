@@ -51,7 +51,7 @@ jobs:
         fetch-depth: 1
         
     - name: Set up sccache
-      uses: actions/sccache@v1
+      uses: mozilla-actions/sccache-action@v0.0.9
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
