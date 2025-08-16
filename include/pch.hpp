@@ -22,9 +22,9 @@
 
 #include <glad/glad.h>
 
-#ifdef _WIN32
-#include <GL/gl.h>
-#endif
+// #ifdef _WIN32
+// #include <GL/gl.h>
+// #endif
 
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
