@@ -18,10 +18,13 @@
 
 #include <winsock2.h>
 #include <Windows.h>
-#include <GL/gl.h>
 #endif
 
 #include <glad/glad.h>
+
+#ifdef _WIN32
+#include <GL/gl.h>
+#endif
 
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
