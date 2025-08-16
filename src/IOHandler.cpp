@@ -148,19 +148,19 @@ void IOHandler::MoveViewUpdate() {
 	}*/
 }
 
-void IOHandler::SetState(const State& state) {
+void IOHandler::SetState(const State& newState) {
 	Renderer& r = *Frame->renderer;
 	//if (this->state == State::Placing) {
 		//NextPlaceBuilding.reset();
 	//}
-	if (state == State::GoHome) {
-		GoHomeSaveState = this->state;
+	if (newState == State::GoHome) {
+		GoHomeSaveState = state;
 	}
-	this->state = state;
-	if (this->state == State::GoHome) {
+	state = newState;
+	if (newState == State::GoHome) {
 		r.StartGoHome();
 	}
-	r.AllowHover = state != State::AreaFirstPoint;
+	r.AllowHover = newState != State::AreaFirstPoint;
 	//if (this->state == Placing) {
 		//BottomupMenu.Show(true);
 	//}
@@ -511,8 +511,6 @@ void IOHandler::OnKeyDown(wxKeyEvent& evt) {
 		break;
 	case 'A':
 		if (Keyboarddata.Strng) {
-			VisualBlockInterior& b = Frame->BlockManager->Interior;
-			Renderer& r = *Frame->renderer;
 			if (state == State::PlacingLine || state == State::DraggingWhilePlacingLine) {
 				b.EndDrag();
 			}

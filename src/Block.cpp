@@ -63,9 +63,9 @@ BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetConflictPoi
 //}
 
 //Returns if need is to redraw
-bool VisualBlockInterior::SetHighlited(int Highlited) {
-	if (this->Highlited == Highlited)return false;
-	this->Highlited = Highlited;
+bool VisualBlockInterior::SetHighlited(int newHighlited) {
+	if (Highlited == newHighlited)return false;
+	Highlited = newHighlited;
 	Dirty = true;
 	DirtyBlocks = true;
 	return true;
@@ -652,9 +652,9 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 	}
 
 	std::map<CompressedBlockDataIndex, std::vector<BlockMetadata>> ToInser;
-	for (const auto& [Ident, Blocks] : Data.blockExteriorData.ContainedBlocks) {
-		for (const auto& Block : Blocks) {
-			ToInser[ResourceManager->GetBlockIndex(Ident)].push_back(Block);
+	for (const auto& [ident, blocks] : Data.blockExteriorData.ContainedBlocks) {
+		for (const auto& block : blocks) {
+			ToInser[ResourceManager->GetBlockIndex(ident)].push_back(block);
 		}
 	}
 

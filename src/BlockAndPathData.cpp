@@ -1898,9 +1898,9 @@ std::string CompressedPathData::toHumanReadable() const {
 			<< Conn.size() << " ";
 		if (Conn.size() > 0) {
 			ss << "(";
-			for (size_t i = 0; i < Conn.size(); i++) {
+			for (size_t j = 0; j < Conn.size(); j++) {
 				ss << Conn[i];
-				if (i != Conn.size() - 1)ss << ", ";
+				if (j != Conn.size() - 1) ss << ", ";
 			}
 			ss << ")";
 		}
