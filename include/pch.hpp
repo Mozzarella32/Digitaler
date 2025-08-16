@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#undef APIENTRY
+// #undef APIENTRY
 
 #include <wx/artprov.h>
 #include <wx/dnd.h>
@@ -22,6 +22,11 @@
 #include <wx/wx.h>
 #include <wx/zipstrm.h>
 #include <wx/glcanvas.h>
+
+#include <GLInitialiser.hpp>
+#include <Utility.hpp>
+// #include <MyWxWidgets/ElementLayerer.h>
+#include <GameLoopTimer.hpp>
 
 #ifdef _WIN32
 
@@ -51,11 +56,6 @@
 #else
 #include <GL/glu.h>
 #endif
-
-#include <GLInitialiser.hpp>
-#include <Utility.hpp>
-// #include <MyWxWidgets/ElementLayerer.h>
-#include <GameLoopTimer.hpp>
 
 #include <Shader.hpp>
 #include <Texture.hpp>
