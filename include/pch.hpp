@@ -1,7 +1,5 @@
 #pragma once
 
-#include <glad/glad.h>
-
 // #undef APIENTRY
 
 #include <wx/artprov.h>
@@ -56,6 +54,8 @@
 #else
 #include <GL/glu.h>
 #endif
+
+#include <glad/glad.h>
 
 #include <Shader.hpp>
 #include <Texture.hpp>
