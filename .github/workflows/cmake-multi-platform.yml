@@ -71,7 +71,7 @@ jobs:
     - name: Configure CMake (Ubuntu, with ccache)
       if: matrix.os == 'ubuntu-latest'
       shell: bash
-      run: |
+      run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
@@ -84,7 +84,7 @@ jobs:
     - name: Configure CMake (Windows, no ccache)
       if: matrix.os == 'windows-latest'
       shell: bash
-      run: |
+      run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
