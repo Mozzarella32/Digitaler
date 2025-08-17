@@ -28,8 +28,8 @@ void Renderer::RenderBackground() {
   glViewport(0, 0, CanvasSize.x(), CanvasSize.y());
 
   GLCALL(glDisable(GL_DEPTH_TEST));
-  const auto& BackgroundShader =
-      ShaderManager::GetShader(ShaderManager::Background);
+  auto* BackgroundShader =
+      ShaderManager::GetShader(ShaderManager::Background).get();
 
   BackgroundShader->bind();
 
