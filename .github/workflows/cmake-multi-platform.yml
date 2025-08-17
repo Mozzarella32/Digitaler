@@ -77,10 +77,6 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libglu1-mesa-dev build-essential
 
-    - name: Install GTK3 (Arch Linux)
-      if: matrix.os == 'archlinux'
-      run: sudo pacman -Sy --noconfirm gtk3 glu
-
     - name: Restore sccache
       uses: actions/cache/restore@v4
       with:
