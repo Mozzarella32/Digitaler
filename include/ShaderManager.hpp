@@ -62,6 +62,7 @@ public:
 
 	static const std::vector<std::pair<Shaders, GLenum>>& GetShadersWithUniform(const std::string& uniform);
 
+	[[gnu::lifetimebound]]
 	static const std::unique_ptr<Shader>& GetShader(const Shaders& shader);
 
 	static void Initilise();
