@@ -58,7 +58,9 @@ jobs:
         submodules: recursive
         fetch-depth: 1
 
-    - name: Restore file timestamps from git with Bash
+    - name: Restore file mtimes from git (cross-platform)
+      shell: bash
+      if: runner.os != 'Windows'
       run: |
         while read -r file; do
           if [ -f "$file" ]; then
@@ -66,6 +68,21 @@ jobs:
             touch -d "@$mtime" "$file"
           fi
         done < <(git ls-files)
+
+    - name: Restore file mtimes from git (Windows)
+      shell: pwsh
+      if: runner.os == 'Windows'
+      run: |
+        git ls-files | ForEach-Object {
+          $file = $_
+          if (Test-Path $file) {
+            $timestamp = git log -1 --format="%at" -- $file
+            if ($timestamp) {
+              $date = [System.DateTimeOffset]::FromUnixTimeSeconds([int]$timestamp).DateTime
+              (Get-Item $file).LastWriteTime = $date
+            }
+          }
+        }
         
     # - name: Set up sccache
       # uses: mozilla-actions/sccache-action@v0.0.9
