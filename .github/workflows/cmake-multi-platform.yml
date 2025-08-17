@@ -58,31 +58,31 @@ jobs:
         submodules: recursive
         fetch-depth: 1
 
-    - name: Restore file mtimes from git (cross-platform)
-      shell: bash
-      if: runner.os != 'Windows'
-      run: |
-        while read -r file; do
-          if [ -f "$file" ]; then
-            mtime=$(git log -1 --format="%at" -- "$file")
-            touch -d "@$mtime" "$file"
-          fi
-        done < <(git ls-files)
+    # - name: Restore file mtimes from git (cross-platform)
+    #   shell: bash
+    #   if: runner.os != 'Windows'
+    #   run: |
+    #     while read -r file; do
+    #       if [ -f "$file" ]; then
+    #         mtime=$(git log -1 --format="%at" -- "$file")
+    #         touch -d "@$mtime" "$file"
+    #       fi
+    #     done < <(git ls-files)
 
-    - name: Restore file mtimes from git (Windows)
-      shell: pwsh
-      if: runner.os == 'Windows'
-      run: |
-        git ls-files | ForEach-Object {
-          $file = $_
-          if (Test-Path $file) {
-            $timestamp = git log -1 --format="%at" -- $file
-            if ($timestamp) {
-              $date = [System.DateTimeOffset]::FromUnixTimeSeconds([int]$timestamp).DateTime
-              (Get-Item $file).LastWriteTime = $date
-            }
-          }
-        }
+    # - name: Restore file mtimes from git (Windows)
+    #   shell: pwsh
+    #   if: runner.os == 'Windows'
+    #   run: |
+    #     git ls-files | ForEach-Object {
+    #       $file = $_
+    #       if (Test-Path $file) {
+    #         $timestamp = git log -1 --format="%at" -- $file
+    #         if ($timestamp) {
+    #           $date = [System.DateTimeOffset]::FromUnixTimeSeconds([int]$timestamp).DateTime
+    #           (Get-Item $file).LastWriteTime = $date
+    #         }
+    #       }
+    #     }
         
     # - name: Set up sccache
       # uses: mozilla-actions/sccache-action@v0.0.9
@@ -108,11 +108,11 @@ jobs:
     #   with:
     #     path: ${{ steps.strings.outputs.sccache-dir }}
     #     key: ccache-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
-    - name: Restore build
-      uses: actions/cache/restore@v4
-      with:
-        path: build
-        key: build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+    # - name: Restore build
+    #   uses: actions/cache/restore@v4
+    #   with:
+    #     path: build
+    #     key: build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
 
     - name: Configure CMake
       run: >
@@ -129,11 +129,11 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
       
-    - name: Save build
-      uses: actions/cache/save@v4
-      with:
-        path: build
-        key: build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+    # - name: Save build
+    #   uses: actions/cache/save@v4
+    #   with:
+    #     path: build
+    #     key: build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
