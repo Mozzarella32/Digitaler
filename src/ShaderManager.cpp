@@ -99,21 +99,21 @@ void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::p
 }
 #endif
 
-const std::unique_ptr<Shader>& ShaderManager::GetShader(const Shaders& shader) {
+Shader& ShaderManager::GetShader(const Shaders& shader) {
 	PROFILE_FUNKTION;
 	auto& This = GetInstance();
 #ifdef HotShaderReload
 	std::unique_lock ul(This.QueueMutex);
-	if (This.Queue.empty() && This.Map.contains(shader)) return This.Map.at(shader);
+	if (This.Queue.empty() && This.Map.contains(shader)) return *This.Map.at(shader);
 	while (!This.Queue.empty()) {
 		const auto& [currShader, Vert, Frag] = This.Queue.back();
 		This.Map[currShader] = std::make_unique<Shader>(ErrorHandler, Vert, Frag);
 		This.Queue.pop_back();
 	}
 	This.IsDirty = true;
-	return This.Map.at(shader);
+	return *This.Map.at(shader);
 #else
-	return This.Map.at(shader);
+	return *This.Map.at(shader);
 #endif
 }
 

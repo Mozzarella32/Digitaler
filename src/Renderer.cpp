@@ -28,10 +28,10 @@ void Renderer::RenderBackground() {
   glViewport(0, 0, CanvasSize.x(), CanvasSize.y());
 
   GLCALL(glDisable(GL_DEPTH_TEST));
-  auto* BackgroundShader =
-      ShaderManager::GetShader(ShaderManager::Background).get();
+  Shader& BackgroundShader =
+      ShaderManager::GetShader(ShaderManager::Background);
 
-  BackgroundShader->bind();
+  BackgroundShader.bind();
 
   Frame->HoleScreenVAO->bind();
 
@@ -39,7 +39,7 @@ void Renderer::RenderBackground() {
 
   Frame->HoleScreenVAO->unbind();
 
-  BackgroundShader->unbind();
+  BackgroundShader.unbind();
 
   FBOBackground.unbind();
 }
@@ -64,43 +64,43 @@ void Renderer::UpdateViewProjectionMatrix(bool OnlyForUniforms) {
   }
 
   PROFILE_SCOPE_ID_START("UZoom", 1);
-  for (const auto &[shader, Location] :
+  for (const auto &[shaderID, Location] :
        ShaderManager::GetShadersWithUniform("UZoom")) {
-    auto &Shader = *ShaderManager::GetShader(shader);
-    Shader.bind();
+    Shader &shader = ShaderManager::GetShader(shaderID);
+    shader.bind();
     GLCALL(glUniform2f(Location, Zoom * CanvasSize.x(), Zoom * CanvasSize.y()));
-    Shader.unbind();
+    shader.unbind();
   }
   PROFILE_SCOPE_ID_END(1);
 
   PROFILE_SCOPE_ID_START("UViewProjectionMatrix", 2);
-  for (const auto &[shader, Location] :
+  for (const auto &[shaderID, Location] :
        ShaderManager::GetShadersWithUniform("UViewProjectionMatrix")) {
-    auto &Shader = *ShaderManager::GetShader(shader);
-    Shader.bind();
+    Shader &shader = ShaderManager::GetShader(shaderID);
+    shader.bind();
     GLCALL(
         glUniformMatrix3fv(Location, 1, GL_FALSE, ViewProjectionMatrix.data()));
-    Shader.unbind();
+    shader.unbind();
   }
   PROFILE_SCOPE_ID_END(2);
 
   PROFILE_SCOPE_ID_START("UOffset", 3);
-  for (const auto &[shader, Location] :
+  for (const auto &[shaderID, Location] :
        ShaderManager::GetShadersWithUniform("UOffset")) {
-    auto &Shader = *ShaderManager::GetShader(shader);
-    Shader.bind();
+    Shader &shader = ShaderManager::GetShader(shaderID);
+    shader.bind();
     GLCALL(glUniform2f(Location, Offset.x(), Offset.y()));
-    Shader.unbind();
+    shader.unbind();
   }
   PROFILE_SCOPE_ID_END(3);
 
   PROFILE_SCOPE_ID_START("UZoomFactor", 4);
-  for (const auto &[shader, Location] :
+  for (const auto &[shaderID, Location] :
        ShaderManager::GetShadersWithUniform("UZoomFactor")) {
-    auto &Shader = *ShaderManager::GetShader(shader);
-    Shader.bind();
+    Shader &shader = ShaderManager::GetShader(shaderID);
+    shader.bind();
     GLCALL(glUniform1f(Location, Zoom));
-    Shader.unbind();
+    shader.unbind();
   }
   PROFILE_SCOPE_ID_END(4);
 
@@ -160,12 +160,12 @@ void Renderer::RenderIDMap() {
 
   if (!UIDRun) {
     UIDRun = true;
-    for (const auto &[shader, Location] :
+    for (const auto &[shaderID, Location] :
          ShaderManager::GetShadersWithUniform("UIDRun")) {
-      auto &Shader = *ShaderManager::GetShader(shader);
-      Shader.bind();
+      Shader &shader = ShaderManager::GetShader(shaderID);
+      shader.bind();
       GLCALL(glUniform1i(Location, UIDRun));
-      Shader.unbind();
+      shader.unbind();
     }
   }
 
@@ -180,13 +180,13 @@ void Renderer::RenderIDMap() {
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName) {
     if (!VertsGetter().Empty()) {
-      const auto &Shader = ShaderManager::GetShader(ShaderName);
+      Shader &shader = ShaderManager::GetShader(ShaderName);
 
-      Shader->bind();
+      shader.bind();
       VAO.bind();
       VAO.DrawAs(GL_TRIANGLE_STRIP);
       VAO.unbind();
-      Shader->unbind();
+      shader.unbind();
     }
   };
 
@@ -219,11 +219,11 @@ void Renderer::RenderWires() {
       b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
     }
 
-    const auto &PathHightlightShader =
+    Shader &PathHightlightShader =
         ShaderManager::GetShader(ShaderManager::HighlightPath);
 
-    PathHightlightShader->bind();
-    FBOBackgroundTexture.bind(PathHightlightShader.get(), "UBackground", "", 0);
+    PathHightlightShader.bind();
+    FBOBackgroundTexture.bind(&PathHightlightShader, "UBackground", "", 0);
 
     GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
     GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
@@ -245,7 +245,7 @@ void Renderer::RenderWires() {
       GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
       if (!b.HasMark(Floating)) {
-        PathHightlightShader->unbind();
+        PathHightlightShader.unbind();
 
         GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
         GLCALL(glStencilMask(0x00));
@@ -275,20 +275,20 @@ void Renderer::RenderWires() {
         VertsVAO.DrawAs(GL_TRIANGLE_STRIP);
       }
 
-      PathHightlightShader->unbind();
+      PathHightlightShader.unbind();
 
       if (!b.GetVerts(Floating).Empty()) {
-        const auto &HighlightPathCornerOverdrawShader =
+        Shader& HighlightPathCornerOverdrawShader =
             ShaderManager::GetShader(
                 ShaderManager::HighlightPathCornerOverdraw);
 
-        HighlightPathCornerOverdrawShader->bind();
+        HighlightPathCornerOverdrawShader.bind();
 
         GLCALL(glUniform3f(
-            HighlightPathCornerOverdrawShader->GetLocation("UColor"), 1.0, 1.0,
+            HighlightPathCornerOverdrawShader.GetLocation("UColor"), 1.0, 1.0,
             0.0));
 
-        FBOBackgroundTexture.bind(HighlightPathCornerOverdrawShader.get(),
+        FBOBackgroundTexture.bind(&HighlightPathCornerOverdrawShader,
                                   "UBackground", "", 0);
 
         GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
@@ -299,7 +299,7 @@ void Renderer::RenderWires() {
         VertsVAO.DrawAs(GL_TRIANGLE_STRIP);
         VertsVAO.unbind();
 
-        HighlightPathCornerOverdrawShader->unbind();
+        HighlightPathCornerOverdrawShader.unbind();
       }
 
       if (!b.GetConflictPoints(Floating).Empty()) {
@@ -312,7 +312,7 @@ void Renderer::RenderWires() {
         GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
         GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-        PathHightlightShader->bind();
+        PathHightlightShader.bind();
 
         EdgesMarkedVAO.bind();
         EdgesMarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
@@ -322,7 +322,7 @@ void Renderer::RenderWires() {
         GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
         GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-        FBOBackgroundTexture.bind(PathHightlightShader.get(), "UBackground", "",
+        FBOBackgroundTexture.bind(&PathHightlightShader, "UBackground", "",
                                   0);
 
         auto &ConflictPointsVAO = GetPathVAOs(Floating).ConflictPointsVAO;
@@ -342,7 +342,7 @@ void Renderer::RenderWires() {
         EdgesUnmarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
         EdgesUnmarkedVAO.unbind();
 
-        PathHightlightShader->unbind();
+        PathHightlightShader.unbind();
 
         GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
         GLCALL(glStencilMask(0x00));
@@ -358,9 +358,9 @@ void Renderer::RenderWires() {
     // Draw Path Edges
     if (!b.GetEdges(Floating).Empty()) {
 
-      const auto &PathShader = ShaderManager::GetShader(ShaderManager::Path);
+      Shader &PathShader = ShaderManager::GetShader(ShaderManager::Path);
 
-      PathShader->bind();
+      PathShader.bind();
 
       auto &EdgesVAO = GetPathVAOs(Floating).EdgesVAO;
 
@@ -368,15 +368,15 @@ void Renderer::RenderWires() {
       b.GetEdges(Floating).ReplaceBuffer(EdgesVAO, 1);
       EdgesVAO.DrawAs(GL_TRIANGLE_STRIP);
       EdgesVAO.unbind();
-      PathShader->unbind();
+      PathShader.unbind();
     }
 
     // Draw Path Rounded Inner Corners
     if (!b.GetSpecialPoints(Floating).Empty()) {
-      const auto &IntersectionPathShader =
+      Shader &IntersectionPathShader =
           ShaderManager::GetShader(ShaderManager::IntersectionPath);
 
-      IntersectionPathShader->bind();
+      IntersectionPathShader.bind();
 
       GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
       GLCALL(glStencilFunc(GL_LEQUAL, 2, 0xFF));
@@ -388,7 +388,7 @@ void Renderer::RenderWires() {
       SpecialPointsVAO.DrawAs(GL_TRIANGLE_STRIP);
       SpecialPointsVAO.unbind();
 
-      IntersectionPathShader->unbind();
+      IntersectionPathShader.unbind();
 
       GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
       GLCALL(glStencilMask(0x00));
@@ -416,8 +416,8 @@ void Renderer::RenderWires() {
   GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
 
   // Recreate Stencli Buffer
-  const auto &PathShader = ShaderManager::GetShader(ShaderManager::Path);
-  PathShader->bind();
+  Shader& PathShader = ShaderManager::GetShader(ShaderManager::Path);
+  PathShader.bind();
   for (bool Floating : {false, true}) {
 
     if (b.GetEdges(Floating).Empty())
@@ -432,7 +432,7 @@ void Renderer::RenderWires() {
     EdgesVAO.DrawAs(GL_TRIANGLE_STRIP);
     EdgesVAO.unbind();
   }
-  PathShader->unbind();
+  PathShader.unbind();
 
   PROFILE_SCOPE_ID_END(3);
 }
@@ -468,12 +468,12 @@ void Renderer::Render() {
 
   if (UIDRun) {
     UIDRun = false;
-    for (const auto &[shader, Location] :
+    for (const auto &[shaderID, Location] :
          ShaderManager::GetShadersWithUniform("UIDRun")) {
-      auto &Shader = *ShaderManager::GetShader(shader);
-      Shader.bind();
+      Shader &shader = ShaderManager::GetShader(shaderID);
+      shader.bind();
       GLCALL(glUniform1i(Location, UIDRun));
-      Shader.unbind();
+      shader.unbind();
     }
   }
 
@@ -505,14 +505,14 @@ void Renderer::Render() {
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName) {
     if (!VertsGetter().Empty()) {
-      const auto &Shader = ShaderManager::GetShader(ShaderName);
+      Shader &shader = ShaderManager::GetShader(ShaderName);
 
-      Shader->bind();
+      shader.bind();
       VAO.bind();
       VertsGetter().ReplaceBuffer(VAO, 1);
       VAO.DrawAs(GL_TRIANGLE_STRIP);
       VAO.unbind();
-      Shader->unbind();
+      shader.unbind();
     }
   };
 
@@ -530,26 +530,26 @@ void Renderer::Render() {
                          ShaderManager::Shaders ShaderName) {
     if (!VertsGetter().Empty()) {
 
-      const auto &Shader = ShaderManager::GetShader(ShaderName);
+      Shader &shader = ShaderManager::GetShader(ShaderName);
 
-      Shader->bind();
+      shader.bind();
 
-      FBOPathColorTexture.bind(Shader.get(), "UPath", "", 0);
+      FBOPathColorTexture.bind(&shader, "UPath", "", 0);
 
       VAO.bind();
       VertsGetter().ReplaceBuffer(VAO, 1);
 
       GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
-      GLCALL(glUniform1i(Shader->GetLocation("UHasWire"), true));
+      GLCALL(glUniform1i(shader.GetLocation("UHasWire"), true));
       VAO.DrawAs(GL_TRIANGLE_STRIP);
 
       GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-      GLCALL(glUniform1i(Shader->GetLocation("UHasWire"), false));
+      GLCALL(glUniform1i(shader.GetLocation("UHasWire"), false));
       VAO.DrawAs(GL_TRIANGLE_STRIP);
 
       VAO.unbind();
 
-      Shader->unbind();
+      shader.unbind();
     }
   };
 
@@ -622,11 +622,11 @@ void Renderer::Render() {
 
     PROFILE_SCOPE("Text");
 
-    const auto &TextShader = ShaderManager::GetShader(ShaderManager::Text);
+    Shader &TextShader = ShaderManager::GetShader(ShaderManager::Text);
 
-    TextShader->bind();
+    TextShader.bind();
 
-    TextAtlas.bind(TextShader.get(), "UTexture", "", 0);
+    TextAtlas.bind(&TextShader, "UTexture", "", 0);
 
     if (!b.GetStaticTextVerts().Empty()) {
       StaticTextVAO.bind();
@@ -643,11 +643,11 @@ void Renderer::Render() {
     }
 
     // Overlay Text
-    GLCALL(glUniform2f(TextShader->GetLocation("UZoom"),
+    GLCALL(glUniform2f(TextShader.GetLocation("UZoom"),
                        0.01 * CanvasSize.x() / 2.0,
                        0.01 * CanvasSize.y() / 2.0));
-    GLCALL(glUniform2f(TextShader->GetLocation("UOffset"), 0, 0));
-    GLCALL(glUniform1f(TextShader->GetLocation("UZoomFactor"), 0.01f));
+    GLCALL(glUniform2f(TextShader.GetLocation("UOffset"), 0, 0));
+    GLCALL(glUniform1f(TextShader.GetLocation("UZoomFactor"), 0.01f));
 
     if (Frame->Blockselector) {
       Frame->Blockselector->Update();
@@ -660,13 +660,13 @@ void Renderer::Render() {
       }
     }
 
-    GLCALL(glUniform2f(TextShader->GetLocation("UZoom"), CanvasSize.x() * Zoom,
+    GLCALL(glUniform2f(TextShader.GetLocation("UZoom"), CanvasSize.x() * Zoom,
                        CanvasSize.y() * Zoom));
-    GLCALL(glUniform2f(TextShader->GetLocation("UOffset"), Offset.x(),
+    GLCALL(glUniform2f(TextShader.GetLocation("UOffset"), Offset.x(),
                        Offset.y()));
-    GLCALL(glUniform1f(TextShader->GetLocation("UZoomFactor"), Zoom));
+    GLCALL(glUniform1f(TextShader.GetLocation("UZoomFactor"), Zoom));
 
-    TextShader->unbind();
+    TextShader.unbind();
   }
 
   PROFILE_SCOPE("Swap Buffers");
@@ -705,17 +705,17 @@ void Renderer::Render() {
 
     PROFILE_SCOPE("AreaSelect");
 
-    const auto &AreaSelectShader =
+    Shader& AreaSelectShader =
         ShaderManager::GetShader(ShaderManager::AreaSelect);
 
-    AreaSelectShader->bind();
+    AreaSelectShader.bind();
 
     AreaSelectVAO.bind();
     AreaSelectVerts.ReplaceBuffer(AreaSelectVAO, 1, false);
     AreaSelectVAO.DrawAs(GL_TRIANGLE_STRIP);
     AreaSelectVAO.unbind();
 
-    AreaSelectShader->unbind();
+    AreaSelectShader.unbind();
   }
 
 #ifdef ShowBasePositionOfBlocks
@@ -723,17 +723,17 @@ void Renderer::Render() {
 
     PROFILE_SCOPE("BasePotitionOfBlocks");
 
-    const auto &AreaSelectShader =
+    Shader &AreaSelectShader =
         ShaderManager::GetShader(ShaderManager::AreaSelect);
 
-    AreaSelectShader->bind();
+    AreaSelectShader.bind();
 
     BlockBasePotitionVAO.bind();
     b.GetBasePotitionOfBlocksVerts().ReplaceBuffer(BlockBasePotitionVAO, 1);
     BlockBasePotitionVAO.DrawAs(GL_TRIANGLE_STRIP);
     BlockBasePotitionVAO.unbind();
 
-    AreaSelectShader->unbind();
+    AreaSelectShader.unbind();
   }
 #endif
 
@@ -759,12 +759,12 @@ void Renderer::CheckZoomDots() {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
   }
 
-  const auto &BackgroundShader =
+  Shader &BackgroundShader =
       ShaderManager::GetShader(ShaderManager::Background);
 
-  BackgroundShader->bind();
-  GLCALL(glUniform1ui(BackgroundShader->GetLocation("UShowDots"), ShowDots));
-  BackgroundShader->unbind();
+  BackgroundShader.bind();
+  GLCALL(glUniform1ui(BackgroundShader.GetLocation("UShowDots"), ShowDots));
+  BackgroundShader.unbind();
 }
 
 void Renderer::RenderPlacholder() {
@@ -901,11 +901,11 @@ void Renderer::UpdateMouseIndex(const PointType &newMouseIndex) {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
   }
 
-  const auto &BackgroundShader =
+  Shader &BackgroundShader =
       ShaderManager::GetShader(ShaderManager::Background);
 
-  BackgroundShader->bind();
-  GLCALL(glUniform2f(BackgroundShader->GetLocation("UMousePos"), newMouseIndex.x(),
+  BackgroundShader.bind();
+  GLCALL(glUniform2f(BackgroundShader.GetLocation("UMousePos"), newMouseIndex.x(),
                      newMouseIndex.y()));
 
   RenderBackground();
@@ -994,12 +994,12 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   if (!UIDRun) {
     UIDRun = true;
-    for (const auto &[shader, Location] :
+    for (const auto &[shaderID, Location] :
          ShaderManager::GetShadersWithUniform("UIDRun")) {
-      auto &Shader = *ShaderManager::GetShader(shader);
-      Shader.bind();
+      Shader &shader = ShaderManager::GetShader(shaderID);
+      shader.bind();
       GLCALL(glUniform1i(Location, UIDRun));
-      Shader.unbind();
+      shader.unbind();
     }
   }
 
@@ -1036,14 +1036,14 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
                        VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName) {
     BlockBuffer.Dirty = true;
-    const auto &Shader = ShaderManager::GetShader(ShaderName);
+    Shader &shader = ShaderManager::GetShader(ShaderName);
 
-    Shader->bind();
+    shader.bind();
     VAO.bind();
     MyBuffer.ReplaceBuffer(VAO, 1);
     VAO.DrawAs(GL_TRIANGLE_STRIP);
     VAO.unbind();
-    Shader->unbind();
+    shader.unbind();
   };
 
   ColourType NoColor = {0, 0, 0, 0};
