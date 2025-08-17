@@ -27,10 +27,10 @@ public:
 public:
 	struct TextInfo {
 		std::vector<float> LineWidths;
-		unsigned int LineCount;
-		float TheoreticalHeight;//Based on acender/decender
-		float EvendentHeight;//Based on the height of characters
-		float Width;
+		unsigned int LineCount = 0;
+		float TheoreticalHeight = 0;//Based on acender/decender
+		float EvendentHeight = 0;//Based on the height of characters
+		float Width = 0;
 	};
 
 private:
