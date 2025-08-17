@@ -81,7 +81,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ${{ steps.strings.outputs.sccache-dir }}
-        key: ccache-${{ runner.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+        key: ccache-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
 
     - name: Configure CMake
       run: >
