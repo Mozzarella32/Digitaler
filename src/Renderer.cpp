@@ -84,6 +84,8 @@ void Renderer::UpdateViewProjectionMatrix(bool OnlyForUniforms) {
   }
   PROFILE_SCOPE_ID_END(2);
 
+  // TODO transform to a apply method
+
   PROFILE_SCOPE_ID_START("UOffset", 3);
   for (const auto &[shaderID, Location] :
        ShaderManager::GetShadersWithUniform("UOffset")) {
