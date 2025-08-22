@@ -101,7 +101,7 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "arch-cache-dir=/mnt/build-cache/${{ github.repository }}/${{ matrix.c_compiler }}-${{ matrix.build_type }}" >> "$GITHUB_OUTPUT"
+        echo "arch-cache-dir=/home/runner/build-cache/${{ github.repository }}/${{ matrix.c_compiler }}-${{ matrix.build_type }}" >> "$GITHUB_OUTPUT"
 
     - name: Install GTK3(Ubuntu)
       if: matrix.os == 'ubuntu-latest'
