@@ -112,8 +112,7 @@ jobs:
       shell: bash
       run: |
         mkdir -p ${{ steps.strings.outputs.build-output-dir }}
-        cp -r ${{ steps.strings.outputs.arch-cache-dir }}/* ${{ steps.strings.outputs.build-output-dir }} || true
-        sleep 120
+        cp --preserve=timestamps -r ${{ steps.strings.outputs.arch-cache-dir }}/* ${{ steps.strings.outputs.build-output-dir }} || true
 
     - name: Configure CMake with sccache
       if: matrix.os != 'archlinux'
@@ -153,7 +152,7 @@ jobs:
       shell: bash
       run: |
         mkdir -p ${{ steps.strings.outputs.arch-cache-dir }}
-        cp -r ${{ steps.strings.outputs.build-output-dir }}/* ${{ steps.strings.outputs.arch-cache-dir }} 
+        cp --preserve=timestamps -r ${{ steps.strings.outputs.build-output-dir }}/* ${{ steps.strings.outputs.arch-cache-dir }} 
       
     # - name: Save build
     #   uses: actions/cache/save@v4
