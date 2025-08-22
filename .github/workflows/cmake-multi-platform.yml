@@ -111,6 +111,7 @@ jobs:
       if: matrix.os == 'archlinux'
       shell: bash
       run: |
+        mkdir -p ${{ steps.strings.outputs.build-output-dir }}
         cp -r ${{ steps.strings.outputs.arch-cache-dir }}/* ${{ steps.strings.outputs.build-output-dir }} || true
 
     - name: Configure CMake with sccache
