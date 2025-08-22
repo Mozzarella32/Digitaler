@@ -330,7 +330,7 @@ add_dependencies(Invoke_ShadersToCharArray ShadersToCharArray)
 
 add_custom_target(
     Invoke_PreparePngs ALL
-    COMMAND $<TARGET_FILE_NAME:PreparePngs> ${PROJECT_SOURCE_DIR}/resources/art
+    COMMAND $<TARGET_FILE:PreparePngs> ${PROJECT_SOURCE_DIR}/resources/art
     COMMENT "Calling PreparePngs"
 )
 add_dependencies(Invoke_PreparePngs PreparePngs)
