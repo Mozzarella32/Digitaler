@@ -107,12 +107,14 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libglu1-mesa-dev build-essential
 
+    #Ugly clang workaround
     - name: Arch restore Build
       if: matrix.os == 'archlinux'
       shell: bash
       run: |
         mkdir -p ${{ steps.strings.outputs.build-output-dir }}
         cp --preserve=timestamps -r ${{ steps.strings.outputs.arch-cache-dir }}/* ${{ steps.strings.outputs.build-output-dir }} || true
+        rm -rf ${{ steps.strings.outputs.build-output-dir }}/CMakeFiles/Digitaler.dir/cmake_pch.hxx.pch
 
     - name: Configure CMake with sccache
       if: matrix.os != 'archlinux'
