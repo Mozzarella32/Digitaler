@@ -322,14 +322,14 @@ target_link_libraries(${PROJECT_NAME} PUBLIC MyWxWidgets)
 
 # Invok the pre build executable to generate Shaders and Pngs as bytarrays as there is still no #embede suppoert on msvc
 add_custom_target(
-    Invoke_ShadersToCharArray
+    Invoke_ShadersToCharArray ALL
     COMMAND ${PROJECT_SOURCE_DIR}/resources/shaders/$<TARGET_FILE_NAME:ShadersToCharArray>
     COMMENT "Calling ShadersToCharArray"
 )
 add_dependencies(Invoke_ShadersToCharArray ShadersToCharArray)
 
 add_custom_target(
-    Invoke_PreparePngs
+    Invoke_PreparePngs ALL
     COMMAND ${PROJECT_SOURCE_DIR}/resources/art/$<TARGET_FILE_NAME:PreparePngs>
     COMMENT "Calling PreparePngs"
 )
