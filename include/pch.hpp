@@ -65,8 +65,9 @@
 #include <Texture.hpp>
 #include <Utilities.hpp>
 #include <VertexBuffer.hpp>
+#include <WxTextureUtil.hpp>
 
-#include "../submodules/Visitor/Visitor.hpp"
+#include "../submodules/MyWxWidgets/submodules/MyOpenGl/submodules/Visitor/Visitor.hpp"
 
 #include "../submodules/LinearAlgebra/Point.hpp"
 

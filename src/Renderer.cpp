@@ -225,7 +225,7 @@ void Renderer::RenderWires() {
         ShaderManager::GetShader(ShaderManager::HighlightPath);
 
     PathHightlightShader.bind();
-    FBOBackgroundTexture.bind(&PathHightlightShader, "UBackground", "", 0);
+    FBOBackgroundTexture.bind(PathHightlightShader, "UBackground", "", 0);
 
     GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
     GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
@@ -285,12 +285,10 @@ void Renderer::RenderWires() {
                 ShaderManager::HighlightPathCornerOverdraw);
 
         HighlightPathCornerOverdrawShader.bind();
+  
+        HighlightPathCornerOverdrawShader.apply("UColor", Shader::Data3f{1.0,1.0,0.0});
 
-        GLCALL(glUniform3f(
-            HighlightPathCornerOverdrawShader.GetLocation("UColor"), 1.0, 1.0,
-            0.0));
-
-        FBOBackgroundTexture.bind(&HighlightPathCornerOverdrawShader,
+        FBOBackgroundTexture.bind(HighlightPathCornerOverdrawShader,
                                   "UBackground", "", 0);
 
         GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
@@ -324,7 +322,7 @@ void Renderer::RenderWires() {
         GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
         GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-        FBOBackgroundTexture.bind(&PathHightlightShader, "UBackground", "",
+        FBOBackgroundTexture.bind(PathHightlightShader, "UBackground", "",
                                   0);
 
         auto &ConflictPointsVAO = GetPathVAOs(Floating).ConflictPointsVAO;
@@ -536,17 +534,17 @@ void Renderer::Render() {
 
       shader.bind();
 
-      FBOPathColorTexture.bind(&shader, "UPath", "", 0);
+      FBOPathColorTexture.bind(shader, "UPath", "", 0);
 
       VAO.bind();
       VertsGetter().ReplaceBuffer(VAO, 1);
 
       GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
-      GLCALL(glUniform1i(shader.GetLocation("UHasWire"), true));
+      shader.apply("UHasWire",Shader::Data1i{true});
       VAO.DrawAs(GL_TRIANGLE_STRIP);
 
       GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-      GLCALL(glUniform1i(shader.GetLocation("UHasWire"), false));
+      shader.apply("UHasWire",Shader::Data1i{false});
       VAO.DrawAs(GL_TRIANGLE_STRIP);
 
       VAO.unbind();
@@ -628,7 +626,7 @@ void Renderer::Render() {
 
     TextShader.bind();
 
-    TextAtlas.bind(&TextShader, "UTexture", "", 0);
+    TextAtlas.bind(TextShader, "UTexture", "", 0);
 
     if (!b.GetStaticTextVerts().Empty()) {
       StaticTextVAO.bind();
@@ -645,11 +643,11 @@ void Renderer::Render() {
     }
 
     // Overlay Text
-    GLCALL(glUniform2f(TextShader.GetLocation("UZoom"),
-                       0.01 * CanvasSize.x() / 2.0,
-                       0.01 * CanvasSize.y() / 2.0));
-    GLCALL(glUniform2f(TextShader.GetLocation("UOffset"), 0, 0));
-    GLCALL(glUniform1f(TextShader.GetLocation("UZoomFactor"), 0.01f));
+    TextShader.apply("UZoom", Shader::Data2f{
+                       0.01f * CanvasSize.x() / 2.0f,
+                       0.01f * CanvasSize.y() / 2.0f});
+    TextShader.apply("UOffset", Shader::Data2f{0.0,0.0});
+    TextShader.apply("UZoomFactor", Shader::Data1f{0.01f});
 
     if (Frame->Blockselector) {
       Frame->Blockselector->Update();
@@ -662,11 +660,12 @@ void Renderer::Render() {
       }
     }
 
-    GLCALL(glUniform2f(TextShader.GetLocation("UZoom"), CanvasSize.x() * Zoom,
-                       CanvasSize.y() * Zoom));
-    GLCALL(glUniform2f(TextShader.GetLocation("UOffset"), Offset.x(),
-                       Offset.y()));
-    GLCALL(glUniform1f(TextShader.GetLocation("UZoomFactor"), Zoom));
+    TextShader.apply("UZoom", Shader::Data2f{
+                            CanvasSize.x() * float(Zoom),
+                            CanvasSize.y() * float(Zoom)});
+    TextShader.apply("UOffset", Shader::Data2f{Offset.x(),
+                       Offset.y()});
+    TextShader.apply("UZoomFactor", Shader::Data1f{float(Zoom)});
 
     TextShader.unbind();
   }
@@ -765,7 +764,7 @@ void Renderer::CheckZoomDots() {
       ShaderManager::GetShader(ShaderManager::Background);
 
   BackgroundShader.bind();
-  GLCALL(glUniform1ui(BackgroundShader.GetLocation("UShowDots"), ShowDots));
+  BackgroundShader.apply("UShowDots", Shader::Data1ui{ShowDots});
   BackgroundShader.unbind();
 }
 
@@ -782,8 +781,8 @@ void Renderer::RenderPlacholder() {
 
   const auto &Shader = ShaderManager::GetPlacholderShader();
   Shader->bind();
-  GLCALL(glUniform2f(Shader->GetLocation("USize"), CanvasSize.x() / 100.0,
-                     CanvasSize.y() / 100.0));
+  Shader->apply("USize", Shader::Data2f{CanvasSize.x() / 100.0f,
+                     CanvasSize.y() / 100.0f});
   Frame->HoleScreenVAO->bind();
   Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
   Frame->HoleScreenVAO->unbind();
@@ -854,12 +853,12 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       BlockBasePotitionVAO(CreateVAO<PointFRGBVertex>()),
       StaticTextVAO(CreateVAO<TextVertex>()),
       DynamicTextVAO(CreateVAO<TextVertex>()),
-      TextAtlas(PngManager::GetPng(PngManager::atlas), []() {
+      TextAtlas(textureFromWxImage(PngManager::GetPng(PngManager::atlas), []() {
         Texture::Descriptor desc;
         desc.Min_Filter = Texture::Descriptor::Filter_Type::LINEAR;
         desc.Mag_Filter = Texture::Descriptor::Filter_Type::LINEAR;
         return desc;
-      }()) {
+      }())) {
   BBUpdater = std::thread([this]() { BBUpdaterWork(); });
 }
 
@@ -907,8 +906,8 @@ void Renderer::UpdateMouseIndex(const PointType &newMouseIndex) {
       ShaderManager::GetShader(ShaderManager::Background);
 
   BackgroundShader.bind();
-  GLCALL(glUniform2f(BackgroundShader.GetLocation("UMousePos"), newMouseIndex.x(),
-                     newMouseIndex.y()));
+  BackgroundShader.apply("UMousePos", Shader::Data2f{float(newMouseIndex.x()),
+    float(newMouseIndex.y())});
 
   RenderBackground();
 

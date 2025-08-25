@@ -6,10 +6,6 @@
 	path = submodules/LinearAlgebra
 	url = https://github.com/Mozzarella32/LinearAlgebra.git
 	branch = main
-[submodule "submodules/Visitor"]
-	path = submodules/Visitor
-	url = https://github.com/Mozzarella32/Visitor.git
-	branch = main
 [submodule "submodules/eigen"]
 	path = submodules/eigen
 	url = https://gitlab.com/libeigen/eigen.git
