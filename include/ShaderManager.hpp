@@ -5,6 +5,8 @@
 #include "Include.hpp"
 #include "../resources/shaders/Shader_X_List.hpp"
 #include <condition_variable>
+#include <functional>
+#include <memory>
 
 //Singilton
 class ShaderManager {
@@ -51,16 +53,15 @@ public:
 	static bool IsDirty;
 
 #endif
-	std::unordered_map<Shaders, std::unique_ptr<Shader>> Map;
+	std::array<Shader,ShadersSize> shaders;
 
 
 private:
-	std::map<std::string, std::vector<std::pair<Shaders, GLenum>>> Uniforms;
+	std::map<std::string, std::vector<std::reference_wrapper<Shader>>> shadersWithUniform;
 
 	static std::unique_ptr<Shader> PlacholderShader;
 public:
-
-	static const std::vector<std::pair<Shaders, GLenum>>& GetShadersWithUniform(const std::string& uniform);
+	static void applyGlobal(const std::string& uniform, const Shader::UniformData& data);
 
 	static Shader& GetShader(const Shaders& shader);
 

@@ -86,8 +86,8 @@
 #include <wx/treelist.h>
 
 #include <numbers>
-
 #include <ranges>
+#include <functional>
 
 // #include <nlohmann/json.hpp>
 

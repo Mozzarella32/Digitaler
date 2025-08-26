@@ -1,5 +1,9 @@
 #include "pch.hpp"
 #include <chrono>
+#include <concepts>
+#include <functional>
+#include <memory>
+#include <utility>
 #include "ShaderManager.hpp"
 
 #define DEFINE_MAKRO_UTILITIES
@@ -11,14 +15,6 @@
 bool ShaderManager::IsDirty = false;
 #endif
 
-#define X(Vert, Frag) \
-Map.emplace(Frag,\
-std::make_unique<Shader>(\
-ErrorHandler,\
-std::string(CONCAT(Vert, _vert)),\
-std::string(CONCAT(Frag, _frag)))\
-);
-
 #ifdef HotShaderReload
 ShaderManager::~ShaderManager() {
 	Running = false;
@@ -27,13 +23,18 @@ ShaderManager::~ShaderManager() {
 }
 #endif
 
+#define X(Vert, Frag) \
+Shader(\
+ErrorHandler,\
+std::string(CONCAT(Vert, _vert)),\
+std::string(CONCAT(Frag, _frag))),
+
 ShaderManager::ShaderManager()
-/*:
-Map{
+:
+shaders{
 	XList_Shaders_Combined
-}*/
+}
 {
-	XList_Shaders_Combined
 #ifdef HotShaderReload
 	Worker = std::thread(&ShaderManager::Work, this);
 #endif
@@ -104,38 +105,41 @@ Shader& ShaderManager::GetShader(const Shaders& shader) {
 	auto& This = GetInstance();
 #ifdef HotShaderReload
 	std::unique_lock ul(This.QueueMutex);
-	if (This.Queue.empty() && This.Map.contains(shader)) return *This.Map.at(shader);
+	if (This.Queue.empty()) return This.shaders[shader];
 	while (!This.Queue.empty()) {
 		const auto& [currShader, Vert, Frag] = This.Queue.back();
-		This.Map[currShader] = std::make_unique<Shader>(ErrorHandler, Vert, Frag);
+		This.shaders[currShader] = Shader(ErrorHandler, Vert, Frag);
 		This.Queue.pop_back();
 	}
 	This.IsDirty = true;
-	return *This.Map.at(shader);
+	return This.shaders[shader];
 #else
-	return *This.Map.at(shader);
+	return This.shaders[shader];
 #endif
 }
 
-const std::vector<std::pair<ShaderManager::Shaders, GLenum>>& ShaderManager::GetShadersWithUniform(const std::string& uniform) {
+void ShaderManager::applyGlobal(const std::string& uniform, const Shader::UniformData& data) {
 	PROFILE_FUNKTION;
 	auto& This = GetInstance();
-	auto it = This.Uniforms.find(uniform);
-	if (it != This.Uniforms.end()) {
-		return it->second;
-	}
-	std::vector<std::pair<Shaders, GLenum>> shaders;
-
-	for (int i = 0; i < ShadersSize; i++) {
-		auto& shader = This.Map.at((Shaders)i);
-    auto location = shader->uniformLocation(uniform);
-		if (location != -1) {
-			shaders.emplace_back((Shaders)i, location);
+	auto it = This.shadersWithUniform.find(uniform);
+	if (it == This.shadersWithUniform.end()) {
+		std::vector<std::reference_wrapper<Shader>> shaders;
+		for(auto& shader : This.shaders){
+			if(shader.uniformLocation(uniform) == -1) {
+				continue;
+			}
+			shaders.push_back(shader);
 		}
+		This.shadersWithUniform[uniform] = std::move(shaders);
+		it = This.shadersWithUniform.find(uniform);
 	}
 
-	This.Uniforms[uniform] = shaders;
-	return This.Uniforms.at(uniform);
+  for (const auto &rShader : it->second) {
+  	auto& shader = rShader.get();
+    shader.bind();
+    shader.apply(uniform, data);
+    shader.unbind();
+  }
 }
 
 void ShaderManager::Initilise() {

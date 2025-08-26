@@ -64,46 +64,20 @@ void Renderer::UpdateViewProjectionMatrix(bool OnlyForUniforms) {
   }
 
   PROFILE_SCOPE_ID_START("UZoom", 1);
-  for (const auto &[shaderID, Location] :
-       ShaderManager::GetShadersWithUniform("UZoom")) {
-    Shader &shader = ShaderManager::GetShader(shaderID);
-    shader.bind();
-    GLCALL(glUniform2f(Location, Zoom * CanvasSize.x(), Zoom * CanvasSize.y()));
-    shader.unbind();
-  }
+
+  ShaderManager::applyGlobal("UZoom", Shader::Data2f{float(Zoom * CanvasSize.x()), float(Zoom * CanvasSize.y())});
   PROFILE_SCOPE_ID_END(1);
 
   PROFILE_SCOPE_ID_START("UViewProjectionMatrix", 2);
-  for (const auto &[shaderID, Location] :
-       ShaderManager::GetShadersWithUniform("UViewProjectionMatrix")) {
-    Shader &shader = ShaderManager::GetShader(shaderID);
-    shader.bind();
-    GLCALL(
-        glUniformMatrix3fv(Location, 1, GL_FALSE, ViewProjectionMatrix.data()));
-    shader.unbind();
-  }
+  ShaderManager::applyGlobal("UViewProjectionMatrix", Shader::DataMatrix3fv{.count = 1, .transpose = GL_FALSE, .value = ViewProjectionMatrix.data()});
   PROFILE_SCOPE_ID_END(2);
 
-  // TODO transform to a apply method
-
   PROFILE_SCOPE_ID_START("UOffset", 3);
-  for (const auto &[shaderID, Location] :
-       ShaderManager::GetShadersWithUniform("UOffset")) {
-    Shader &shader = ShaderManager::GetShader(shaderID);
-    shader.bind();
-    GLCALL(glUniform2f(Location, Offset.x(), Offset.y()));
-    shader.unbind();
-  }
+  ShaderManager::applyGlobal("UOffset", Shader::Data2f{Offset.x(), Offset.y()});
   PROFILE_SCOPE_ID_END(3);
 
   PROFILE_SCOPE_ID_START("UZoomFactor", 4);
-  for (const auto &[shaderID, Location] :
-       ShaderManager::GetShadersWithUniform("UZoomFactor")) {
-    Shader &shader = ShaderManager::GetShader(shaderID);
-    shader.bind();
-    GLCALL(glUniform1f(Location, Zoom));
-    shader.unbind();
-  }
+  ShaderManager::applyGlobal("UZoomFactor",Shader::Data1f{float(Zoom)});
   PROFILE_SCOPE_ID_END(4);
 
   if (OnlyForUniforms)
@@ -162,13 +136,7 @@ void Renderer::RenderIDMap() {
 
   if (!UIDRun) {
     UIDRun = true;
-    for (const auto &[shaderID, Location] :
-         ShaderManager::GetShadersWithUniform("UIDRun")) {
-      Shader &shader = ShaderManager::GetShader(shaderID);
-      shader.bind();
-      GLCALL(glUniform1i(Location, UIDRun));
-      shader.unbind();
-    }
+    ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
   }
 
   GLuint clearint = 0;
@@ -468,13 +436,7 @@ void Renderer::Render() {
 
   if (UIDRun) {
     UIDRun = false;
-    for (const auto &[shaderID, Location] :
-         ShaderManager::GetShadersWithUniform("UIDRun")) {
-      Shader &shader = ShaderManager::GetShader(shaderID);
-      shader.bind();
-      GLCALL(glUniform1i(Location, UIDRun));
-      shader.unbind();
-    }
+    ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
   }
 
   GLCALL(glStencilMask(0xFF));
@@ -995,13 +957,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   if (!UIDRun) {
     UIDRun = true;
-    for (const auto &[shaderID, Location] :
-         ShaderManager::GetShadersWithUniform("UIDRun")) {
-      Shader &shader = ShaderManager::GetShader(shaderID);
-      shader.bind();
-      GLCALL(glUniform1i(Location, UIDRun));
-      shader.unbind();
-    }
+    ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
   }
 
   auto Rotation = MyDirection::Up;
