@@ -84,14 +84,12 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libglu1-mesa-dev build-essential
 
-    - name: Arch restore Build
+    - name: Arch create symlink
       if: matrix.os == 'archlinux'
       shell: bash
       run: |
-        mkdir -p ${{ steps.strings.outputs.build-output-dir }}
-        cp --preserve=timestamps -r ${{ steps.strings.outputs.arch-cache-dir }}/* ${{ steps.strings.outputs.build-output-dir }} || true
-        rm -rf ${{ steps.strings.outputs.build-output-dir }}/CMakeFiles/Digitaler.dir/cmake_pch.hxx.pch
-      #Ugly clang workaround ^
+        mkdir -p ${{ steps.strings.outputs.arch-cache-dir }}
+        ln -s ${{ steps.strings.outputs.arch-cache-dir }} ${{ steps.strings.outputs.build-output-dir }} 
 
     - name: Configure CMake with sccache
       if: matrix.os != 'archlinux'
@@ -125,13 +123,11 @@ jobs:
       if: matrix.os == 'archlinux'
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Arch save Build
+    - name: Arch remove symlink
       if: matrix.os == 'archlinux'
       shell: bash
       run: |
-        rm -rf ${{ steps.strings.outputs.arch-cache-dir }}
-        mkdir -p ${{ steps.strings.outputs.arch-cache-dir }}
-        cp --preserve=timestamps -r ${{ steps.strings.outputs.build-output-dir }}/* ${{ steps.strings.outputs.arch-cache-dir }} 
+        rm ${{ steps.strings.outputs.build-output-dir }}
 
     # - name: Test
     #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
