@@ -461,6 +461,12 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
 
+  if (!Frame->Canvas->BindContext()) {
+      wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
+
+  FBOMain.bind(FrameBufferObject::Draw);
+
   // GLCALL(glDepthMask(GL_TRUE));
   GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
