@@ -434,6 +434,8 @@ void Renderer::Render() {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
   }
 
+  FBOMain.bind(FrameBufferObject::Draw);
+
   if (UIDRun) {
     UIDRun = false;
     ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
@@ -700,6 +702,20 @@ void Renderer::Render() {
   }
 #endif
 
+  FBOMain.unbind();
+  
+  if (!Frame->Canvas->BindContext()) {
+    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  }
+
+  FBOMain.bind(FrameBufferObject::Read);
+
+  GLCALL(glBlitFramebuffer(0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0,
+                           CanvasSize.x(), CanvasSize.y(), GL_COLOR_BUFFER_BIT,
+                           GL_NEAREST));
+
+  FBOMain.unbind();
+
   Frame->Canvas->SwapBuffers();
 }
 
@@ -768,6 +784,19 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                                   }()),
       FBOPathColorTexture(1, 1),
       FBOPath({&FBOPathColorTexture, &FBOPathStencileDepthTexture},
+              {GL_COLOR_ATTACHMENT0, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOMainStencileDepthTexture(1, 1, nullptr,
+                                  []() {
+                                    Texture::Descriptor desc;
+                                    desc.Format = GL_DEPTH_STENCIL;
+                                    desc.Internal_Format = GL_DEPTH24_STENCIL8;
+                                    desc.Depth_Stencil_Texture_Mode =
+                                        GL_STENCIL_INDEX;
+                                    desc.Type = GL_UNSIGNED_INT_24_8;
+                                    return desc;
+                                  }()),
+      FBOMainColorTexture(1, 1),
+      FBOMain({&FBOMainColorTexture, &FBOMainStencileDepthTexture},
               {GL_COLOR_ATTACHMENT0, GL_DEPTH_STENCIL_ATTACHMENT}),
       FBOIDTexture(1, 1, nullptr,
                    []() {
@@ -844,6 +873,9 @@ void Renderer::UpdateSize(bool Initilized) {
 
   FBOPathStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOPathColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
+
+  FBOMainStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
+  FBOMainColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   // FBONonDefaultStencilDepthTexture.Resize(CanvasSize.x(),CanvasSize.y());
   // FBONonDefaultColorTexture.Resize(CanvasSize.x(),CanvasSize.y());

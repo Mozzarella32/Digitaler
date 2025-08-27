@@ -43,6 +43,10 @@ private:
 	Texture FBOPathColorTexture;
 	FrameBufferObject FBOPath;
 
+	Texture FBOMainStencileDepthTexture;
+	Texture FBOMainColorTexture;
+	FrameBufferObject FBOMain;
+
 	Texture FBOIDTexture;
 	FrameBufferObject FBOID;
 
