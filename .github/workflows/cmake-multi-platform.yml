@@ -8,62 +8,60 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.runner }}
 
+    runs-on: ${{ matrix.runner }}
+    
     strategy:
       fail-fast: false
-
       matrix:
         os: [ubuntu-latest, windows-latest, archlinux]
         build_type: [Release, Debug]
         c_compiler: [gcc, clang, cl]
-
-      include:
-        # Windows
-        - os: windows-latest
-          c_compiler: cl
-          cpp_compiler: cl
-          runner: windows-latest
-        # Ubuntu
-        - os: ubuntu-latest
-          c_compiler: gcc
-          cpp_compiler: g++
-          runner: ubuntu-latest
-        - os: ubuntu-latest
-          c_compiler: clang
-          cpp_compiler: clang++
-          runner: ubuntu-latest
-        # Archlinux self-hosted
-        - os: archlinux
-          build_type: Debug
-          c_compiler: gcc
-          cpp_compiler: g++
-          runner: archlinux-debug-gcc
-        - os: archlinux
-          build_type: Release
-          c_compiler: gcc
-          cpp_compiler: g++
-          runner: archlinux-release-gcc
-        - os: archlinux
-          build_type: Debug
-          c_compiler: clang
-          cpp_compiler: clang++
-          runner: archlinux-debug-clang
-        - os: archlinux
-          build_type: Release
-          c_compiler: clang
-          cpp_compiler: clang++
-          runner: archlinux-release-clang
-
-      exclude:
-        - os: windows-latest
-          c_compiler: gcc
-        - os: windows-latest
-          c_compiler: clang
-        - os: ubuntu-latest
-          c_compiler: cl
-        - os: archlinux
-          c_compiler: cl
+        include:
+          # Windows
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            runner: windows-latest
+          # Ubuntu
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+            runner: ubuntu-latest
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            runner: ubuntu-latest
+          # Archlinux self-hosted
+          - os: archlinux
+            build_type: Debug
+            c_compiler: gcc
+            cpp_compiler: g++
+            runner: archlinux-debug-gcc
+          - os: archlinux
+            build_type: Release
+            c_compiler: gcc
+            cpp_compiler: g++
+            runner: archlinux-release-gcc
+          - os: archlinux
+            build_type: Debug
+            c_compiler: clang
+            cpp_compiler: clang++
+            runner: archlinux-debug-clang
+          - os: archlinux
+            build_type: Release
+            c_compiler: clang
+            cpp_compiler: clang++
+            runner: archlinux-release-clang
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+          - os: archlinux
+            c_compiler: cl
 
     steps:
     - uses: actions/checkout@v4
