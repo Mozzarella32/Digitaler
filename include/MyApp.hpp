@@ -9,19 +9,9 @@ class MyApp : public wxApp{
 public:
   MyFrame *frame;
 
-public:
-  // GLContextBinder* ContextBinder;
-  // std::unique_ptr<wxGLContext> GlContext;
-
-  // std::unique_ptr<VertexArrayObject> HoleScreenVAO;
-
-  // wxGLContextAttrs cxtAttrs;
-  // GLFrameIndependentInitiliser* Initlisier;
-
-public:
   bool OnInit() override;
 
-  // void OnGLInit() override;
+  virtual ~MyApp();
 
   // bool OnExceptionInMainLoop() override;
 };

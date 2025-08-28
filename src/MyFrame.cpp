@@ -491,28 +491,18 @@ MyFrame::MyFrame(MyApp *App)
 
   LoopTimer.Start();
 
-  // SetSize({ 1000,1000 });
-
   Show(true);
 
   Maximize();
-
-  PROFILE_SESSION_START("Hi",
-                        std::filesystem::path(wxGetHomeDir().ToStdString()) /
-                            "Profiled.json");
 
   InitilizeDescriptor = "Waiting for Opengl initilisation";
 
   std::cout << std::string("Initilizing: ") << InitilizeDescriptor << "\n";
   SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
-  // CallAfter([this]() {
-
-  // });
 }
 
 MyFrame::~MyFrame() {
-  PROFILE_SESSION_END;
   LoopTimer.Stop();
 }
 
