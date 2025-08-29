@@ -2,7 +2,7 @@
 
 #include "MyApp.hpp"
 #include "MyFrame.hpp"
-// #include "ShaderManager.hpp"
+#include "ShaderManager.hpp"
 
 wxIMPLEMENT_APP(MyApp);
 
@@ -40,6 +40,7 @@ bool MyApp::OnInit() {
 }
 
 MyApp::~MyApp() {
+  ShaderManager::Stop();
   PROFILE_SESSION_END;
 }
 

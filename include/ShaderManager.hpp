@@ -67,5 +67,7 @@ public:
 
 	static void Initilise();
 
+	static void Stop();
+
 	static const std::unique_ptr<Shader>& GetPlacholderShader();
 };

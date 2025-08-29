@@ -17,9 +17,7 @@ bool ShaderManager::IsDirty = false;
 
 #ifdef HotShaderReload
 ShaderManager::~ShaderManager() {
-	Running = false;
-	WaitCV.notify_all();
-	Worker.join();
+	ShaderManager::Stop();
 }
 #endif
 
@@ -40,13 +38,19 @@ shaders{
 #endif
 }
 #undef X
+void ShaderManager::Stop() {
+	auto& This = GetInstance();
+	if (This.Running) {
+		This.Running = false;
+		This.WaitCV.notify_all();
+		This.Worker.join();
+	}
+}
 
 ShaderManager& ShaderManager::GetInstance() {
 	static ShaderManager This;
 	return This;
 }
-
-
 
 #define X(Vert,Frag) \
 UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".vert",std::string("../resources/shaders/Source/")+STRINGIFY(Frag)+".frag");
