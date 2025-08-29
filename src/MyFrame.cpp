@@ -135,6 +135,9 @@ MyFrame::MyFrame(MyApp *App)
       LoopTimer(this, [this]() { Loop(); }),
       App(App) {
   PROFILE_FUNKTION;
+
+  Maximize();
+
   Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent &evt) {
     evt.Skip();
     LoopTimer.Stop();
@@ -492,8 +495,6 @@ MyFrame::MyFrame(MyApp *App)
   LoopTimer.Start();
 
   Show(true);
-
-  Maximize();
 
   InitilizeDescriptor = "Waiting for Opengl initilisation";
 

@@ -13,8 +13,8 @@ PngManager::PngManager()
 [](){\
 	wxMemoryInputStream stream(CONCAT(Source_,CONCAT(Name, _png)), CONCAT(Source_,CONCAT(Name, _png_len)));\
 	return wxImage(stream, wxBITMAP_TYPE_PNG);\
-}()},
-	Map{
+}},
+	pngLoaders{
 	XList_Png_Images
 }
 #undef X
@@ -30,6 +30,11 @@ PngManager& PngManager::GetInstance() {
 }
 
 const wxImage& PngManager::GetPng(const Pngs& xpm) {
-	const auto& This = GetInstance();
+	auto& This = GetInstance();
+	auto it = This.Map.find(xpm);
+	if (it != This.Map.end()) {
+		return it->second;
+	}
+	This.Map[xpm] = This.pngLoaders.at(xpm)();
 	return This.Map.at(xpm);
 }

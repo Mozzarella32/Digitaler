@@ -22,6 +22,7 @@ public:
 
 private:
 
+	std::unordered_map<Pngs, std::function<wxImage(void)>> pngLoaders;
 	std::unordered_map<Pngs, wxImage> Map;
 
 public:
