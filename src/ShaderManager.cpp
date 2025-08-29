@@ -13,6 +13,7 @@
 
 #ifdef HotShaderReload
 bool ShaderManager::IsDirty = false;
+bool ShaderManager::allowReload = false;
 #endif
 
 #ifdef HotShaderReload
@@ -109,7 +110,7 @@ Shader& ShaderManager::GetShader(const Shaders& shader) {
 	auto& This = GetInstance();
 #ifdef HotShaderReload
 	std::unique_lock ul(This.QueueMutex);
-	if (This.Queue.empty()) return This.shaders[shader];
+	if (This.Queue.empty() || !This.allowReload) return This.shaders[shader];
 	while (!This.Queue.empty()) {
 		const auto& [currShader, Vert, Frag] = This.Queue.back();
 		This.shaders[currShader] = Shader(ErrorHandler, Vert, Frag);
@@ -153,11 +154,11 @@ void ShaderManager::Initilise() {
 
 std::unique_ptr<Shader> ShaderManager::PlacholderShader;
 
-const std::unique_ptr<Shader>& ShaderManager::GetPlacholderShader() {
+Shader& ShaderManager::GetPlacholderShader() {
 	PROFILE_FUNKTION;
-	if (PlacholderShader) return PlacholderShader;
-	PlacholderShader = std::make_unique<Shader>(ErrorHandler,
-		std::string(R"--(
+	if (!PlacholderShader) {
+		PlacholderShader = std::make_unique<Shader>(ErrorHandler,
+			std::string(R"--(
 //PlacholderShader.vert
 
 #version 330 core
@@ -200,5 +201,6 @@ void main() {
     }
 }
 )--"));
-	return PlacholderShader;
+	}
+	return *PlacholderShader;
 }

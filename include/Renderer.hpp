@@ -131,11 +131,11 @@ public:
 private:
 	void RenderWires();
 
-	public:
+public:
 
 	void Render();
 
-	void RenderPlacholder();
+	static void RenderPlacholder(MyFrame& frame, Eigen::Vector2f CanvasSize);
 
 private:
 	void RenderIDMap();
@@ -152,7 +152,7 @@ public:
 	Renderer(MyApp* App, MyFrame* Frame);
 	~Renderer();
 
-	void UpdateSize(bool Initilized);
+	void UpdateSize();
 
 	BufferedVertexVec<PointFRGBVertex>& GetAreaSelectVerts();
 

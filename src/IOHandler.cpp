@@ -15,15 +15,18 @@
 #include "BlockSelector.hpp"
 
 void IOHandler::OnCanvasSizeChange() {
-	Renderer& r = *Frame->renderer;
-
 	if (state == State::Loading) {
-		r.UpdateSize(false);
-		r.RenderPlacholder();
+		auto Size = Frame->Canvas->GetSize();
+		const double scale = Frame->Canvas->GetContentScaleFactor();
+		auto CanvasSize = Eigen::Vector2f{ scale * Size.x, scale * Size.y };
+
+		Renderer::RenderPlacholder(*Frame, CanvasSize);
 		return;
 	}
 
-	r.UpdateSize(true);
+	Renderer& r = *Frame->renderer;
+
+	r.UpdateSize();
 }
 
 void IOHandler::OnDelete() {

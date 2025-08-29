@@ -52,9 +52,10 @@ private:
 public:
 	static bool IsDirty;
 
+	static bool allowReload;
+
 #endif
 	std::array<Shader,ShadersSize> shaders;
-
 
 private:
 	std::map<std::string, std::vector<std::reference_wrapper<Shader>>> shadersWithUniform;
@@ -69,5 +70,5 @@ public:
 
 	static void Stop();
 
-	static const std::unique_ptr<Shader>& GetPlacholderShader();
+	static Shader& GetPlacholderShader();
 };

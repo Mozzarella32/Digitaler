@@ -566,9 +566,16 @@ void MyFrame::OnGLInit() {
           ShaderManager::Initilise();*/
 
   IO = std::make_unique<IOHandler>(this);
+
+  IO->OnCanvasSizeChange();
+  
   {
-    PROFILE_SCOPE("Creating Renderer");
-    renderer = std::make_unique<Renderer>(this->App, this);
+      PROFILE_SCOPE("Creating Renderer");
+      InitilizeDescriptor = "Creating Renderer";
+      std::cout << "Initilizing: " << InitilizeDescriptor << "\n";
+      SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
+
+      renderer = std::make_unique<Renderer>(this->App, this);
   }
 
   IO->OnCanvasSizeChange();
@@ -588,7 +595,7 @@ void MyFrame::OnGLInit() {
   BlockManager->SetCurrent(
       BlockManager->GetBlockIndex(
           BlockIdentifiyer::ParsePredefined("Testing:MainBlock")),
-      0.01f, {0, 0}, true);
+      0.01f, { 0, 0 }, true);
 
   InitilizeDescriptor =
       "Resizing Textures, Creating BoundingBoxes and Initial Render";
@@ -600,6 +607,8 @@ void MyFrame::OnGLInit() {
   IO->OnCanvasSizeChange();
   std::cout << "Ready\n";
   SetTitle("Ready");
+
+  ShaderManager::allowReload = true;
 }
 
 void MyFrame::Loop() {

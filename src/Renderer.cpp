@@ -327,7 +327,7 @@ void Renderer::RenderWires() {
     if (!b.GetEdges(Floating).Empty()) {
 
       Shader &PathShader = ShaderManager::GetShader(ShaderManager::Path);
-
+      
       PathShader.bind();
 
       auto &EdgesVAO = GetPathVAOs(Floating).EdgesVAO;
@@ -752,10 +752,10 @@ void Renderer::CheckZoomDots() {
   BackgroundShader.unbind();
 }
 
-void Renderer::RenderPlacholder() {
+void Renderer::RenderPlacholder(MyFrame& frame, Eigen::Vector2f CanvasSize) {
   PROFILE_FUNKTION;
 
-  if (!Frame->Canvas->BindContext()) {
+  if (!frame.Canvas->BindContext()) {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
   }
 
@@ -763,16 +763,16 @@ void Renderer::RenderPlacholder() {
 
   GLCALL(glViewport(0, 0, CanvasSize.x(), CanvasSize.y()));
 
-  const auto &Shader = ShaderManager::GetPlacholderShader();
-  Shader->bind();
-  Shader->apply("USize", Shader::Data2f{CanvasSize.x() / 100.0f,
+  auto &Shader = ShaderManager::GetPlacholderShader();
+  Shader.bind();
+  Shader.apply("USize", Shader::Data2f{CanvasSize.x() / 100.0f,
                      CanvasSize.y() / 100.0f});
-  Frame->HoleScreenVAO->bind();
-  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-  Frame->HoleScreenVAO->unbind();
-  Shader->unbind();
+  frame.HoleScreenVAO->bind();
+  frame.HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+  frame.HoleScreenVAO->unbind();
+  Shader.unbind();
 
-  Frame->Canvas->SwapBuffers();
+  frame.Canvas->SwapBuffers();
 }
 
 Renderer::Renderer(MyApp *App, MyFrame *Frame)
@@ -865,15 +865,12 @@ Renderer::~Renderer() {
   BBUpdater.join();
 }
 
-void Renderer::UpdateSize(bool Initilized) {
+void Renderer::UpdateSize() {
   PROFILE_FUNKTION;
 
   auto Size = Frame->Canvas->GetSize();
   const double scale = Frame->Canvas->GetContentScaleFactor();
   CanvasSize = {scale * Size.x, scale * Size.y};
-
-  if (!Initilized)
-    return;
 
   FBOBackgroundTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
