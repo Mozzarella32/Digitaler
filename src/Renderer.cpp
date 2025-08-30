@@ -109,7 +109,7 @@ Renderer::PathVAOs &Renderer::GetPathVAOs(bool Preview) {
   return Preview ? VAOsPathPreview : VAOsPath;
 }
 
-template <typename VertexType> VertexArrayObject Renderer::CreateVAO() {
+template <typename VertexType> VertexArrayObject Renderer::CreateVAOInstancing4() {
   VertexArrayObject VAO = {std::vector<VertexBufferObjectDescriptor>{
       {GL_STATIC_DRAW, IndexVertex{}}, {GL_DYNAMIC_DRAW, VertexType{}, 1}}};
 
@@ -117,6 +117,11 @@ template <typename VertexType> VertexArrayObject Renderer::CreateVAO() {
   VAO.ReplaceVertexBuffer(std::vector<IndexVertex>{{0}, {1}, {2}, {3}}, 0);
   VAO.unbind();
   return VAO;
+}
+
+template <typename VertexType> VertexArrayObject Renderer::CreateVAO() {
+  return VertexArrayObject{std::vector<VertexBufferObjectDescriptor>{
+      {GL_DYNAMIC_DRAW, VertexType{}}}};
 }
 
 void Renderer::RenderIDMap() {
@@ -149,7 +154,7 @@ void Renderer::RenderIDMap() {
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName) {
-    if (!VertsGetter().Empty()) {
+    if (!VertsGetter().empty()) {
       Shader &shader = ShaderManager::GetShader(ShaderName);
 
       shader.bind();
@@ -207,7 +212,7 @@ void Renderer::RenderWires() {
       auto &EdgesUnmarkedVAO = GetPathVAOs(Floating).EdgesUnmarkedVAO;
 
       EdgesUnmarkedVAO.bind();
-      b.GetEdgesUnmarked(Floating).ReplaceBuffer(EdgesUnmarkedVAO, 1);
+      b.GetEdgesUnmarked(Floating).replaceBuffer(EdgesUnmarkedVAO, 1);
       EdgesUnmarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
       EdgesUnmarkedVAO.unbind();
 
@@ -228,7 +233,7 @@ void Renderer::RenderWires() {
 
       // Draw Highlight Stem
       EdgesMarkedVAO.bind();
-      b.GetEdgesMarked(Floating).ReplaceBuffer(EdgesMarkedVAO, 1, !Floating);
+      b.GetEdgesMarked(Floating).replaceBuffer(EdgesMarkedVAO, 1, !Floating);
       EdgesMarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
       EdgesMarkedVAO.unbind();
 
@@ -238,16 +243,16 @@ void Renderer::RenderWires() {
 
       auto &VertsVAO = GetPathVAOs(Floating).VertsVAO;
 
-      if (!b.GetVerts(Floating).Empty()) {
+      if (!b.GetVerts(Floating).empty()) {
         // Draw Roundings at Stencil 0
         VertsVAO.bind();
-        b.GetVerts(Floating).ReplaceBuffer(VertsVAO, 1);
+        b.GetVerts(Floating).replaceBuffer(VertsVAO, 1);
         VertsVAO.DrawAs(GL_TRIANGLE_STRIP);
       }
 
       PathHightlightShader.unbind();
 
-      if (!b.GetVerts(Floating).Empty()) {
+      if (!b.GetVerts(Floating).empty()) {
         Shader& HighlightPathCornerOverdrawShader =
             ShaderManager::GetShader(
                 ShaderManager::HighlightPathCornerOverdraw);
@@ -270,7 +275,7 @@ void Renderer::RenderWires() {
         HighlightPathCornerOverdrawShader.unbind();
       }
 
-      if (!b.GetConflictPoints(Floating).Empty()) {
+      if (!b.GetConflictPoints(Floating).empty()) {
 
         GLCALL(glStencilMask(0xFF));
         GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
@@ -295,7 +300,7 @@ void Renderer::RenderWires() {
 
         auto &ConflictPointsVAO = GetPathVAOs(Floating).ConflictPointsVAO;
         ConflictPointsVAO.bind();
-        b.GetConflictPoints(Floating).ReplaceBuffer(ConflictPointsVAO, 1);
+        b.GetConflictPoints(Floating).replaceBuffer(ConflictPointsVAO, 1);
         ConflictPointsVAO.DrawAs(GL_TRIANGLE_STRIP);
         ConflictPointsVAO.unbind();
 
@@ -324,7 +329,7 @@ void Renderer::RenderWires() {
     }
 
     // Draw Path Edges
-    if (!b.GetEdges(Floating).Empty()) {
+    if (!b.GetEdges(Floating).empty()) {
 
       Shader &PathShader = ShaderManager::GetShader(ShaderManager::Path);
       
@@ -333,14 +338,14 @@ void Renderer::RenderWires() {
       auto &EdgesVAO = GetPathVAOs(Floating).EdgesVAO;
 
       EdgesVAO.bind();
-      b.GetEdges(Floating).ReplaceBuffer(EdgesVAO, 1);
+      b.GetEdges(Floating).replaceBuffer(EdgesVAO, 1);
       EdgesVAO.DrawAs(GL_TRIANGLE_STRIP);
       EdgesVAO.unbind();
       PathShader.unbind();
     }
 
     // Draw Path Rounded Inner Corners
-    if (!b.GetSpecialPoints(Floating).Empty()) {
+    if (!b.GetSpecialPoints(Floating).empty()) {
       Shader &IntersectionPathShader =
           ShaderManager::GetShader(ShaderManager::IntersectionPath);
 
@@ -352,7 +357,7 @@ void Renderer::RenderWires() {
       auto &SpecialPointsVAO = GetPathVAOs(Floating).SpecialPointsVAO;
 
       SpecialPointsVAO.bind();
-      b.GetSpecialPoints(Floating).ReplaceBuffer(SpecialPointsVAO, 1);
+      b.GetSpecialPoints(Floating).replaceBuffer(SpecialPointsVAO, 1);
       SpecialPointsVAO.DrawAs(GL_TRIANGLE_STRIP);
       SpecialPointsVAO.unbind();
 
@@ -388,7 +393,7 @@ void Renderer::RenderWires() {
   PathShader.bind();
   for (bool Floating : {false, true}) {
 
-    if (b.GetEdges(Floating).Empty())
+    if (b.GetEdges(Floating).empty())
       continue;
 
     auto &EdgesVAO = GetPathVAOs(Floating).EdgesVAO;
@@ -396,7 +401,7 @@ void Renderer::RenderWires() {
     EdgesVAO.bind();
     // Is importent as it might not have been replaced by drawing wires and the
     // buffer was cleared
-    b.GetEdges(Floating).ReplaceBuffer(EdgesVAO, 1);
+    b.GetEdges(Floating).replaceBuffer(EdgesVAO, 1);
     EdgesVAO.DrawAs(GL_TRIANGLE_STRIP);
     EdgesVAO.unbind();
   }
@@ -474,12 +479,12 @@ void Renderer::Render() {
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName) {
-    if (!VertsGetter().Empty()) {
+    if (!VertsGetter().empty()) {
       Shader &shader = ShaderManager::GetShader(ShaderName);
 
       shader.bind();
       VAO.bind();
-      VertsGetter().ReplaceBuffer(VAO, 1);
+      VertsGetter().replaceBuffer(VAO, 1);
       VAO.DrawAs(GL_TRIANGLE_STRIP);
       VAO.unbind();
       shader.unbind();
@@ -498,7 +503,7 @@ void Renderer::Render() {
 
   auto WirePass = [this](auto VertsGetter, VertexArrayObject &VAO,
                          ShaderManager::Shaders ShaderName) {
-    if (!VertsGetter().Empty()) {
+    if (!VertsGetter().empty()) {
 
       Shader &shader = ShaderManager::GetShader(ShaderName);
 
@@ -507,7 +512,7 @@ void Renderer::Render() {
       FBOPathColorTexture.bind(shader, "UPath", "", 0);
 
       VAO.bind();
-      VertsGetter().ReplaceBuffer(VAO, 1);
+      VertsGetter().replaceBuffer(VAO, 1);
 
       GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
       shader.apply("UHasWire",Shader::Data1i{true});
@@ -587,8 +592,8 @@ void Renderer::Render() {
 
   SimplePass([&b]() { return b.GetMuxVerts(); }, MuxVAO, ShaderManager::Mux);
 
-  if (!b.GetStaticTextVerts().Empty() || !b.GetDynamicTextVerts().Empty() ||
-      (Frame->Blockselector && !Frame->Blockselector->GetTextVerts().Empty())) {
+  if (!b.GetStaticTextVerts().empty() || !b.GetDynamicTextVerts().empty() ||
+      (Frame->Blockselector && !Frame->Blockselector->GetTextVerts().empty())) {
 
     PROFILE_SCOPE("Text");
 
@@ -598,16 +603,16 @@ void Renderer::Render() {
 
     TextAtlas.bind(TextShader, "UTexture", "", 0);
 
-    if (!b.GetStaticTextVerts().Empty()) {
+    if (!b.GetStaticTextVerts().empty()) {
       StaticTextVAO.bind();
-      b.GetStaticTextVerts().ReplaceBuffer(StaticTextVAO, 1);
+      b.GetStaticTextVerts().replaceBuffer(StaticTextVAO, 1);
       StaticTextVAO.DrawAs(GL_TRIANGLE_STRIP);
       StaticTextVAO.unbind();
     }
 
-    if (!b.GetDynamicTextVerts().Empty()) {
+    if (!b.GetDynamicTextVerts().empty()) {
       DynamicTextVAO.bind();
-      b.GetDynamicTextVerts().ReplaceBuffer(DynamicTextVAO, 1, false);
+      b.GetDynamicTextVerts().replaceBuffer(DynamicTextVAO, 1, false);
       DynamicTextVAO.DrawAs(GL_TRIANGLE_STRIP);
       DynamicTextVAO.unbind();
     }
@@ -622,9 +627,9 @@ void Renderer::Render() {
     if (Frame->Blockselector) {
       Frame->Blockselector->Update();
       auto &Blockselector = *Frame->Blockselector;
-      if (!Blockselector.GetTextVerts().Empty()) {
+      if (!Blockselector.GetTextVerts().empty()) {
         DynamicTextVAO.bind();
-        Blockselector.GetTextVerts().ReplaceBuffer(DynamicTextVAO, 1, false);
+        Blockselector.GetTextVerts().replaceBuffer(DynamicTextVAO, 1, false);
         DynamicTextVAO.DrawAs(GL_TRIANGLE_STRIP);
         DynamicTextVAO.unbind();
       }
@@ -672,7 +677,7 @@ void Renderer::Render() {
   // BoundingBox.Size,ColourType{1.0,1.0,0.0,0.0}); PointFRGBVertex(const
   // Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& c)
 
-  if (!AreaSelectVerts.Empty()) {
+  if (!AreaSelectVerts.empty()) {
 
     PROFILE_SCOPE("AreaSelect");
 
@@ -682,7 +687,7 @@ void Renderer::Render() {
     AreaSelectShader.bind();
 
     AreaSelectVAO.bind();
-    AreaSelectVerts.ReplaceBuffer(AreaSelectVAO, 1, false);
+    AreaSelectVerts.replaceBuffer(AreaSelectVAO, 0, false);
     AreaSelectVAO.DrawAs(GL_TRIANGLE_STRIP);
     AreaSelectVAO.unbind();
 
@@ -690,7 +695,7 @@ void Renderer::Render() {
   }
 
 #ifdef ShowBasePositionOfBlocks
-  if (!b.GetBasePotitionOfBlocksVerts().Empty()) {
+  if (!b.GetBasePotitionOfBlocksVerts().empty()) {
 
     PROFILE_SCOPE("BasePotitionOfBlocks");
 
@@ -699,10 +704,10 @@ void Renderer::Render() {
 
     AreaSelectShader.bind();
 
-    BlockBasePotitionVAO.bind();
-    b.GetBasePotitionOfBlocksVerts().ReplaceBuffer(BlockBasePotitionVAO, 1);
-    BlockBasePotitionVAO.DrawAs(GL_TRIANGLE_STRIP);
-    BlockBasePotitionVAO.unbind();
+    BlockBasePositionVAO.bind();
+    b.GetBasePotitionOfBlocksVerts().replaceBuffer(BlockBasePositionVAO, 1);
+    BlockBasePositionVAO.DrawAs(GL_TRIANGLE_STRIP);
+    BlockBasePositionVAO.unbind();
 
     AreaSelectShader.unbind();
   }
@@ -818,38 +823,38 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       CollisionGridVAO(CreateVAO<TwoPointIRGBAIDVertex>()),
 #endif
       VAOsPath(PathVAOs{
-          .EdgesVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .EdgesMarkedVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .EdgesUnmarkedVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .SpecialPointsVAO = CreateVAO<PointIRGBVertex>(),
-          .VertsVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .ConflictPointsVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
+          .EdgesVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .EdgesMarkedVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .EdgesUnmarkedVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .SpecialPointsVAO = CreateVAOInstancing4<PointIRGBVertex>(),
+          .VertsVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .ConflictPointsVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
       }),
       VAOsPathPreview(PathVAOs{
-          .EdgesVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .EdgesMarkedVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .EdgesUnmarkedVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .SpecialPointsVAO = CreateVAO<PointIRGBVertex>(),
-          .VertsVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
-          .ConflictPointsVAO = CreateVAO<TwoPointIRGBRHGHBHVertex>(),
+          .EdgesVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .EdgesMarkedVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .EdgesUnmarkedVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .SpecialPointsVAO = CreateVAOInstancing4<PointIRGBVertex>(),
+          .VertsVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
+          .ConflictPointsVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
       }),
-      SevenSegVAO(CreateVAO<SevenSegVertex>()),
-      SixteenSegVAO(CreateVAO<SixteenSegVertex>()),
-      MuxVAO(CreateVAO<MuxIDVertex>()),
-      BlocksVAO(CreateVAO<TwoPointIRGBAIDVertex>()),
-      PinVAO(CreateVAO<PointIOrientationRGBRHGHBHIDVertex>()),
-      RoundPinVAO(CreateVAO<PointIRGBIDVertex>()),
-      AndVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
+      SevenSegVAO(CreateVAOInstancing4<SevenSegVertex>()),
+      SixteenSegVAO(CreateVAOInstancing4<SixteenSegVertex>()),
+      MuxVAO(CreateVAOInstancing4<MuxIDVertex>()),
+      BlocksVAO(CreateVAOInstancing4<TwoPointIRGBAIDVertex>()),
+      PinVAO(CreateVAOInstancing4<PointIOrientationRGBRHGHBHIDVertex>()),
+      RoundPinVAO(CreateVAOInstancing4<PointIRGBIDVertex>()),
+      AndVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
       /*NotTriangleVAO(CreatePointIOrientationVAO()),
       NDotVAO(CreatePointIOrientationVAO()),*/
-      OrVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
-#ifdef ShowBasePositionOfBlocks
-      XOrVAO(CreateVAO<PointIOrientationRGBIDVertex>()),
-#endif
+      OrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
+      XOrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
       AreaSelectVAO(CreateVAO<PointFRGBVertex>()),
-      BlockBasePotitionVAO(CreateVAO<PointFRGBVertex>()),
-      StaticTextVAO(CreateVAO<TextVertex>()),
-      DynamicTextVAO(CreateVAO<TextVertex>()),
+#ifdef ShowBasePositionOfBlocks
+      BlockBasePositionVAO(CreateVAOInstancing4<PointFRGBVertex>()),
+#endif
+      StaticTextVAO(CreateVAOInstancing4<TextVertex>()),
+      DynamicTextVAO(CreateVAOInstancing4<TextVertex>()),
       TextAtlas(textureFromWxImage(PngManager::GetPng(PngManager::atlas), []() {
         Texture::Descriptor desc;
         desc.Min_Filter = Texture::Descriptor::Filter_Type::LINEAR;
@@ -985,26 +990,26 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
                            Eigen::Vector2f{BlockSize.x(), -BlockSize.y()} +
                                Eigen::Vector2f{1.5, -1.5});
 
-  auto rectHorizontal =
-      MyRectF::FromCorners(Eigen::Vector2f{-1.5, 1.5},
-                           Eigen::Vector2f{BlockSize.y(), -BlockSize.x()} +
-                               Eigen::Vector2f{1.5, -1.5});
+  // auto rectHorizontal =
+  //     MyRectF::FromCorners(Eigen::Vector2f{-1.5, 1.5},
+  //                          Eigen::Vector2f{BlockSize.y(), -BlockSize.x()} +
+  //                              Eigen::Vector2f{1.5, -1.5});
 
   if (!UIDRun) {
     UIDRun = true;
     ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
   }
 
-  auto Rotation = MyDirection::Up;
+  // auto Rotation = MyDirection::Up;
 
   PointType ViewportSize;
-  if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
-    ViewportSize = {int(rectHorizontal.Size.x()) * 1.0 / Zoom,
-                    int(rectHorizontal.Size.y()) * 1.0 / Zoom};
-  } else {
+  // if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
+  //   ViewportSize = {int(rectHorizontal.Size.x()) * 1.0 / Zoom,
+  //                   int(rectHorizontal.Size.y()) * 1.0 / Zoom};
+  // } else {
     ViewportSize = {int(rectVertical.Size.x()) * 1.0 / Zoom,
                     int(rectVertical.Size.y()) * 1.0 / Zoom};
-  }
+  // }
 
   FBOIDTexture.Resize(ViewportSize.x(), ViewportSize.y());
 
@@ -1020,19 +1025,16 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   GLCALL(glClearTexImage(FBOIDTexture.GetId(), 0, GL_RED_INTEGER,
                          GL_UNSIGNED_INT, &clearint));
 
-  VisualBlockInterior &b = Frame->BlockManager->Interior;
-
   GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-  auto SimplePass = [](auto &BlockBuffer, auto &MyBuffer,
+  auto SimplePass = [](auto &MyBuffer,
                        VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName) {
-    BlockBuffer.Dirty = true;
     Shader &shader = ShaderManager::GetShader(ShaderName);
 
     shader.bind();
     VAO.bind();
-    MyBuffer.ReplaceBuffer(VAO, 1);
+    MyBuffer.replaceBuffer(VAO, 1);
     VAO.DrawAs(GL_TRIANGLE_STRIP);
     VAO.unbind();
     shader.unbind();
@@ -1042,85 +1044,86 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   BlockMetadata Meta;
   Meta.Pos = {};
-  Meta.Rotation = Rotation;
+  Meta.Rotation = MyDirection::Up;
 
   PointType TopLeft;
   PointType BottomRight;
-  if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
+  // if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
+  //   // Meta.Pos =
+  //   TopLeft = Meta.Pos +
+  //             PointType{-1, -1} * int((BlockSize.y() - BlockSize.x()) / 2.0);
+  //   BottomRight = TopLeft + PointType{BlockSize.y(), -BlockSize.x()};
+  // } else {
     // Meta.Pos =
-    TopLeft = Meta.Pos +
-              PointType{-1, -1} * int((BlockSize.y() - BlockSize.x()) / 2.0);
-    BottomRight = TopLeft + PointType{BlockSize.y(), -BlockSize.x()};
-  } else {
-    // Meta.Pos =
-    TopLeft = Meta.Pos;
+    // TopLeft = Meta.Pos;
+    TopLeft = {};
     BottomRight = TopLeft + PointType{BlockSize.x(), -BlockSize.y()};
-  }
+  // }
 
   if (cbdi == SB.And || cbdi == SB.Or || cbdi == SB.XOr) {
     if (cbdi == SB.And) {
       BufferedVertexVec<PointIOrientationRGBIDVertex> AndBuffer;
-      AndBuffer.Emplace(1u, Meta, NoColor);
-      SimplePass(b.GetAndVerts(), AndBuffer, AndVAO, ShaderManager::And);
+      AndBuffer.emplace(1u, Meta, NoColor);
+      SimplePass(AndBuffer, AndVAO, ShaderManager::And);
     }
     if (cbdi == SB.Or) {
       BufferedVertexVec<PointIOrientationRGBIDVertex> OrBuffer;
-      OrBuffer.Emplace(1u, Meta, NoColor);
-      SimplePass(b.GetOrVerts(), OrBuffer, OrVAO, ShaderManager::Or);
+      OrBuffer.emplace(1u, Meta, NoColor);
+      SimplePass(OrBuffer, OrVAO, ShaderManager::Or);
     }
     if (cbdi == SB.XOr) {
       BufferedVertexVec<PointIOrientationRGBIDVertex> XOrBuffer;
-      XOrBuffer.Emplace(1u, Meta, NoColor);
-      SimplePass(b.GetXOrVerts(), XOrBuffer, XOrVAO, ShaderManager::XOr);
+      XOrBuffer.emplace(1u, Meta, NoColor);
+      SimplePass(XOrBuffer, XOrVAO, ShaderManager::XOr);
     }
 
     BufferedVertexVec<PointIRGBIDVertex> RoundedPinBuffer;
     for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-      RoundedPinBuffer.Emplace(
+      RoundedPinBuffer.emplace(
           1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
           NoColor);
     }
     for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-      RoundedPinBuffer.Emplace(
+      RoundedPinBuffer.emplace(
           1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
           NoColor);
     }
-    SimplePass(b.GetRoundedPinVerts(), RoundedPinBuffer, RoundPinVAO,
+    SimplePass(RoundedPinBuffer, RoundPinVAO,
                ShaderManager::RoundPin);
   } else if (cbdi == SB.Mux) {
     BufferedVertexVec<MuxIDVertex> MuxBuffer;
-    MuxBuffer.Emplace(1u, Meta, 2, 0, NoColor);
-    SimplePass(b.GetMuxVerts(), MuxBuffer, MuxVAO, ShaderManager::Mux);
+    MuxBuffer.emplace(1u, Meta, 2, 0, NoColor);
+    SimplePass(MuxBuffer, MuxVAO, ShaderManager::Mux);
 
     BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
     for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-      PinBuffer.Emplace(
+      PinBuffer.emplace(
           1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
           VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
     }
     for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-      PinBuffer.Emplace(
+      PinBuffer.emplace(
           1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
           VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
     }
-    SimplePass(b.GetPinVerts(), PinBuffer, PinVAO, ShaderManager::Pin);
+    SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
   } else {
     BufferedVertexVec<TwoPointIRGBAIDVertex> BlockBuffer;
-    BlockBuffer.Emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
-    SimplePass(b.GetBlockVerts(), BlockBuffer, BlocksVAO, ShaderManager::Block);
+    BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
+    SimplePass(BlockBuffer, BlocksVAO, ShaderManager::Block);
 
     BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
     for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-      PinBuffer.Emplace(
+      PinBuffer.emplace(
           1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
           VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
     }
     for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-      PinBuffer.Emplace(
+      PinBuffer.emplace(
           1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
           VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
     }
-    SimplePass(b.GetPinVerts(), PinBuffer, PinVAO, ShaderManager::Pin);
+    SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
   }
   FBOID.unbind();
 

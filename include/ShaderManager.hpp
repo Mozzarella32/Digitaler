@@ -40,15 +40,15 @@ private:
 
 	std::mutex WaitCVMutex;
 	std::condition_variable WaitCV;
-	std::vector<std::tuple<Shaders, std::filesystem::path, std::filesystem::path>> Queue;
+	std::vector<std::tuple<Shaders, std::filesystem::path, std::optional<std::filesystem::path>, std::filesystem::path>> Queue;
 
 	bool Running = true;
 
-	std::unordered_map<Shaders, std::pair<std::filesystem::file_time_type, std::filesystem::file_time_type>> LastUpdate;
+	std::unordered_map<Shaders, std::tuple<std::filesystem::file_time_type, std::filesystem::file_time_type, std::filesystem::file_time_type>> LastUpdate;
 
 	void Work();
 
-	void UpdateShader(const Shaders& shader,const std::filesystem::path& Vert, const std::filesystem::path& Frag);
+	void UpdateShader(const Shaders& shader,const std::filesystem::path& Vert, const std::optional<std::filesystem::path>& Geom, const std::filesystem::path& Frag);
 public:
 	static bool IsDirty;
 

@@ -68,9 +68,9 @@ Eigen::Affine2f BlockSelector::GetTransform(const Eigen::Vector2f& CanvasSize) c
 }
 
 void BlockSelector::UpdateExtendsAndText() {
-	TextVerts.Clear();
+	TextVerts.clear();
 	ClipRects.clear();
-	//Blocks.Clear();
+	//Blocks.clear();
 
 	const auto& CanvasSize = renderer->CanvasSize;
 

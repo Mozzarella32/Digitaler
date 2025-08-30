@@ -587,30 +587,30 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 	Blocks.clear();
 	Destructing = false;
 
-	Edges.Clear();
-	EdgesMarked.Clear();
-	EdgesUnmarked.Clear();
-	SpecialPoints.Clear();
-	Verts.Clear();
-	ConflictPoints.Clear();
-	FloatingEdges.Clear();
-	FloatingSpecialPoints.Clear();
-	FloatingVerts.Clear();
-	StaticTextVerts.Clear();
-	DynamicTextVerts.Clear();
+	Edges.clear();
+	EdgesMarked.clear();
+	EdgesUnmarked.clear();
+	SpecialPoints.clear();
+	Verts.clear();
+	ConflictPoints.clear();
+	FloatingEdges.clear();
+	FloatingSpecialPoints.clear();
+	FloatingVerts.clear();
+	StaticTextVerts.clear();
+	DynamicTextVerts.clear();
 
-	PinVerts.Clear();
-	BlockVerts.Clear();
-	SevenSegVerts.Clear();
-	SixteenSegVerts.Clear();
-	RoundedPinVerts.Clear();
-	AndVerts.Clear();
-	OrVerts.Clear();
-	XOrVerts.Clear();
-	MuxVerts.Clear();
+	PinVerts.clear();
+	BlockVerts.clear();
+	SevenSegVerts.clear();
+	SixteenSegVerts.clear();
+	RoundedPinVerts.clear();
+	AndVerts.clear();
+	OrVerts.clear();
+	XOrVerts.clear();
+	MuxVerts.clear();
 
 #ifdef ShowBasePositionOfBlocks
-	BasePositionVerts.Clear();
+	BasePositionVerts.clear();
 #endif
 
 	PreviewData.clear();
@@ -697,12 +697,12 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 
 	Dirty = false;
 
-	Edges.Clear();
-	EdgesMarked.Clear();
-	EdgesUnmarked.Clear();
-	SpecialPoints.Clear();
-	Verts.Clear();
-	ConflictPoints.Clear();
+	Edges.clear();
+	EdgesMarked.clear();
+	EdgesUnmarked.clear();
+	SpecialPoints.clear();
+	Verts.clear();
+	ConflictPoints.clear();
 
 	MyRectI ViewRectI = MyRectI::FromCorners(
 		ViewRect.Position.cast<int>() - PointType(1, 1),
@@ -712,30 +712,30 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		if (p.IsFree()) continue;
 		p.ComputeAll(ViewRectI);
 		if (p.IsFullyMarked()) continue;
-		EdgesMarked.Append(p.getEdgesMarked());
-		EdgesUnmarked.Append(p.getEdgesUnmarked());
-		Verts.Append(p.getVerts());
-		SpecialPoints.Append(p.getSpecialPoints());
-		ConflictPoints.Append(p.getConflictPoints());
+		EdgesMarked.append(p.getEdgesMarked());
+		EdgesUnmarked.append(p.getEdgesUnmarked());
+		Verts.append(p.getVerts());
+		SpecialPoints.append(p.getSpecialPoints());
+		ConflictPoints.append(p.getConflictPoints());
 	}
 
-	Edges.AppendOther(EdgesMarked, EdgesUnmarked);
+	Edges.appendOther(EdgesMarked, EdgesUnmarked);
 }
 
 void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, const PointType& Mouse) {
 	PROFILE_FUNKTION;
 
 	if (!HasPreview()) {
-		FloatingEdges.Clear();
-		FloatingVerts.Clear();
-		FloatingSpecialPoints.Clear();
+		FloatingEdges.clear();
+		FloatingVerts.clear();
+		FloatingSpecialPoints.clear();
 
 		for (auto& p : Paths) {
 			if (p.IsFree()) continue;
 			if (!p.IsFullyMarked()) continue;
-			FloatingEdges.Append(p.getEdgesMarked());
-			FloatingVerts.Append(p.getVerts());
-			FloatingSpecialPoints.Append(p.getSpecialPoints());
+			FloatingEdges.append(p.getEdgesMarked());
+			FloatingVerts.append(p.getVerts());
+			FloatingSpecialPoints.append(p.getSpecialPoints());
 		}
 		return;
 	}
@@ -768,9 +768,9 @@ void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, co
 
 	if (RecalcVecs) {
 
-		FloatingEdges.Clear();
-		FloatingVerts.Clear();
-		FloatingSpecialPoints.Clear();
+		FloatingEdges.clear();
+		FloatingVerts.clear();
+		FloatingSpecialPoints.clear();
 
 		if (!PreviewCached.has_value()) return;
 
@@ -784,9 +784,9 @@ void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, co
 		);
 
 		Preview.ComputeAll(ViewRectI);
-		FloatingEdges.Append(Preview.getEdgesMarked());
-		FloatingVerts.Append(Preview.getVerts());
-		FloatingSpecialPoints.Append(Preview.getSpecialPoints());
+		FloatingEdges.append(Preview.getEdgesMarked());
+		FloatingVerts.append(Preview.getVerts());
+		FloatingSpecialPoints.append(Preview.getSpecialPoints());
 	}
 }
 
@@ -972,11 +972,11 @@ void VisualBlockInterior::MergeAfterMove() {
 }
 
 bool VisualBlockInterior::HasMark(bool Preview) {
-	return !GetEdgesMarked(Preview).Empty();
+	return !GetEdgesMarked(Preview).empty();
 }
 
 bool VisualBlockInterior::HasUnmarked(bool Preview) {
-	return !GetEdgesUnmarked(Preview).Empty();
+	return !GetEdgesUnmarked(Preview).empty();
 }
 
 
@@ -1072,9 +1072,9 @@ void VisualBlockInterior::EndDrag() {
 	auto PathOpt = GeneratePreviewPath();
 	PreviewData.clear();
 	PreviewCached.reset();
-	FloatingEdges.Clear();
-	FloatingVerts.Clear();
-	FloatingSpecialPoints.Clear();
+	FloatingEdges.clear();
+	FloatingVerts.clear();
+	FloatingSpecialPoints.clear();
 	PreviewIsDirty = true;
 	if (!PathOpt) {
 		return;
@@ -1093,7 +1093,7 @@ bool VisualBlockInterior::HasPreview() const {
 }
 
 bool VisualBlockInterior::HasFloating() const {
-	return !FloatingEdges.Empty() || HasPreview();
+	return !FloatingEdges.empty() || HasPreview();
 }
 //
 //std::string VisualBlockInterior::CollisionMapToString() const {
@@ -1306,20 +1306,20 @@ void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockM
 void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	if (!DirtyBlocks)return;
 	DirtyBlocks = false;
-	PinVerts.Clear();
-	BlockVerts.Clear();
-	SevenSegVerts.Clear();
-	SixteenSegVerts.Clear();
-	RoundedPinVerts.Clear();
-	AndVerts.Clear();
-	OrVerts.Clear();
-	XOrVerts.Clear();
-	//NDotVerts.Clear();
-	//NotTriangleVerts.Clear();
-	MuxVerts.Clear();
-	StaticTextVerts.Clear();
+	PinVerts.clear();
+	BlockVerts.clear();
+	SevenSegVerts.clear();
+	SixteenSegVerts.clear();
+	RoundedPinVerts.clear();
+	AndVerts.clear();
+	OrVerts.clear();
+	XOrVerts.clear();
+	//NDotVerts.clear();
+	//NotTriangleVerts.clear();
+	MuxVerts.clear();
+	StaticTextVerts.clear();
 #ifdef ShowBasePositionOfBlocks
-	BasePositionVerts.Clear();
+	BasePositionVerts.clear();
 #endif
 
 	ssize_t id = 0;
@@ -1353,7 +1353,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			}
 
 #ifdef ShowBasePositionOfBlocks
-			BasePositionVerts.Emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
+			BasePositionVerts.emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
 #endif
 
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
@@ -1381,43 +1381,43 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			}
 
 			if (IndexContained == SB.SevengSeg) {
-				SevenSegVerts.Emplace(Meta, time(0) % 0x10, ColourType{ 0.78f,0.992f,0.0f,1.0f });
-				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
+				SevenSegVerts.emplace(Meta, time(0) % 0x10, ColourType{ 0.78f,0.992f,0.0f,1.0f });
+				BlockVerts.emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
 			}
 			else if (IndexContained == SB.SixteenSeg) {
 				static std::array<int, 218> Translation = { 73,99,104,32,104,97,98,101,32,106,101,116,122,116,32,101,105,110,102,117,110,107,116,105,111,110,105,101,114,101,110,100,101,115,49,54,32,83,101,103,109,101,110,116,32,68,105,115,112,108,97,121,100,97,115,32,97,108,108,101,32,97,115,99,105,105,32,90,101,105,99,104,101,110,100,97,114,115,116,101,108,108,101,110,32,107,97,110,110,58,48,49,50,51,52,53,54,55,56,57,116,104,101,32,113,117,105,99,107,32,98,114,111,119,110,32,102,111,120,32,106,117,109,112,115,32,111,118,101,114,32,116,104,101,32,108,97,122,121,32,100,111,103,84,72,69,32,81,85,73,67,75,32,66,82,79,87,78,32,70,79,88,32,74,85,77,80,83,32,79,86,69,82,32,84,72,69,32,76,65,90,89,32,68,79,71,33,64,35,36,37,94,38,42,40,41,95,45,43,123,125,124,58,34,60,62,63,96,126,91,93,92,59,39,44,46,47,126, };
-				SixteenSegVerts.Emplace(Meta, Translation[std::max(i - 5, 0)], ColourType{ 0.992f,0.43f,0.0f,1.0f });
-				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
+				SixteenSegVerts.emplace(Meta, Translation[std::max(i - 5, 0)], ColourType{ 0.992f,0.43f,0.0f,1.0f });
+				BlockVerts.emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
 			}
 			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.XOr) {
-				if (IndexContained == SB.And)AndVerts.Emplace(id, Meta, Color);
-				else if (IndexContained == SB.Or)OrVerts.Emplace(id, Meta, Color);
-				else if (IndexContained == SB.XOr)XOrVerts.Emplace(id, Meta, Color);
+				if (IndexContained == SB.And)AndVerts.emplace(id, Meta, Color);
+				else if (IndexContained == SB.Or)OrVerts.emplace(id, Meta, Color);
+				else if (IndexContained == SB.XOr)XOrVerts.emplace(id, Meta, Color);
 
 				for (const auto& Pin : InputPins) {
-					RoundedPinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0f,0.0f,0.0f,0.0f });
+					RoundedPinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0f,0.0f,0.0f,0.0f });
 				}
 				for (const auto& Pin : OutputPins) {
-					RoundedPinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.0f,1.0f,0.0f,0.0f });
+					RoundedPinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.0f,1.0f,0.0f,0.0f });
 				}
 				ShowBlockLabl(BlockSize, Meta, Name);
 				continue;
 			}
 			else if (IndexContained == SB.Mux) {
-				MuxVerts.Emplace(id, Meta, 2, 0, Color);
+				MuxVerts.emplace(id, Meta, 2, 0, Color);
 			}
 			else {
-				BlockVerts.Emplace(id, TopLeft, BottomRight, ColourType{ 0.5,0.5,1.0,1.0 }, Color);
+				BlockVerts.emplace(id, TopLeft, BottomRight, ColourType{ 0.5,0.5,1.0,1.0 }, Color);
 				ShowBlockLabl(BlockSize, Meta, Name);
 			}
 
 			for (const auto& Pin : InputPins) {
-				PinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.7f,0.0f,0.0f,0.0f }, Color);
+				PinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.7f,0.0f,0.0f,0.0f }, Color);
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}
 			for (const auto& Pin : OutputPins) {
-				PinVerts.Emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.0f,0.7f,0.0f,0.0f }, Color);
+				PinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.0f,0.7f,0.0f,0.0f }, Color);
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}

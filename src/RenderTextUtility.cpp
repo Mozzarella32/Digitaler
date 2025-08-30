@@ -137,7 +137,7 @@ void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, Buf
 		}
 
 		//Buff.Dirty = true;
-		Buff.Emplace(
+		Buff.emplace(
 			Cursor.Pos + Cursor.Offset + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor
 		);
 

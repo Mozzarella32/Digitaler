@@ -89,12 +89,15 @@ private:
 	VertexArrayObject AreaSelectVAO;
 
 #ifdef ShowBasePositionOfBlocks
-	VertexArrayObject BlockBasePotitionVAO;
+	VertexArrayObject BlockBasePositionVAO;
 #endif
 
 	BufferedVertexVec<PointFRGBVertex> AreaSelectVerts;
 
 	PointType MouseIndex;
+
+	template<typename VertexType>
+	static VertexArrayObject CreateVAOInstancing4();
 
 	template<typename VertexType>
 	static VertexArrayObject CreateVAO();

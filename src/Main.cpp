@@ -36,6 +36,8 @@ bool MyApp::OnInit() {
 
   frame = new MyFrame(this);
   frame->Show();
+  frame->Refresh();
+  frame->Update();
   return true;
 }
 

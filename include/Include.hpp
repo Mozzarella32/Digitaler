@@ -14,5 +14,5 @@
 
 #define HotShaderReload
 
-//#define PROFILING
+#define PROFILING
 #include "../submodules/Instrumentor/Instrumentor.hpp"

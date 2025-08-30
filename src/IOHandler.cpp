@@ -288,8 +288,8 @@ void IOHandler::OnMouseMove(const Eigen::Vector2f& Pos) {
 		b.MarkArea(MyRectF::FromCorners(AreaFirstPoint, AreaSecondPoint));
 
 		auto& buff = r.GetAreaSelectVerts();
-		buff.Clear();
-		buff.Emplace(AreaFirstPoint, AreaSecondPoint, ColourType{ 1.0f,0.0f,1.0f,0.1f });
+		buff.clear();
+		buff.emplace(AreaFirstPoint, AreaSecondPoint, ColourType{ 1.0f,0.0f,1.0f,0.1f });
 
 		r.Dirty = true;
 		r.Render();
@@ -409,7 +409,7 @@ void IOHandler::OnMouseUp(const Eigen::Vector2f& Pos) {
 			}
 			AreaFirstPoint = {};
 
-			r.GetAreaSelectVerts().Clear();
+			r.GetAreaSelectVerts().clear();
 			r.Dirty = true;
 			r.Render();
 			return;
@@ -648,7 +648,7 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 			b.ClearMarked();
 
 			Renderer& r = *Frame->renderer;
-			r.GetAreaSelectVerts().Clear();
+			r.GetAreaSelectVerts().clear();
 			r.Dirty = true;
 			r.Render();
 		}

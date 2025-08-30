@@ -6,6 +6,7 @@
 
 #include "BlockAndPathData.hpp"
 
+// Path: Edges EdgesMarked EdgesUnmarked Verts
 struct TwoPointIRGBRHGHBHVertex {
 
 	int x1;
@@ -93,7 +94,7 @@ struct TwoPointIRGBRHGHBHVertex {
 	}
 };
 
-
+// CollisionGrid and Blocks
 struct TwoPointIRGBAIDVertex {
 
 	unsigned int id;
@@ -205,7 +206,7 @@ namespace std {
 }
 
 
-
+//RoundPin
 struct PointIRGBIDVertex {
 
 	unsigned int id;
@@ -264,7 +265,7 @@ struct PointIRGBIDVertex {
 	}
 };
 
-
+//Base Position Area Select
 struct PointFRGBVertex {
 
 	float x1;
@@ -325,40 +326,40 @@ struct PointFRGBVertex {
 	}
 };
 
-struct PointIVertex {
+// struct PointIVertex {
 
-	int x1;
-	int y1;
+// 	int x1;
+// 	int y1;
 
-	PointIVertex() {}
+// 	PointIVertex() {}
 
-	PointIVertex(int x1, int y1)
-		:
-		x1(x1),
-		y1(y1)
-	{
-	}
+// 	PointIVertex(int x1, int y1)
+// 		:
+// 		x1(x1),
+// 		y1(y1)
+// 	{
+// 	}
 
-	PointIVertex(const PointType& p1)
-		:
-		x1(p1.x()),
-		y1(p1.y())
-	{
-	}
+// 	PointIVertex(const PointType& p1)
+// 		:
+// 		x1(p1.x()),
+// 		y1(p1.y())
+// 	{
+// 	}
 
-	bool operator ==(const PointIVertex& Other) const = default;
+// 	bool operator ==(const PointIVertex& Other) const = default;
 
-	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIVertex), (void*)offsetof(PointIVertex, x1)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		/*GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, r)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));*/
-	}
-};
+// 	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
+// 		GLCALL(glEnableVertexAttribArray(Position));
+// 		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIVertex), (void*)offsetof(PointIVertex, x1)));
+// 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+// 		/*GLCALL(glEnableVertexAttribArray(Position));
+// 		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, r)));
+// 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));*/
+// 	}
+// };
 
-
+// Path: special points
 struct PointIRGBVertex {
 
 	int x1;
@@ -416,7 +417,7 @@ namespace std {
 	};
 }
 
-
+// And Or XOr
 struct PointIOrientationRGBIDVertex {
 
 	unsigned int id;
@@ -471,6 +472,7 @@ struct PointIOrientationRGBIDVertex {
 	}
 };
 
+// Pin
 struct PointIOrientationRGBRHGHBHIDVertex {
 
 	int id;
@@ -554,7 +556,7 @@ struct PointIOrientationRGBRHGHBHIDVertex {
 	}
 };
 
-
+// Seven
 struct SevenSegVertex {
 
 	int x;
@@ -638,6 +640,7 @@ struct SevenSegVertex {
 	}
 };
 
+// Sixteen
 struct SixteenSegVertex {
 
 	int x;
@@ -839,6 +842,7 @@ struct SixteenSegVertex {
 	}
 };
 
+// Mux
 struct MuxIDVertex {
 
 	unsigned int id;
@@ -912,6 +916,7 @@ struct MuxIDVertex {
 	}
 };
 
+// Text
 struct TextVertex {
 	/*float x;
 	float y;
@@ -1018,7 +1023,6 @@ struct TextVertex {
 };
 
 struct IndexVertex {
-
 	int index;
 
 	bool operator ==(const IndexVertex& Other) const = default;
@@ -1027,57 +1031,5 @@ struct IndexVertex {
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(IndexVertex), (void*)offsetof(IndexVertex, index)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-	}
-};
-
-
-template<class VertexType>
-struct BufferedVertexVec {
-private:
-	std::vector<VertexType> Vertices;
-public:
-	bool Dirty = true;
-
-	void ReplaceBuffer(VertexArrayObject& VAO, size_t BufferIndex, bool ClearDirty = true) {
-		//if (!Dirty)return;
-		VAO.ReplaceVertexBuffer(Vertices, BufferIndex);
-		if (ClearDirty)Dirty = false;
-	}
-
-	void Clear() {
-		Dirty = true;
-		Vertices.clear();
-	}
-
-
-	void Append(const VertexType& Vertex) {
-		Dirty = true;
-		Vertices.push_back(Vertex);
-	}
-
-	template<typename ...Args>
-	void Emplace(Args&&... args) {
-		Dirty = true;
-		Vertices.emplace_back(std::forward<Args>(args)...);
-	}
-
-	void Append(const std::vector<VertexType>& Vertex) {
-		Dirty = true;
-		Vertices.insert(Vertices.end(), Vertex.begin(), Vertex.end());
-	}
-
-	template<typename ...Args>
-	void AppendOther(Args&&... Other) {
-		Dirty = true;
-		Vertices.reserve(Vertices.size() + (Other.Vertices.size() + ...));
-		(Append(Other.Vertices), ...);
-	}
-
-	bool Empty() const {
-		return Vertices.empty();
-	}
-
-	size_t Size() const {
-		return Vertices.size();
 	}
 };

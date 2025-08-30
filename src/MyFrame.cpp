@@ -494,8 +494,6 @@ MyFrame::MyFrame(MyApp *App)
 
   LoopTimer.Start();
 
-  Show(true);
-
   InitilizeDescriptor = "Waiting for Opengl initilisation";
 
   std::cout << std::string("Initilizing: ") << InitilizeDescriptor << "\n";

@@ -22,23 +22,35 @@ ShaderManager::~ShaderManager() {
 }
 #endif
 
-#define X(Vert, Frag) \
-Shader(\
-ErrorHandler,\
-std::string(CONCAT(Vert, _vert)),\
-std::string(CONCAT(Frag, _frag))),
-
 ShaderManager::ShaderManager()
-:
-shaders{
-	XList_Shaders_Combined
-}
-{
+    : shaders{
+
+#define X(Vert, Frag) \
+Shader(ErrorHandler, {\
+       Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{std::string(CONCAT(Vert, _vert))}},\
+       Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{std::string(CONCAT(Frag, _frag))}}\
+     }),
+
+XList_Shaders_VertFrag
+
+#undef X
+
+#define X(Vert, Geom, Frag) \
+Shader(ErrorHandler, {\
+       Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{std::string(CONCAT(Vert, _vert))}},\
+       Shader::ShaderInfo{Shader::ShaderType::Geometry, Shader::ShaderSource{std::string(CONCAT(Geom, _geom))}},\
+       Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{std::string(CONCAT(Frag, _frag))}}\
+     }),
+
+XList_Shaders_VertGeomFrag
+
+#undef X
+
+      } {
 #ifdef HotShaderReload
 	Worker = std::thread(&ShaderManager::Work, this);
 #endif
 }
-#undef X
 void ShaderManager::Stop() {
 	auto& This = GetInstance();
 	if (This.Running) {
@@ -53,13 +65,24 @@ ShaderManager& ShaderManager::GetInstance() {
 	return This;
 }
 
-#define X(Vert,Frag) \
-UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".vert",std::string("../resources/shaders/Source/")+STRINGIFY(Frag)+".frag");
-
 #ifdef HotShaderReload
 void ShaderManager::Work() {
 	while (Running) {
-		XList_Shaders_Combined
+
+
+#define X(Vert, Frag) \
+UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".vert", std::nullopt, std::string("../resources/shaders/Source/")+STRINGIFY(Frag)+".frag");
+
+		XList_Shaders_VertFrag
+
+#undef X
+
+#define X(Vert, Geom, Frag) \
+UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".vert", std::string("../resources/shaders/Source/")+STRINGIFY(Geom)+".geom", std::string("../resources/shaders/Source/")+STRINGIFY(Frag)+".frag");
+
+		XList_Shaders_VertGeomFrag
+
+#undef X
 
 		std::unique_lock ulSleep(WaitCVMutex);
 		WaitCV.wait_for(ulSleep,std::chrono::milliseconds(16));
@@ -71,12 +94,16 @@ void ShaderManager::Work() {
 	}
 }
 
-void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::path& Vert, const std::filesystem::path& Frag) {
+void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::path& Vert, const std::optional<std::filesystem::path>& Geom, const std::filesystem::path& Frag) {
 	PROFILE_FUNKTION;
 	std::filesystem::file_time_type VertTime;
+	std::filesystem::file_time_type GeomTime{};
 	std::filesystem::file_time_type FragTime;
 	try {
 		 VertTime = std::filesystem::last_write_time(Vert);
+		 if(Geom) {
+			 GeomTime = std::filesystem::last_write_time(Geom.value());
+		 }
 		 FragTime = std::filesystem::last_write_time(Frag);
 	}
 	catch (...) {
@@ -88,9 +115,12 @@ void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::p
 		Update = true;
 	}
 	else {
-		const auto& [LastVertTime, LastFragTime] = LastUpdate.at(shader);
+		const auto& [LastVertTime, LastGeomTime, LastFragTime] = LastUpdate.at(shader);
 
 		if (LastVertTime != VertTime) {
+			Update = true;
+		}
+		if(Geom && LastGeomTime != GeomTime){
 			Update = true;
 		}
 		if (LastFragTime != FragTime) {
@@ -99,9 +129,9 @@ void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::p
 	}
 
 	if (!Update) return;
-	LastUpdate[shader] = std::make_pair(VertTime, FragTime);
+	LastUpdate[shader] = std::make_tuple(VertTime, GeomTime, FragTime);
 	std::unique_lock ul(QueueMutex);
-	Queue.emplace_back(shader, Vert, Frag);
+	Queue.emplace_back(shader, Vert, Geom, Frag);
 }
 #endif
 
@@ -112,8 +142,15 @@ Shader& ShaderManager::GetShader(const Shaders& shader) {
 	std::unique_lock ul(This.QueueMutex);
 	if (This.Queue.empty() || !This.allowReload) return This.shaders[shader];
 	while (!This.Queue.empty()) {
-		const auto& [currShader, Vert, Frag] = This.Queue.back();
-		This.shaders[currShader] = Shader(ErrorHandler, Vert, Frag);
+		const auto& [currShader, Vert, Geom, Frag] = This.Queue.back();
+		std::vector<Shader::ShaderInfo> shaders = {
+			Shader::ShaderInfo{Shader::ShaderType::Vertex, Vert},
+			Shader::ShaderInfo{Shader::ShaderType::Fragment, Frag},
+		};
+		if(Geom){
+			shaders.emplace_back(Shader::ShaderType::Geometry, Geom.value());
+		}
+		This.shaders[currShader] = Shader(ErrorHandler, shaders);
 		This.Queue.pop_back();
 	}
 	This.IsDirty = true;
@@ -156,9 +193,11 @@ std::unique_ptr<Shader> ShaderManager::PlacholderShader;
 
 Shader& ShaderManager::GetPlacholderShader() {
 	PROFILE_FUNKTION;
-	if (!PlacholderShader) {
-		PlacholderShader = std::make_unique<Shader>(ErrorHandler,
-			std::string(R"--(
+        if (!PlacholderShader) {
+          PlacholderShader = std::make_unique<Shader>(
+              ErrorHandler, std::vector<Shader::ShaderInfo>{
+                                Shader::ShaderInfo{Shader::ShaderType::Vertex,
+                                                   std::string(R"--(
 //PlacholderShader.vert
 
 #version 330 core
@@ -173,8 +212,9 @@ void main() {
 	 TextureCoord = (InPosition+1)/2;
 	gl_Position = vec4(InPosition,0.0,1.0);
 }
-)--"),
-std::string(R"--(
+)--")},
+                                Shader::ShaderInfo{Shader::ShaderType::Fragment,
+                                                   std::string(R"--(
 //PlacholderShader.frag
 
 #version 330 core
@@ -200,7 +240,7 @@ void main() {
         FragColor = vec4(0.953, 0.286, 0.961, 1.0);
     }
 }
-)--"));
-	}
-	return *PlacholderShader;
+)--")}});
+        }
+        return *PlacholderShader;
 }
