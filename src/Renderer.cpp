@@ -688,7 +688,7 @@ void Renderer::Render() {
 
     AreaSelectVAO.bind();
     AreaSelectVerts.replaceBuffer(AreaSelectVAO, 0, false);
-    AreaSelectVAO.DrawAs(GL_TRIANGLE_STRIP);
+    AreaSelectVAO.DrawAs(GL_POINTS);
     AreaSelectVAO.unbind();
 
     AreaSelectShader.unbind();
