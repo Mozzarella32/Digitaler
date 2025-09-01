@@ -77,7 +77,7 @@ private:
 #ifdef RenderCollisionGrid
 	VertexArrayObject CollisionGridVAO;
 #endif
-	VertexArrayObject BlocksVAO;
+	VertexArrayObject AssetVAO;
 	VertexArrayObject PinVAO;
 	VertexArrayObject RoundPinVAO;
 

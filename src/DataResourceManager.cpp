@@ -201,7 +201,7 @@ DataResourceManager::DataResourceManager(Renderer* renderer)
 					{{ -70,90 },Left},
 			}},
 			{ BlockIdentifiyer::ParsePredefined("Testing:Block5-2"),{
-					{{0,0},Up},
+					// {{0,0},Up},
 					{{ -40,100 },Up},
 					{{ -50,100 },Right},
 					{{ -60,100 },Down},

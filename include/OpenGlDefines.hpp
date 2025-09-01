@@ -1033,3 +1033,80 @@ struct IndexVertex {
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
 };
+
+
+struct AssetVertex {
+	int index;
+	int id;
+	int transform;
+
+	int xi1;
+	int yi1;
+
+	int xi2;
+	int yi2;
+
+	float colorAr;
+	float colorAg;
+	float colorAb;
+	float colorAa;
+
+	private:
+
+	AssetVertex(
+	int index,
+	int id,
+	int transform,
+	int xi1,
+	int yi1,
+	int xi2,
+	int yi2,
+	float colorAr,
+	float colorAg,
+	float colorAb,
+	float colorAa
+) :
+	index(index),
+	id(id),
+	transform(transform),
+	xi1(xi1),
+	yi1(yi1),
+	xi2(xi2),
+	yi2(yi2),
+	colorAr(colorAr),
+	colorAg(colorAg),
+	colorAb(colorAb),
+	colorAa(colorAa)
+	{}
+
+	public:
+
+	AssetVertex() {}
+
+		bool operator ==(const AssetVertex& Other) const = default;
+
+	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, index)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, id)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, transform)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi1)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi2)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(AssetVertex), (void*)offsetof(AssetVertex, colorAr)));
+		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
+	}
+
+	static AssetVertex Box(int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, int id = 0) {
+		return AssetVertex(0, id, transform, p1.x(), p1.y(), p2.x(), p2.y(), colorA.x(), colorA.y(), colorA.z(), colorA.w());
+	}
+};

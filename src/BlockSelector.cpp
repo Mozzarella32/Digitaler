@@ -68,7 +68,7 @@ Eigen::Affine2f BlockSelector::GetTransform(const Eigen::Vector2f& CanvasSize) c
 }
 
 void BlockSelector::UpdateExtendsAndText() {
-	TextVerts.clear();
+	TextVBO.clear();
 	ClipRects.clear();
 	//Blocks.clear();
 
@@ -101,7 +101,7 @@ void BlockSelector::UpdateExtendsAndText() {
 
 		ColourType TextColour = i <= HoverIndex ? ColourType{ 1.0,1.0,0.0,1.0 } : ColourType{ 1.0,1.0,1.0,1.0 };
 
-		RenderTextUtility::AddText(Text, Cursor, TextVerts, RenderTextUtility::x_Right | RenderTextUtility::y_Bottom, i <= HoverIndex, false, FontSize, MyDirection::Up, TextColour);
+		RenderTextUtility::AddText(Text, Cursor, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Bottom, i <= HoverIndex, false, FontSize, MyDirection::Up, TextColour);
 
 	}
 
@@ -167,6 +167,6 @@ void BlockSelector::Update() {
 
 }
 
-BufferedVertexVec<TextVertex>& BlockSelector::GetTextVerts() {
-	return TextVerts;
+BufferedVertexVec<TextVertex>& BlockSelector::GetTextVBO() {
+	return TextVBO;
 }

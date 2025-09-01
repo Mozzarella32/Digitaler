@@ -165,15 +165,15 @@ void Renderer::RenderIDMap() {
     }
   };
 
-  SimplePass([&b]() { return b.GetAndVerts(); }, AndVAO, ShaderManager::And);
-  SimplePass([&b]() { return b.GetOrVerts(); }, OrVAO, ShaderManager::Or);
-  SimplePass([&b]() { return b.GetXOrVerts(); }, XOrVAO, ShaderManager::XOr);
-  SimplePass([&b]() { return b.GetPinVerts(); }, PinVAO, ShaderManager::Pin);
-  SimplePass([&b]() { return b.GetRoundedPinVerts(); }, RoundPinVAO,
+  SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
+  SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
+  SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
+  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Pin);
+  SimplePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
              ShaderManager::RoundPin);
-  SimplePass([&b]() { return b.GetBlockVerts(); }, BlocksVAO,
-             ShaderManager::Block);
-  SimplePass([&b]() { return b.GetMuxVerts(); }, MuxVAO, ShaderManager::Mux);
+  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
+             ShaderManager::Assets);
+  SimplePass([&b]() { return b.GetMuxVBO(); }, MuxVAO, ShaderManager::Mux);
 
   GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
@@ -478,22 +478,22 @@ void Renderer::Render() {
   GLCALL(glStencilMask(0x00));
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName) {
+                       ShaderManager::Shaders ShaderName, size_t BufferIndex = 1) {
     if (!VertsGetter().empty()) {
       Shader &shader = ShaderManager::GetShader(ShaderName);
 
       shader.bind();
       VAO.bind();
-      VertsGetter().replaceBuffer(VAO, 1);
+      VertsGetter().replaceBuffer(VAO, BufferIndex);
       VAO.DrawAs(GL_TRIANGLE_STRIP);
       VAO.unbind();
       shader.unbind();
     }
   };
 
-  SimplePass([&b]() { return b.GetAndVerts(); }, AndVAO, ShaderManager::And);
-  SimplePass([&b]() { return b.GetOrVerts(); }, OrVAO, ShaderManager::Or);
-  SimplePass([&b]() { return b.GetXOrVerts(); }, XOrVAO, ShaderManager::XOr);
+  SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
+  SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
+  SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
 
   PROFILE_SCOPE_ID_END(4);
 
@@ -528,8 +528,8 @@ void Renderer::Render() {
     }
   };
 
-  WirePass([&b]() { return b.GetPinVerts(); }, PinVAO, ShaderManager::Pin);
-  WirePass([&b]() { return b.GetRoundedPinVerts(); }, RoundPinVAO,
+  WirePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Pin);
+  WirePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
            ShaderManager::RoundPin);
 
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
@@ -539,11 +539,11 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_END(5);
 
-  SimplePass([&b]() { return b.GetBlockVerts(); }, BlocksVAO,
-             ShaderManager::Block);
-  SimplePass([&b]() { return b.GetSevenSegVerts(); }, SevenSegVAO,
+  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
+             ShaderManager::Assets, 0);
+  SimplePass([&b]() { return b.GetSevenSegVBO(); }, SevenSegVAO,
              ShaderManager::SevenSeg);
-  SimplePass([&b]() { return b.GetSixteenSegVerts(); }, SixteenSegVAO,
+  SimplePass([&b]() { return b.GetSixteenSegVBO(); }, SixteenSegVAO,
              ShaderManager::SixteenSeg);
 
 #ifdef RenderCollisionGrid
@@ -590,10 +590,25 @@ void Renderer::Render() {
              ShaderManager::Block);
 #endif
 
-  SimplePass([&b]() { return b.GetMuxVerts(); }, MuxVAO, ShaderManager::Mux);
+  // SimplePass([&b]() { return b.GetMuxVerts(); }, MuxVAO, ShaderManager::Mux);
 
-  if (!b.GetStaticTextVerts().empty() || !b.GetDynamicTextVerts().empty() ||
-      (Frame->Blockselector && !Frame->Blockselector->GetTextVerts().empty())) {
+  // auto& shaderAssets = ShaderManager::GetShader(ShaderManager::Assets);
+
+  // shaderAssets.bind();
+  // BufferedVertexVec<AssetVertex> assetVBO;
+  // assetVBO.append(AssetVertex::Box(0, {0,0}, {2,3}));
+
+  // static VertexArrayObject assetVAO = CreateVAO<AssetVertex>();
+  // assetVAO.bind();
+  // assetVBO.replaceBuffer(assetVAO, 0);
+  // assetVAO.DrawAs(GL_POINTS);
+  // assetVAO.unbind();
+
+  // shaderAssets.unbind();
+  
+
+  if (!b.GetStaticTextVBO().empty() || !b.GetDynamicTextVBO().empty() ||
+      (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty())) {
 
     PROFILE_SCOPE("Text");
 
@@ -603,16 +618,16 @@ void Renderer::Render() {
 
     TextAtlas.bind(TextShader, "UTexture", "", 0);
 
-    if (!b.GetStaticTextVerts().empty()) {
+    if (!b.GetStaticTextVBO().empty()) {
       StaticTextVAO.bind();
-      b.GetStaticTextVerts().replaceBuffer(StaticTextVAO, 1);
+      b.GetStaticTextVBO().replaceBuffer(StaticTextVAO, 1);
       StaticTextVAO.DrawAs(GL_TRIANGLE_STRIP);
       StaticTextVAO.unbind();
     }
 
-    if (!b.GetDynamicTextVerts().empty()) {
+    if (!b.GetDynamicTextVBO().empty()) {
       DynamicTextVAO.bind();
-      b.GetDynamicTextVerts().replaceBuffer(DynamicTextVAO, 1, false);
+      b.GetDynamicTextVBO().replaceBuffer(DynamicTextVAO, 1, false);
       DynamicTextVAO.DrawAs(GL_TRIANGLE_STRIP);
       DynamicTextVAO.unbind();
     }
@@ -627,9 +642,9 @@ void Renderer::Render() {
     if (Frame->Blockselector) {
       Frame->Blockselector->Update();
       auto &Blockselector = *Frame->Blockselector;
-      if (!Blockselector.GetTextVerts().empty()) {
+      if (!Blockselector.GetTextVBO().empty()) {
         DynamicTextVAO.bind();
-        Blockselector.GetTextVerts().replaceBuffer(DynamicTextVAO, 1, false);
+        Blockselector.GetTextVBO().replaceBuffer(DynamicTextVAO, 1, false);
         DynamicTextVAO.DrawAs(GL_TRIANGLE_STRIP);
         DynamicTextVAO.unbind();
       }
@@ -695,7 +710,7 @@ void Renderer::Render() {
   }
 
 #ifdef ShowBasePositionOfBlocks
-  if (!b.GetBasePotitionOfBlocksVerts().empty()) {
+  if (!b.GetBasePotitionOfBlocksVBO().empty()) {
 
     PROFILE_SCOPE("BasePotitionOfBlocks");
 
@@ -705,8 +720,8 @@ void Renderer::Render() {
     AreaSelectShader.bind();
 
     BlockBasePositionVAO.bind();
-    b.GetBasePotitionOfBlocksVerts().replaceBuffer(BlockBasePositionVAO, 1);
-    BlockBasePositionVAO.DrawAs(GL_TRIANGLE_STRIP);
+    b.GetBasePotitionOfBlocksVBO().replaceBuffer(BlockBasePositionVAO, 0);
+    BlockBasePositionVAO.DrawAs(GL_POINTS);
     BlockBasePositionVAO.unbind();
 
     AreaSelectShader.unbind();
@@ -841,7 +856,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       SevenSegVAO(CreateVAOInstancing4<SevenSegVertex>()),
       SixteenSegVAO(CreateVAOInstancing4<SixteenSegVertex>()),
       MuxVAO(CreateVAOInstancing4<MuxIDVertex>()),
-      BlocksVAO(CreateVAOInstancing4<TwoPointIRGBAIDVertex>()),
+      AssetVAO(CreateVAO<AssetVertex>()),
       PinVAO(CreateVAOInstancing4<PointIOrientationRGBRHGHBHIDVertex>()),
       RoundPinVAO(CreateVAOInstancing4<PointIRGBIDVertex>()),
       AndVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
@@ -851,7 +866,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       XOrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
       AreaSelectVAO(CreateVAO<PointFRGBVertex>()),
 #ifdef ShowBasePositionOfBlocks
-      BlockBasePositionVAO(CreateVAOInstancing4<PointFRGBVertex>()),
+      BlockBasePositionVAO(CreateVAO<PointFRGBVertex>()),
 #endif
       StaticTextVAO(CreateVAOInstancing4<TextVertex>()),
       DynamicTextVAO(CreateVAOInstancing4<TextVertex>()),
@@ -1029,12 +1044,13 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   auto SimplePass = [](auto &MyBuffer,
                        VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName) {
+                       ShaderManager::Shaders ShaderName,
+                       size_t BufferIndex = 1) {
     Shader &shader = ShaderManager::GetShader(ShaderName);
 
     shader.bind();
     VAO.bind();
-    MyBuffer.replaceBuffer(VAO, 1);
+    MyBuffer.replaceBuffer(VAO, BufferIndex);
     VAO.DrawAs(GL_TRIANGLE_STRIP);
     VAO.unbind();
     shader.unbind();
@@ -1108,9 +1124,10 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     }
     SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
   } else {
-    BufferedVertexVec<TwoPointIRGBAIDVertex> BlockBuffer;
-    BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
-    SimplePass(BlockBuffer, BlocksVAO, ShaderManager::Block);
+    BufferedVertexVec<AssetVertex> AssetVBO;
+    AssetVBO.append(AssetVertex::Box(0, TopLeft, BottomRight, NoColor));
+    // BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
+    SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0);
 
     BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
     for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {

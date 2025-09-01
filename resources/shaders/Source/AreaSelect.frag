@@ -23,15 +23,15 @@ float sdBox( in vec2 p, in vec2 a, in vec2 b )
 	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
 }
 
-void main(){
+void main() {
 	float expr = -1.0+10*sdBox(PosInWorld,A,B);
 	expr += 1.0;
-	if(expr > 0){
+	if(expr > 0) {
 	
 		FragColor = vec4(0.0);
 
 	}
-	else{
+	else {
 		if(expr > -UZoomFactor*100.0){
 			FragColor = vec4(Color,0.5);
 		}

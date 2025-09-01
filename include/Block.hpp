@@ -47,8 +47,8 @@ private:
 	BufferedVertexVec<PointIRGBVertex> FloatingSpecialPoints;
 	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> FloatingVerts;
 
-	BufferedVertexVec<TextVertex> StaticTextVerts;
-	BufferedVertexVec<TextVertex> DynamicTextVerts;
+	BufferedVertexVec<TextVertex> StaticTextVBO;
+	BufferedVertexVec<TextVertex> DynamicTextVBO;
 
 	//BufferedVertexVec <std::pair<PointType, DragDirection>> PreviewData;
 	std::vector<PointType> PreviewData;//Data of the Point
@@ -275,18 +275,18 @@ private:
 
 	std::unordered_map<CompressedBlockDataIndex, std::vector<BlockMetadata>> Blocks;
 
-	BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinVerts;
-	BufferedVertexVec<TwoPointIRGBAIDVertex> BlockVerts;
-	BufferedVertexVec<SevenSegVertex> SevenSegVerts;
-	BufferedVertexVec<SixteenSegVertex> SixteenSegVerts;
-	BufferedVertexVec<PointIRGBIDVertex> RoundedPinVerts;
-	BufferedVertexVec<PointIOrientationRGBIDVertex> AndVerts;
-	BufferedVertexVec<PointIOrientationRGBIDVertex> OrVerts;
-	BufferedVertexVec<PointIOrientationRGBIDVertex> XOrVerts;
-	BufferedVertexVec<MuxIDVertex> MuxVerts;
+	BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinVBO;
+	BufferedVertexVec<AssetVertex> AssetVBO;
+	BufferedVertexVec<SevenSegVertex> SevenSegVBO;
+	BufferedVertexVec<SixteenSegVertex> SixteenSegVBO;
+	BufferedVertexVec<PointIRGBIDVertex> RoundedPinVBO;
+	BufferedVertexVec<PointIOrientationRGBIDVertex> AndVBO;
+	BufferedVertexVec<PointIOrientationRGBIDVertex> OrVBO;
+	BufferedVertexVec<PointIOrientationRGBIDVertex> XOrVBO;
+	BufferedVertexVec<MuxIDVertex> MuxVBO;
 
 #ifdef ShowBasePositionOfBlocks
-	BufferedVertexVec<PointFRGBVertex> BasePositionVerts;
+	BufferedVertexVec<PointFRGBVertex> BasePositionVBO;
 #endif
 	/*BufferedVertexVec<PointIOrientationRGBIDVertex> NotTriangleVerts;
 	BufferedVertexVec<PointIOrientationRGBIDVertex> NDotVerts;*/
@@ -318,21 +318,21 @@ private:
 	void UpdateBlocks(const float& Zoom);
 public:
 
-	BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex>& GetPinVerts();
-	BufferedVertexVec<TwoPointIRGBAIDVertex>& GetBlockVerts();
-	BufferedVertexVec<SevenSegVertex>& GetSevenSegVerts();
-	BufferedVertexVec<SixteenSegVertex>& GetSixteenSegVerts();
-	BufferedVertexVec<PointIRGBIDVertex>& GetRoundedPinVerts();
-	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetAndVerts();
-	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetOrVerts();
-	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetXOrVerts();
+	BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex>& GetPinVBO();
+	BufferedVertexVec<AssetVertex>& GetAssetVBO();
+	BufferedVertexVec<SevenSegVertex>& GetSevenSegVBO();
+	BufferedVertexVec<SixteenSegVertex>& GetSixteenSegVBO();
+	BufferedVertexVec<PointIRGBIDVertex>& GetRoundedPinVBO();
+	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetAndVBO();
+	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetOrVBO();
+	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetXOrVBO();
 	/*BufferedVertexVec<PointIOrientationRGBIDVertex>& GetNotTriangleVerts();
 	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetNDotVerts();*/
-	BufferedVertexVec<MuxIDVertex>& GetMuxVerts();
-	BufferedVertexVec<TextVertex>& GetStaticTextVerts();
-	BufferedVertexVec<TextVertex>& GetDynamicTextVerts();
+	BufferedVertexVec<MuxIDVertex>& GetMuxVBO();
+	BufferedVertexVec<TextVertex>& GetStaticTextVBO();
+	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
 
 #ifdef ShowBasePositionOfBlocks
-	BufferedVertexVec<PointFRGBVertex>& GetBasePotitionOfBlocksVerts();
+	BufferedVertexVec<PointFRGBVertex>& GetBasePotitionOfBlocksVBO();
 #endif
 };

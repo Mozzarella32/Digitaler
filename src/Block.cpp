@@ -596,21 +596,21 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 	FloatingEdges.clear();
 	FloatingSpecialPoints.clear();
 	FloatingVerts.clear();
-	StaticTextVerts.clear();
-	DynamicTextVerts.clear();
+	StaticTextVBO.clear();
+	DynamicTextVBO.clear();
 
-	PinVerts.clear();
-	BlockVerts.clear();
-	SevenSegVerts.clear();
-	SixteenSegVerts.clear();
-	RoundedPinVerts.clear();
-	AndVerts.clear();
-	OrVerts.clear();
-	XOrVerts.clear();
-	MuxVerts.clear();
+	PinVBO.clear();
+	AssetVBO.clear();
+	SevenSegVBO.clear();
+	SixteenSegVBO.clear();
+	RoundedPinVBO.clear();
+	AndVBO.clear();
+	OrVBO.clear();
+	XOrVBO.clear();
+	MuxVBO.clear();
 
 #ifdef ShowBasePositionOfBlocks
-	BasePositionVerts.clear();
+	BasePositionVBO.clear();
 #endif
 
 	PreviewData.clear();
@@ -1229,7 +1229,7 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 	const auto Pos = GetPinPosition(BlockSize, Meta, Pin, 1);
 	RenderTextUtility::AddText(Text,
 		Point<float>{(float)Pos.x() + Offset.x, (float)Pos.y() + Offset.y},
-		StaticTextVerts,
+		StaticTextVBO,
 		RenderTextUtility::TextPlacmentFlags::x_Center | RenderTextUtility::TextPlacmentFlags::y_Center,
 		true, false, Scale,
 		MyDirection::ToReadable(GetPinRotation(Meta, Pin)),
@@ -1271,7 +1271,7 @@ void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSiz
 	const auto Pos = GetPinPosition(BlockSize, Meta, Pin, 1);
 	RenderTextUtility::AddText(Pin.Name,
 		Point<float>{(float)Pos.x() + Offset.x, (float)Pos.y() + Offset.y},
-		StaticTextVerts,
+		StaticTextVBO,
 		RenderTextUtility::TextPlacmentFlags::x_Right | RenderTextUtility::TextPlacmentFlags::y_Center,
 		false, false, Scale,
 		MyDirection::ToReadable(MyDirection::RotateCCW(GetPinRotation(Meta, Pin))),
@@ -1297,7 +1297,7 @@ void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockM
 
 	RenderTextUtility::AddText(Name,
 		Point<float>{(float)TopLeft.x(), (float)TopLeft.y()} + Off,
-		StaticTextVerts,
+		StaticTextVBO,
 		RenderTextUtility::TextPlacmentFlags::x_Center | RenderTextUtility::TextPlacmentFlags::y_Center,
 		true, false, 0.5,
 		MyDirection::ToReadable(Meta.Rotation));
@@ -1306,20 +1306,20 @@ void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockM
 void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	if (!DirtyBlocks)return;
 	DirtyBlocks = false;
-	PinVerts.clear();
-	BlockVerts.clear();
-	SevenSegVerts.clear();
-	SixteenSegVerts.clear();
-	RoundedPinVerts.clear();
-	AndVerts.clear();
-	OrVerts.clear();
-	XOrVerts.clear();
-	//NDotVerts.clear();
-	//NotTriangleVerts.clear();
-	MuxVerts.clear();
-	StaticTextVerts.clear();
+	PinVBO.clear();
+	AssetVBO.clear();
+	SevenSegVBO.clear();
+	SixteenSegVBO.clear();
+	RoundedPinVBO.clear();
+	AndVBO.clear();
+	OrVBO.clear();
+	XOrVBO.clear();
+	//NDotVBO.clear();
+	//NotTriangleVBO.clear();
+	MuxVBO.clear();
+	StaticTextVBO.clear();
 #ifdef ShowBasePositionOfBlocks
-	BasePositionVerts.clear();
+	BasePositionVBO.clear();
 #endif
 
 	ssize_t id = 0;
@@ -1353,7 +1353,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			}
 
 #ifdef ShowBasePositionOfBlocks
-			BasePositionVerts.emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
+			BasePositionVBO.emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
 #endif
 
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
@@ -1381,43 +1381,46 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			}
 
 			if (IndexContained == SB.SevengSeg) {
-				SevenSegVerts.emplace(Meta, time(0) % 0x10, ColourType{ 0.78f,0.992f,0.0f,1.0f });
-				BlockVerts.emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
+				SevenSegVBO.emplace(Meta, time(0) % 0x10, ColourType{ 0.78f,0.992f,0.0f,1.0f });
+				// BlockVBO.emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
+				AssetVBO.append(AssetVertex::Box(Meta.Transform(), TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }));
 			}
 			else if (IndexContained == SB.SixteenSeg) {
 				static std::array<int, 218> Translation = { 73,99,104,32,104,97,98,101,32,106,101,116,122,116,32,101,105,110,102,117,110,107,116,105,111,110,105,101,114,101,110,100,101,115,49,54,32,83,101,103,109,101,110,116,32,68,105,115,112,108,97,121,100,97,115,32,97,108,108,101,32,97,115,99,105,105,32,90,101,105,99,104,101,110,100,97,114,115,116,101,108,108,101,110,32,107,97,110,110,58,48,49,50,51,52,53,54,55,56,57,116,104,101,32,113,117,105,99,107,32,98,114,111,119,110,32,102,111,120,32,106,117,109,112,115,32,111,118,101,114,32,116,104,101,32,108,97,122,121,32,100,111,103,84,72,69,32,81,85,73,67,75,32,66,82,79,87,78,32,70,79,88,32,74,85,77,80,83,32,79,86,69,82,32,84,72,69,32,76,65,90,89,32,68,79,71,33,64,35,36,37,94,38,42,40,41,95,45,43,123,125,124,58,34,60,62,63,96,126,91,93,92,59,39,44,46,47,126, };
-				SixteenSegVerts.emplace(Meta, Translation[std::max(i - 5, 0)], ColourType{ 0.992f,0.43f,0.0f,1.0f });
-				BlockVerts.emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
+				SixteenSegVBO.emplace(Meta, Translation[std::max(i - 5, 0)], ColourType{ 0.992f,0.43f,0.0f,1.0f });
+				AssetVBO.append(AssetVertex::Box(Meta.Transform(), TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }));
+				// BlockVBO.emplace(id, TopLeft, BottomRight, ColourType{ 0.1f,0.1f,0.1f,1.0f }, Color);
 			}
 			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.XOr) {
-				if (IndexContained == SB.And)AndVerts.emplace(id, Meta, Color);
-				else if (IndexContained == SB.Or)OrVerts.emplace(id, Meta, Color);
-				else if (IndexContained == SB.XOr)XOrVerts.emplace(id, Meta, Color);
+				if (IndexContained == SB.And) AndVBO.emplace(id, Meta, Color);
+				else if (IndexContained == SB.Or) OrVBO.emplace(id, Meta, Color);
+				else if (IndexContained == SB.XOr) XOrVBO.emplace(id, Meta, Color);
 
 				for (const auto& Pin : InputPins) {
-					RoundedPinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0f,0.0f,0.0f,0.0f });
+					RoundedPinVBO.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0f,0.0f,0.0f,0.0f });
 				}
 				for (const auto& Pin : OutputPins) {
-					RoundedPinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.0f,1.0f,0.0f,0.0f });
+					RoundedPinVBO.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.0f,1.0f,0.0f,0.0f });
 				}
 				ShowBlockLabl(BlockSize, Meta, Name);
 				continue;
 			}
 			else if (IndexContained == SB.Mux) {
-				MuxVerts.emplace(id, Meta, 2, 0, Color);
+				MuxVBO.emplace(id, Meta, 2, 0, Color);
 			}
 			else {
-				BlockVerts.emplace(id, TopLeft, BottomRight, ColourType{ 0.5,0.5,1.0,1.0 }, Color);
+				AssetVBO.append(AssetVertex::Box(Meta.Transform(), TopLeft, BottomRight, ColourType{ 0.5,0.5,1.0,1.0 }));
+				// BlockVBO.emplace(id, TopLeft, BottomRight, ColourType{ 0.5,0.5,1.0,1.0 }, Color);
 				ShowBlockLabl(BlockSize, Meta, Name);
 			}
 
 			for (const auto& Pin : InputPins) {
-				PinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.7f,0.0f,0.0f,0.0f }, Color);
+				PinVBO.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.7f,0.0f,0.0f,0.0f }, Color);
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}
 			for (const auto& Pin : OutputPins) {
-				PinVerts.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.0f,0.7f,0.0f,0.0f }, Color);
+				PinVBO.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), GetPinRotation(Meta, Pin), ColourType{ 0.0f,0.7f,0.0f,0.0f }, Color);
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}
@@ -1425,62 +1428,62 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	}
 }
 
-BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex>& VisualBlockInterior::GetPinVerts() {
-	return PinVerts;
+BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex>& VisualBlockInterior::GetPinVBO() {
+	return PinVBO;
 }
 
-BufferedVertexVec<TwoPointIRGBAIDVertex>& VisualBlockInterior::GetBlockVerts() {
-	return BlockVerts;
+BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetAssetVBO() {
+	return AssetVBO;
 }
 
-BufferedVertexVec<SevenSegVertex>& VisualBlockInterior::GetSevenSegVerts() {
-	return SevenSegVerts;
+BufferedVertexVec<SevenSegVertex>& VisualBlockInterior::GetSevenSegVBO() {
+	return SevenSegVBO;
 }
 
-BufferedVertexVec<SixteenSegVertex>& VisualBlockInterior::GetSixteenSegVerts() {
-	return SixteenSegVerts;
+BufferedVertexVec<SixteenSegVertex>& VisualBlockInterior::GetSixteenSegVBO() {
+	return SixteenSegVBO;
 }
 
-BufferedVertexVec<PointIRGBIDVertex>& VisualBlockInterior::GetRoundedPinVerts() {
-	return RoundedPinVerts;
+BufferedVertexVec<PointIRGBIDVertex>& VisualBlockInterior::GetRoundedPinVBO() {
+	return RoundedPinVBO;
 }
 
-BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetAndVerts() {
-	return AndVerts;
+BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetAndVBO() {
+	return AndVBO;
 }
 
-BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetOrVerts() {
-	return OrVerts;
+BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetOrVBO() {
+	return OrVBO;
 }
 
-BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetXOrVerts() {
-	return XOrVerts;
+BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetXOrVBO() {
+	return XOrVBO;
 }
 
-//BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetNotTriangleVerts() {
-//	return NotTriangleVerts;
+//BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetNotTriangleVBO() {
+//	return NotTriangleVBO;
 //}
 //
-//BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetNDotVerts() {
-//	return NDotVerts;
+//BufferedVertexVec<PointIOrientationRGBIDVertex>& VisualBlockInterior::GetNDotVBO() {
+//	return NDotVBO;
 //}
 
 
-BufferedVertexVec<MuxIDVertex>& VisualBlockInterior::GetMuxVerts() {
-	return MuxVerts;
+BufferedVertexVec<MuxIDVertex>& VisualBlockInterior::GetMuxVBO() {
+	return MuxVBO;
 }
 
-BufferedVertexVec<TextVertex>& VisualBlockInterior::GetStaticTextVerts() {
-	return StaticTextVerts;
+BufferedVertexVec<TextVertex>& VisualBlockInterior::GetStaticTextVBO() {
+	return StaticTextVBO;
 }
 
-BufferedVertexVec<TextVertex>& VisualBlockInterior::GetDynamicTextVerts() {
-	return DynamicTextVerts;
+BufferedVertexVec<TextVertex>& VisualBlockInterior::GetDynamicTextVBO() {
+	return DynamicTextVBO;
 }
 
 #ifdef ShowBasePositionOfBlocks
-BufferedVertexVec<PointFRGBVertex>& VisualBlockInterior::GetBasePotitionOfBlocksVerts() {
-	return BasePositionVerts;
+BufferedVertexVec<PointFRGBVertex>& VisualBlockInterior::GetBasePotitionOfBlocksVBO() {
+	return BasePositionVBO;
 }
 #endif
 
