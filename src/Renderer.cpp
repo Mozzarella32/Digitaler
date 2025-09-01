@@ -153,13 +153,14 @@ void Renderer::RenderIDMap() {
   GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName) {
+                       ShaderManager::Shaders ShaderName,
+                       GLenum primitive = GL_TRIANGLE_STRIP) {
     if (!VertsGetter().empty()) {
       Shader &shader = ShaderManager::GetShader(ShaderName);
 
       shader.bind();
       VAO.bind();
-      VAO.DrawAs(GL_TRIANGLE_STRIP);
+      VAO.DrawAs(primitive);
       VAO.unbind();
       shader.unbind();
     }
@@ -172,7 +173,7 @@ void Renderer::RenderIDMap() {
   SimplePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
              ShaderManager::RoundPin);
   SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
-             ShaderManager::Assets);
+             ShaderManager::Assets, GL_POINTS);
   SimplePass([&b]() { return b.GetMuxVBO(); }, MuxVAO, ShaderManager::Mux);
 
   GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
@@ -478,14 +479,16 @@ void Renderer::Render() {
   GLCALL(glStencilMask(0x00));
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName, size_t BufferIndex = 1) {
+                       ShaderManager::Shaders ShaderName,
+                       size_t BufferIndex = 1,
+                       GLenum primitive = GL_TRIANGLE_STRIP) {
     if (!VertsGetter().empty()) {
       Shader &shader = ShaderManager::GetShader(ShaderName);
 
       shader.bind();
       VAO.bind();
       VertsGetter().replaceBuffer(VAO, BufferIndex);
-      VAO.DrawAs(GL_TRIANGLE_STRIP);
+      VAO.DrawAs(primitive);
       VAO.unbind();
       shader.unbind();
     }
@@ -540,7 +543,7 @@ void Renderer::Render() {
   PROFILE_SCOPE_ID_END(5);
 
   SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
-             ShaderManager::Assets, 0);
+             ShaderManager::Assets, 0, GL_POINTS);
   SimplePass([&b]() { return b.GetSevenSegVBO(); }, SevenSegVAO,
              ShaderManager::SevenSeg);
   SimplePass([&b]() { return b.GetSixteenSegVBO(); }, SixteenSegVAO,
@@ -1045,13 +1048,14 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   auto SimplePass = [](auto &MyBuffer,
                        VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName,
-                       size_t BufferIndex = 1) {
+                       size_t BufferIndex = 1,
+                       GLenum primitive = GL_TRIANGLE_STRIP) {
     Shader &shader = ShaderManager::GetShader(ShaderName);
 
     shader.bind();
     VAO.bind();
     MyBuffer.replaceBuffer(VAO, BufferIndex);
-    VAO.DrawAs(GL_TRIANGLE_STRIP);
+    VAO.DrawAs(primitive);
     VAO.unbind();
     shader.unbind();
   };
@@ -1127,7 +1131,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     BufferedVertexVec<AssetVertex> AssetVBO;
     AssetVBO.append(AssetVertex::Box(0, TopLeft, BottomRight, NoColor));
     // BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
-    SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0);
+    SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
 
     BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
     for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
