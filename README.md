@@ -38,7 +38,7 @@ cd app
 The executable is moved to the app directory
 
 ## State of development
-Builds on Windows and Linux(Tested on Ubuntu and Arch). But is not functional on Linux.
+Builds on Windows and Linux(Tested on Ubuntu and Arch see ci). Currently refactory shaders so graphics are broken.
 
 ### Windows
 ![image](assets/README/DemoWindows.png)
