@@ -34,13 +34,13 @@ mat2 rot(int i) {
         return mat2(1, 0, 0, 1);
     }
     else if(i == 1) {
-        return mat2(0, -1, -1, 0);
+        return mat2(0, 1, -1, 0);
     }
     else if(i == 2) {
-        return mat2(-1, 0, 0, 1);
+        return mat2(-1, 0, 0, -1);
     }
     else { // n == 3
-        return mat2(0, 1, -1, 0);
+        return mat2(0, -1, 1, 0);
     }
 }
 
@@ -68,7 +68,7 @@ void main() {
 
     int Transform = VSTransform[0];
     int Rot = Transform & 0x3;
-    int Flip = Transform & 0xC >> 2;
+    int Flip = Transform >> 2;
     
     vec2 size = vec2(B - A) / 2.0 + 0.5;
 
