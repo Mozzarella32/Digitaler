@@ -166,9 +166,9 @@ void Renderer::RenderIDMap() {
     }
   };
 
-  SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
-  SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
-  SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
+  //SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
+  //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
+  //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
   SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Pin);
   SimplePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
              ShaderManager::RoundPin);
@@ -494,9 +494,9 @@ void Renderer::Render() {
     }
   };
 
-  SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
-  SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
-  SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
+  //SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
+  //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
+  //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
 
   PROFILE_SCOPE_ID_END(4);
 
@@ -862,11 +862,11 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       AssetVAO(CreateVAO<AssetVertex>()),
       PinVAO(CreateVAOInstancing4<PointIOrientationRGBRHGHBHIDVertex>()),
       RoundPinVAO(CreateVAOInstancing4<PointIRGBIDVertex>()),
-      AndVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
+      //AndVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
       /*NotTriangleVAO(CreatePointIOrientationVAO()),
       NDotVAO(CreatePointIOrientationVAO()),*/
-      OrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
-      XOrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
+      //OrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
+      //XOrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
       AreaSelectVAO(CreateVAO<PointFRGBVertex>()),
 #ifdef ShowBasePositionOfBlocks
       BlockBasePositionVAO(CreateVAO<PointFRGBVertex>()),
@@ -1080,22 +1080,24 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     BottomRight = TopLeft + PointType{BlockSize.x(), -BlockSize.y()};
   // }
 
-  if (cbdi == SB.And || cbdi == SB.Or || cbdi == SB.XOr) {
-    if (cbdi == SB.And) {
-      BufferedVertexVec<PointIOrientationRGBIDVertex> AndBuffer;
-      AndBuffer.emplace(1u, Meta, NoColor);
-      SimplePass(AndBuffer, AndVAO, ShaderManager::And);
-    }
-    if (cbdi == SB.Or) {
-      BufferedVertexVec<PointIOrientationRGBIDVertex> OrBuffer;
-      OrBuffer.emplace(1u, Meta, NoColor);
-      SimplePass(OrBuffer, OrVAO, ShaderManager::Or);
-    }
-    if (cbdi == SB.XOr) {
-      BufferedVertexVec<PointIOrientationRGBIDVertex> XOrBuffer;
-      XOrBuffer.emplace(1u, Meta, NoColor);
-      SimplePass(XOrBuffer, XOrVAO, ShaderManager::XOr);
-    }
+  if (cbdi == SB.And || cbdi == SB.Or || cbdi == SB.Xor) {
+    //if (cbdi == SB.And) {
+    //  BufferedVertexVec<PointIOrientationRGBIDVertex> AndBuffer;
+    //  AndBuffer.emplace(1u, Meta, NoColor);
+    //  SimplePass(AndBuffer, AndVAO, ShaderManager::And);
+    //}
+    //if (cbdi == SB.Or) {
+    //  //BufferedVertexVec<PointIOrientationRGBIDVertex> OrBuffer;
+    //  //OrBuffer.emplace(1u, Meta, NoColor);
+    //  //SimplePass(OrBuffer, OrVAO, ShaderManager::Or);
+    //}
+    //if (cbdi == SB.Xor) {
+    //  //BufferedVertexVec<PointIOrientationRGBIDVertex> AssetVBO;
+    //  //XOrBuffer.emplace(1u, Meta, NoColor);
+    //  //SimplePass(XOrBuffer, XorVAO, ShaderManager::XOr);
+    //  //AssetVBO.append(AssetVertex::Gate(0, TopLeft, BottomRight, NoColor));
+    //  //SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
+    //}
 
     BufferedVertexVec<PointIRGBIDVertex> RoundedPinBuffer;
     for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
@@ -1128,10 +1130,10 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     }
     SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
   } else {
-    BufferedVertexVec<AssetVertex> AssetVBO;
-    AssetVBO.append(AssetVertex::Box(0, TopLeft, BottomRight, NoColor));
-    // BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
-    SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
+    //BufferedVertexVec<AssetVertex> AssetVBO;
+    //AssetVBO.append(AssetVertex::Box(0, TopLeft, BottomRight, NoColor));
+    //// BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
+    //SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
 
     BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
     for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {

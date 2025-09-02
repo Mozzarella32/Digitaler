@@ -81,9 +81,9 @@ private:
 	VertexArrayObject PinVAO;
 	VertexArrayObject RoundPinVAO;
 
-	VertexArrayObject AndVAO;
-	VertexArrayObject OrVAO;
-	VertexArrayObject XOrVAO;
+	//VertexArrayObject AndVAO;
+	//VertexArrayObject OrVAO;
+	//VertexArrayObject XorVAO;
 	//VertexArrayObject NotTriangleVAO;
 	//VertexArrayObject NDotVAO;
 	VertexArrayObject AreaSelectVAO;

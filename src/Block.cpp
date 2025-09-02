@@ -1383,10 +1383,10 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				SixteenSegVBO.emplace(Meta, Translation[std::max(i - 5, 0)], ColourType{ 0.992f,0.43f,0.0f,1.0f });
 				AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.1f,0.1f,0.1f,1.0f }));
 			}
-			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.XOr) {
-				if (IndexContained == SB.And) AssetVBO.append(AssetVertex::Gate(AssetVertex::And, Meta.Transform(), Base));
-				else if (IndexContained == SB.Or) AssetVBO.append(AssetVertex::Gate(AssetVertex::Or, Meta.Transform(), Base));
-				else if (IndexContained == SB.XOr) AssetVBO.append(AssetVertex::Gate(AssetVertex::Xor, Meta.Transform(), Base));
+			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.Xor) {
+				if (IndexContained == SB.And) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Base));
+				else if (IndexContained == SB.Or) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Base));
+				else if (IndexContained == SB.Xor) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Base));
 
 				for (const auto& Pin : InputPins) {
 					RoundedPinVBO.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0f,0.0f,0.0f,0.0f });

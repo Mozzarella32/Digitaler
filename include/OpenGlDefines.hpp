@@ -1106,7 +1106,7 @@ struct AssetVertex {
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
 
-	enum class ID : unsigned int{
+	enum class ID : unsigned int {
 		Box,
 		And,
 		Or,

@@ -62,7 +62,7 @@ DataResourceManager::DataResourceManager(Renderer* renderer)
 			},
 		}
 		});
-	SpecialBlocks.XOr = AddCompressedData(
+	SpecialBlocks.Xor = AddCompressedData(
 		CompressedBlockData{
 		.blockExteriorData = {
 			.Identifiyer = BlockIdentifiyer::ParsePredefined("Logic:=1"),

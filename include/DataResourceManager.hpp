@@ -54,7 +54,7 @@ private:
 		CompressedBlockDataIndex SixteenSeg;
 		CompressedBlockDataIndex And;
 		CompressedBlockDataIndex Or;
-		CompressedBlockDataIndex XOr;
+		CompressedBlockDataIndex Xor;
 		CompressedBlockDataIndex Mux;
 	};
 
