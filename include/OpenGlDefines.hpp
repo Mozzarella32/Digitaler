@@ -1101,12 +1101,38 @@ struct AssetVertex {
 		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi2)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(Position));
 		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(AssetVertex), (void*)offsetof(AssetVertex, colorAr)));
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
 	}
 
+	private:
+	enum class ID : unsigned int{
+		Box,
+		And,
+		Or,
+		Xor,
+	};
+
+	public:
+
 	static AssetVertex Box(int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, int id = 0) {
-		return AssetVertex(0, id, transform, p1.x(), p1.y(), p2.x(), p2.y(), colorA.x(), colorA.y(), colorA.z(), colorA.w());
+		return AssetVertex((int)ID::Box, id, transform, p1.x(), p1.y(), p2.x(), p2.y(), colorA.x(), colorA.y(), colorA.z(), colorA.w());
+	}
+
+	enum GateType{
+		And,
+		Or,
+		Xor
+	};
+
+	static AssetVertex Gate(GateType type, int transform, const Eigen::Vector2i& p, int id = 0){
+		int typeId;
+		switch (type) {
+			case And: typeId = (int)ID::And; break;
+			case Or: typeId = (int)ID::Or; break;
+			case Xor: typeId = (int)ID::Xor; break;
+		};
+		return AssetVertex(typeId, id, transform, p.x(), p.y(), 0, 0, 0, 0, 0, 0);
 	}
 };

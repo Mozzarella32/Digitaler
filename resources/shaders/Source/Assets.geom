@@ -59,22 +59,61 @@ mat2 flip(int i) {
     }
 }
 
+// vec2 getSize(int Index) {
+//     ivec2 A = VSIPoint1[0];
+//     ivec2 B = VSIPoint2[0];
+//     switch (Index) {
+//         case 0://Box
+//             return vec2(B - A) / 2.0 + 0.5;
+//     }
+// }
+
+// vec2 getBase(int Index) {
+    
+// }
+
+vec4 rectFromPointAndSize(vec2 pos, vec2 size) {
+    return vec4(pos - vec2(0, size.y), pos + vec2(size.x, 0));
+}
+
+vec4 getRect(int Index) {
+    switch (Index) {
+        case 0://Box
+        return vec4(VSIPoint1[0], VSIPoint2[0]);
+        case 1://And
+        case 2://Or
+        case 3://Xor
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+    }
+}
+
+float getRectOffset(int Index) {
+    switch (Index) {
+        case 0://Box
+        return 0.3;
+        case 1://And
+        case 2://Or
+        case 3://Xor
+        return 0.0;
+    }
+}
+
 void main() {
     ID =      VSID[0];
     Index =   VSIndex[0];
-    ivec2 A = VSIPoint1[0];
-    ivec2 B = VSIPoint2[0];
     ColorA =  VSColorA[0];
 
     int Transform = VSTransform[0];
     int Rot = Transform & 0x3;
     int Flip = Transform >> 2;
+
+    vec4 rect = getRect(Index);
     
-    vec2 size = vec2(B - A) / 2.0 + 0.5;
+    vec2 size = vec2(rect.zw - rect.xy) / 2.0 + 0.5;
 
-    FPoint = (B - A) / 2.0 + 0.3;
+    FPoint = (rect.zw - rect.xy) / 2.0 + getRectOffset(Index);
 
-    vec2 base = vec2(A + B) / 2.0;
+    vec2 base = vec2(rect.xy + rect.zw) / 2.0;
 
     for (int i = 0; i < 4; ++i) {
         Pos = size * signes[i];

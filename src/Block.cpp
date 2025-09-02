@@ -1343,11 +1343,11 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			id++;
 			const PointType& BlockSize = ContainedExterior.blockExteriorData.Size;
 
-			// const PointType& Pos = Meta.Pos;
+			const PointType& Base = GetBasePosition(Meta, BlockSize);
 
-			PointType Pos1 = GetBasePosition(Meta, BlockSize);
+			PointType Pos1 = Base;
 			Pos1.y() -= BlockSize.y();
-			PointType Pos2 = GetBasePosition(Meta, BlockSize);
+			PointType Pos2 = Base;
 			Pos2.x() += BlockSize.x();
 
 			// const MyDirection::Direction& Rotation = Meta.Rotation;
@@ -1360,7 +1360,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			}
 
 #ifdef ShowBasePositionOfBlocks
-			BasePositionVBO.emplace(GetBasePosition(Meta, BlockSize).cast<float>() + Eigen::Vector2f(0.1, 0.1), GetBasePosition(Meta, BlockSize).cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
+			BasePositionVBO.emplace(Base.cast<float>() + Eigen::Vector2f(0.1, 0.1), Base.cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
 #endif
 
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
@@ -1384,9 +1384,9 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.1f,0.1f,0.1f,1.0f }));
 			}
 			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.XOr) {
-				if (IndexContained == SB.And) AndVBO.emplace(id, Meta, Color);
-				else if (IndexContained == SB.Or) OrVBO.emplace(id, Meta, Color);
-				else if (IndexContained == SB.XOr) XOrVBO.emplace(id, Meta, Color);
+				if (IndexContained == SB.And) AssetVBO.append(AssetVertex::Gate(AssetVertex::And, Meta.Transform(), Base));
+				else if (IndexContained == SB.Or) AssetVBO.append(AssetVertex::Gate(AssetVertex::Or, Meta.Transform(), Base));
+				else if (IndexContained == SB.XOr) AssetVBO.append(AssetVertex::Gate(AssetVertex::Xor, Meta.Transform(), Base));
 
 				for (const auto& Pin : InputPins) {
 					RoundedPinVBO.emplace(id, GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 1.0f,0.0f,0.0f,0.0f });
