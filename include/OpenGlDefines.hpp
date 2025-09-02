@@ -1106,7 +1106,6 @@ struct AssetVertex {
 		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
 	}
 
-	private:
 	enum class ID : unsigned int{
 		Box,
 		And,
@@ -1114,25 +1113,12 @@ struct AssetVertex {
 		Xor,
 	};
 
-	public:
-
 	static AssetVertex Box(int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, int id = 0) {
 		return AssetVertex((int)ID::Box, id, transform, p1.x(), p1.y(), p2.x(), p2.y(), colorA.x(), colorA.y(), colorA.z(), colorA.w());
 	}
 
-	enum GateType{
-		And,
-		Or,
-		Xor
-	};
-
-	static AssetVertex Gate(GateType type, int transform, const Eigen::Vector2i& p, int id = 0){
-		int typeId;
-		switch (type) {
-			case And: typeId = (int)ID::And; break;
-			case Or: typeId = (int)ID::Or; break;
-			case Xor: typeId = (int)ID::Xor; break;
-		};
-		return AssetVertex(typeId, id, transform, p.x(), p.y(), 0, 0, 0, 0, 0, 0);
+	static AssetVertex Gate(ID type, int transform, const Eigen::Vector2i& p, int id = 0) {
+		assert(type == ID::And || type == ID::Or || type == ID::Xor);
+		return AssetVertex((int)type, id, transform, p.x(), p.y(), 0, 0, 0, 0, 0, 0);
 	}
 };
