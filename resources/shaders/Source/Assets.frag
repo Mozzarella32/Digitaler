@@ -18,5 +18,6 @@ float sdBox( in vec2 p, in vec2 b )
 }
 void main () {
     float sd = 1.0-10.0*sdBox(Pos, vec2(FPoint));
-    FragColor = vec4(ColorA.rgb, min(sd, ColorA.a));
+    // FragColor = vec4(ColorA.rgb, min(sd, ColorA.a));
+    FragColor = vec4(Pos.xy, -Pos.x, 1.0);
 }

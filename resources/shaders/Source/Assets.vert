@@ -11,7 +11,7 @@ layout(location = 5) in vec4  InColorA;
 
 out int   VSIndex;
 out int   VSID;
-out int   VSTransfrom;
+out int   VSTransform;
 out ivec2 VSIPoint1;
 out ivec2 VSIPoint2;
 out vec4  VSColorA;
@@ -19,7 +19,7 @@ out vec4  VSColorA;
 void main() {
     VSIndex =     InIndex;
     VSID =        InID;
-    VSTransfrom = InTransform;
+    VSTransform = InTransform;
     VSIPoint1 =   InIPoint1;
     VSIPoint2 =   InIPoint2;
     VSColorA =    InColorA;
