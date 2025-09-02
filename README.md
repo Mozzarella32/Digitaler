@@ -3,15 +3,28 @@
 A logic Simulator
 
 ## Prerequisites
-Cmake, c++23, a c++/c compiler, some mesa stuff(on linux)
+Cmake, c++23, a c++/c compiler
+### Ubuntu
+```bash
+sudo apt-get update
+sudo apt-get install -y libgtk-3-dev libglu1-mesa-dev build-essential
+```
+### Arch
+```bash
+sudo pacman -S gtk3 glu base-devel
+```
+Probebly some xorg stuff to, not sure
+```bash
+sudo pacman -S xorgproto libx11 libxext libxau libxmu libxt libxpm libxrender libice libsm libxcb libxfixes libxrandr libxi libxinerama libxcursor libxdamage libxdmcp libxcomposite libxft libxfont2
 
+```
 ## Building and Downloading
 ### Linux
 ```bash
 git clone --recurse-submodules --shallow-submodules --jobs 8 https://github.com/Mozzarella32/Digitaler.git
 cd Digitaler
-cd app
-./buildreleaseandstart.sh
+make release
+make run
 ```
 ### Windows
 ```bash
