@@ -275,15 +275,15 @@ private:
 
 	std::unordered_map<CompressedBlockDataIndex, std::vector<BlockMetadata>> Blocks;
 
-	BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinVBO;
+	BufferedVertexVec<AssetVertex> PinVBO;
 	BufferedVertexVec<AssetVertex> AssetVBO;
-	BufferedVertexVec<SevenSegVertex> SevenSegVBO;
-	BufferedVertexVec<SixteenSegVertex> SixteenSegVBO;
-	BufferedVertexVec<PointIRGBIDVertex> RoundedPinVBO;
-	BufferedVertexVec<PointIOrientationRGBIDVertex> AndVBO;
-	BufferedVertexVec<PointIOrientationRGBIDVertex> OrVBO;
-	BufferedVertexVec<PointIOrientationRGBIDVertex> XOrVBO;
-	BufferedVertexVec<MuxIDVertex> MuxVBO;
+	// BufferedVertexVec<SevenSegVertex> SevenSegVBO;
+	// BufferedVertexVec<SixteenSegVertex> SixteenSegVBO;
+	BufferedVertexVec<AssetVertex> RoundPinVBO;
+	// BufferedVertexVec<PointIOrientationRGBIDVertex> AndVBO;
+	// BufferedVertexVec<PointIOrientationRGBIDVertex> OrVBO;
+	// BufferedVertexVec<PointIOrientationRGBIDVertex> XOrVBO;
+	// BufferedVertexVec<MuxIDVertex> MuxVBO;
 
 #ifdef ShowBasePositionOfBlocks
 	BufferedVertexVec<PointFRGBVertex> BasePositionVBO;
@@ -318,17 +318,17 @@ private:
 	void UpdateBlocks(const float& Zoom);
 public:
 
-	BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex>& GetPinVBO();
+	BufferedVertexVec<AssetVertex>& GetPinVBO();
 	BufferedVertexVec<AssetVertex>& GetAssetVBO();
-	BufferedVertexVec<SevenSegVertex>& GetSevenSegVBO();
-	BufferedVertexVec<SixteenSegVertex>& GetSixteenSegVBO();
-	BufferedVertexVec<PointIRGBIDVertex>& GetRoundedPinVBO();
-	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetAndVBO();
-	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetOrVBO();
-	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetXOrVBO();
+	// BufferedVertexVec<SevenSegVertex>& GetSevenSegVBO();
+	// BufferedVertexVec<SixteenSegVertex>& GetSixteenSegVBO();
+	BufferedVertexVec<AssetVertex>& GetRoundPinVBO();
+	// BufferedVertexVec<PointIOrientationRGBIDVertex>& GetAndVBO();
+	// BufferedVertexVec<PointIOrientationRGBIDVertex>& GetOrVBO();
+	// BufferedVertexVec<PointIOrientationRGBIDVertex>& GetXOrVBO();
 	/*BufferedVertexVec<PointIOrientationRGBIDVertex>& GetNotTriangleVerts();
 	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetNDotVerts();*/
-	BufferedVertexVec<MuxIDVertex>& GetMuxVBO();
+	// BufferedVertexVec<MuxIDVertex>& GetMuxVBO();
 	BufferedVertexVec<TextVertex>& GetStaticTextVBO();
 	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
 

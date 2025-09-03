@@ -169,12 +169,13 @@ void Renderer::RenderIDMap() {
   //SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
   //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
   //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
-  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Pin);
-  SimplePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
-             ShaderManager::RoundPin);
+  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Assets, GL_POINTS);
+  SimplePass([&b]() { return b.GetPinVBO(); }, RoundPinVAO, ShaderManager::Assets, GL_POINTS);
+  // SimplePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
+             // ShaderManager::RoundPin);
   SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
              ShaderManager::Assets, GL_POINTS);
-  SimplePass([&b]() { return b.GetMuxVBO(); }, MuxVAO, ShaderManager::Mux);
+  // SimplePass([&b]() { return b.GetMuxVBO(); }, MuxVAO, ShaderManager::Mux);
 
   GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
@@ -498,42 +499,50 @@ void Renderer::Render() {
   //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
   //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
 
+  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO,
+             ShaderManager::Assets, 0, GL_POINTS);
+  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
+             ShaderManager::Assets, 0, GL_POINTS);
+
+  SimplePass([&b]() { return b.GetRoundPinVBO(); }, RoundPinVAO,
+             ShaderManager::Assets, 0, GL_POINTS);
+
   PROFILE_SCOPE_ID_END(4);
 
   PROFILE_SCOPE_ID_START("Pins", 5);
 
   // GLCALL(glDepthMask(GL_FALSE));
 
-  auto WirePass = [this](auto VertsGetter, VertexArrayObject &VAO,
-                         ShaderManager::Shaders ShaderName) {
-    if (!VertsGetter().empty()) {
+  // auto WirePass = [this](auto VertsGetter, VertexArrayObject &VAO,
+  //                        ShaderManager::Shaders ShaderName) {
+  //   if (!VertsGetter().empty()) {
 
-      Shader &shader = ShaderManager::GetShader(ShaderName);
+  //     Shader &shader = ShaderManager::GetShader(ShaderName);
 
-      shader.bind();
+  //     shader.bind();
 
-      FBOPathColorTexture.bind(shader, "UPath", "", 0);
+  //     FBOPathColorTexture.bind(shader, "UPath", "", 0);
 
-      VAO.bind();
-      VertsGetter().replaceBuffer(VAO, 1);
+  //     VAO.bind();
+  //     VertsGetter().replaceBuffer(VAO, 1);
 
-      GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
-      shader.apply("UHasWire",Shader::Data1i{true});
-      VAO.DrawAs(GL_TRIANGLE_STRIP);
+  //     GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
+  //     shader.apply("UHasWire",Shader::Data1i{true});
+  //     VAO.DrawAs(GL_TRIANGLE_STRIP);
 
-      GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-      shader.apply("UHasWire",Shader::Data1i{false});
-      VAO.DrawAs(GL_TRIANGLE_STRIP);
+  //     GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
+  //     shader.apply("UHasWire",Shader::Data1i{false});
+  //     VAO.DrawAs(GL_TRIANGLE_STRIP);
 
-      VAO.unbind();
+  //     VAO.unbind();
 
-      shader.unbind();
-    }
-  };
+  //     shader.unbind();
+  //   }
+  // };
 
-  WirePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Pin);
-  WirePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
-           ShaderManager::RoundPin);
+  // WirePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Assets);
+  // WirePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
+           // ShaderManager::RoundPin);
 
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   GLCALL(glStencilMask(0x00));
@@ -542,56 +551,56 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_END(5);
 
-  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
-             ShaderManager::Assets, 0, GL_POINTS);
-  SimplePass([&b]() { return b.GetSevenSegVBO(); }, SevenSegVAO,
-             ShaderManager::SevenSeg);
-  SimplePass([&b]() { return b.GetSixteenSegVBO(); }, SixteenSegVAO,
-             ShaderManager::SixteenSeg);
+  // SimplePass([&b]() { return b.GetSevenSegVBO(); }, SevenSegVAO,
+  //            ShaderManager::SevenSeg);
+  // SimplePass([&b]() { return b.GetSixteenSegVBO(); }, SixteenSegVAO,
+  //            ShaderManager::SixteenSeg);
 
-#ifdef RenderCollisionGrid
-  BufferedVertexVec<TwoPointIRGBAIDVertex> Blocks;
+// #ifdef RenderCollisionGrid
+//   BufferedVertexVec<AssetV> Blocks;
 
-  static std::unordered_map<int, std::tuple<float, float, float>> ColourMap;
-  auto GetColour = [&](const int &i) {
-    if (i == 0)
-      return std::make_tuple(1.0f, 1.0f, 1.0f);
-    auto it = ColourMap.find(i);
-    if (it == ColourMap.end()) {
-      ColourMap[i] = std::make_tuple(float(rand()) / (float)RAND_MAX,
-                                     float(rand()) / (float)RAND_MAX,
-                                     float(rand()) / (float)RAND_MAX);
-      return ColourMap[i];
-    }
-    return it->second;
-  };
+//   static std::unordered_map<int, std::tuple<float, float, float>> ColourMap;
+//   auto GetColour = [&](const int &i) {
+//     if (i == 0)
+//       return std::make_tuple(1.0f, 1.0f, 1.0f);
+//     auto it = ColourMap.find(i);
+//     if (it == ColourMap.end()) {
+//       ColourMap[i] = std::make_tuple(float(rand()) / (float)RAND_MAX,
+//                                      float(rand()) / (float)RAND_MAX,
+//                                      float(rand()) / (float)RAND_MAX);
+//       return ColourMap[i];
+//     }
+//     return it->second;
+//   };
 
-  for (const auto &pair : b.CollisionMap) {
-    MyRectI BB = MyRectI::FromCorners(
-        pair.first, pair.first + PointType{VisualBlockInterior::BoxSize,
-                                           VisualBlockInterior::BoxSize});
-    if (BoundingBox.Intersectes(
-            MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
-      const auto &size = pair.second.size();
-      if (size == 0) {
-        Blocks.Emplace(0, BB.Position,
-                       PointType(BB.Position.x() + BB.Size.x() - 1,
-                                 BB.Position.y() + BB.Size.y() - 1),
-                       ColourType(0.5, 0.5, 0.5, 0.1), ColourType(0, 0, 0, 0));
-      } else {
-        auto [r, g, b] = GetColour(size);
-        Blocks.Emplace(0, BB.Position,
-                       PointType(BB.Position.x() + BB.Size.x() - 1,
-                                 BB.Position.y() + BB.Size.y() - 1),
-                       // r, g, b, 0.5,
-                       ColourType(r, g, b, 0.5), ColourType(0, 0, 0, 0));
-      }
-    }
-  }
+//   for (const auto &pair : b.CollisionMap) {
+//     MyRectI BB = MyRectI::FromCorners(
+//         pair.first, pair.first + PointType{VisualBlockInterior::BoxSize,
+//                                            VisualBlockInterior::BoxSize});
+//     if (BoundingBox.Intersectes(
+//             MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
+//       const auto &size = pair.second.size();
+//       if (size == 0) {
+//         BlockMetadata Meta;
+//         V
+//         // Blocks.emplace(0, BB.Position,
+//         //                PointType(BB.Position.x() + BB.Size.x() - 1,
+//         //                          BB.Position.y() + BB.Size.y() - 1),
+//         //                ColourType(0.5, 0.5, 0.5, 0.1), ColourType(0, 0, 0, 0));
+//       } else {
+//         auto [r, g, b] = GetColour(size);
+//         Blocks.emplace(0, BB.Position,
+//                        PointType(BB.Position.x() + BB.Size.x() - 1,
+//                                  BB.Position.y() + BB.Size.y() - 1),
+//                        // r, g, b, 0.5,
+//                        ColourType(r, g, b, 0.5), ColourType(0, 0, 0, 0));
+//       }
+//     }
+//   }
 
-  SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO,
-             ShaderManager::Block);
-#endif
+//   // SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO,
+//   //            ShaderManager::Block);
+// #endif
 
   // SimplePass([&b]() { return b.GetMuxVerts(); }, MuxVAO, ShaderManager::Mux);
 
@@ -837,9 +846,6 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                      return desc;
                    }()),
       FBOID({&FBOIDTexture}, {GL_COLOR_ATTACHMENT1}),
-#ifdef RenderCollisionGrid
-      CollisionGridVAO(CreateVAO<TwoPointIRGBAIDVertex>()),
-#endif
       VAOsPath(PathVAOs{
           .EdgesVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
           .EdgesMarkedVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
@@ -856,12 +862,15 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
           .VertsVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
           .ConflictPointsVAO = CreateVAOInstancing4<TwoPointIRGBRHGHBHVertex>(),
       }),
-      SevenSegVAO(CreateVAOInstancing4<SevenSegVertex>()),
-      SixteenSegVAO(CreateVAOInstancing4<SixteenSegVertex>()),
-      MuxVAO(CreateVAOInstancing4<MuxIDVertex>()),
+#ifdef RenderCollisionGrid
+      CollisionGridVAO(CreateVAO<AssetVertex>()),
+#endif
+      // SevenSegVAO(CreateVAOInstancing4<SevenSegVertex>()),
+      // SixteenSegVAO(CreateVAOInstancing4<SixteenSegVertex>()),
+      // MuxVAO(CreateVAOInstancing4<MuxIDVertex>()),
       AssetVAO(CreateVAO<AssetVertex>()),
-      PinVAO(CreateVAOInstancing4<PointIOrientationRGBRHGHBHIDVertex>()),
-      RoundPinVAO(CreateVAOInstancing4<PointIRGBIDVertex>()),
+      PinVAO(CreateVAO<AssetVertex>()),
+      RoundPinVAO(CreateVAO<AssetVertex>()),
       //AndVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
       /*NotTriangleVAO(CreatePointIOrientationVAO()),
       NDotVAO(CreatePointIOrientationVAO()),*/
@@ -1045,22 +1054,22 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-  auto SimplePass = [](auto &MyBuffer,
-                       VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName,
-                       size_t BufferIndex = 1,
-                       GLenum primitive = GL_TRIANGLE_STRIP) {
-    Shader &shader = ShaderManager::GetShader(ShaderName);
+  // auto SimplePass = [](auto &MyBuffer,
+  //                      VertexArrayObject &VAO,
+  //                      ShaderManager::Shaders ShaderName,
+  //                      size_t BufferIndex = 1,
+  //                      GLenum primitive = GL_TRIANGLE_STRIP) {
+  //   Shader &shader = ShaderManager::GetShader(ShaderName);
 
-    shader.bind();
-    VAO.bind();
-    MyBuffer.replaceBuffer(VAO, BufferIndex);
-    VAO.DrawAs(primitive);
-    VAO.unbind();
-    shader.unbind();
-  };
+  //   shader.bind();
+  //   VAO.bind();
+  //   MyBuffer.replaceBuffer(VAO, BufferIndex);
+  //   VAO.DrawAs(primitive);
+  //   VAO.unbind();
+  //   shader.unbind();
+  // };
 
-  ColourType NoColor = {0, 0, 0, 0};
+  // ColourType NoColor = {0, 0, 0, 0};
 
   BlockMetadata Meta;
   Meta.Pos = {};
@@ -1099,54 +1108,54 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     //  //SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
     //}
 
-    BufferedVertexVec<PointIRGBIDVertex> RoundedPinBuffer;
-    for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-      RoundedPinBuffer.emplace(
-          1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-          NoColor);
-    }
-    for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-      RoundedPinBuffer.emplace(
-          1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-          NoColor);
-    }
-    SimplePass(RoundedPinBuffer, RoundPinVAO,
-               ShaderManager::RoundPin);
+    // BufferedVertexVec<PointIRGBIDVertex> RoundedPinBuffer;
+    // for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
+    //   RoundedPinBuffer.emplace(
+    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
+    //       NoColor);
+    // }
+    // for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
+    //   RoundedPinBuffer.emplace(
+    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
+    //       NoColor);
+    // }
+    // SimplePass(RoundedPinBuffer, RoundPinVAO,
+    //            ShaderManager::RoundPin);
   } else if (cbdi == SB.Mux) {
-    BufferedVertexVec<MuxIDVertex> MuxBuffer;
-    MuxBuffer.emplace(1u, Meta, 2, 0, NoColor);
-    SimplePass(MuxBuffer, MuxVAO, ShaderManager::Mux);
+    // BufferedVertexVec<MuxIDVertex> MuxBuffer;
+    // MuxBuffer.emplace(1u, Meta, 2, 0, NoColor);
+    // SimplePass(MuxBuffer, MuxVAO, ShaderManager::Mux);
 
-    BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
-    for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-      PinBuffer.emplace(
-          1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-          VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    }
-    for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-      PinBuffer.emplace(
-          1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-          VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    }
-    SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
+    // BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
+    // for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
+    //   PinBuffer.emplace(
+    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
+    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
+    // }
+    // for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
+    //   PinBuffer.emplace(
+    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
+    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
+    // }
+    // SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
   } else {
     //BufferedVertexVec<AssetVertex> AssetVBO;
     //AssetVBO.append(AssetVertex::Box(0, TopLeft, BottomRight, NoColor));
     //// BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
     //SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
 
-    BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
-    for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-      PinBuffer.emplace(
-          1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-          VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    }
-    for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-      PinBuffer.emplace(
-          1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-          VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    }
-    SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
+    // BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
+    // for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
+    //   PinBuffer.emplace(
+    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
+    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
+    // }
+    // for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
+    //   PinBuffer.emplace(
+    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
+    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
+    // }
+    // SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
   }
   FBOID.unbind();
 

@@ -4,13 +4,14 @@
 #define UseCollisionGrid
 
 
-//#define RenderCollisionGrid
+//Not working
+// #define RenderCollisionGrid
 
-#ifndef UseCollisionGrid
-#undef RenderCollisionGrid
-#endif
+// #ifndef UseCollisionGrid
+// #undef RenderCollisionGrid
+// #endif
 
-#define ShowBasePositionOfBlocks
+// #define ShowBasePositionOfBlocks
 
 #define HotShaderReload
 

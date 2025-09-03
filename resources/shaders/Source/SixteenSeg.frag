@@ -176,8 +176,8 @@ void main(){
     sdP * float((Flags & 0x10000) == 0));
 
     if(On > Off){
-        FragColor = vec4(1.0,1.0,0.0,1.0);
-        FragColor = vec4(Color,2.5*On-0.5);
+        FragColor = vec4(Color, 2.5*On-0.5);
+        // FragColor = vec4(1.0, 0.0, 1.0, 1.0*On-0.5);
         return;
     }
     FragColor = vec4(0,0,1,1);

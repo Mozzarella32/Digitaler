@@ -1111,6 +1111,13 @@ struct AssetVertex {
 		And,
 		Or,
 		Xor,
+		SevenSeg,
+		SixteenSeg,
+		Mux,
+		InputPin,
+		OutputPin,
+		InputRoundPin,
+		OutputRoundPin,
 	};
 
 	static AssetVertex Box(int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, int id = 0) {
@@ -1121,4 +1128,171 @@ struct AssetVertex {
 		assert(type == ID::And || type == ID::Or || type == ID::Xor);
 		return AssetVertex((int)type, id, transform, p.x(), p.y(), 0, 0, 0, 0, 0, 0);
 	}
+
+	static AssetVertex Display(ID type, int transform, int segs, const Eigen::Vector2i& p, const ColourType& colorH, int id = 0) {
+		assert(type == ID::SevenSeg || type == ID::SixteenSeg);
+		return AssetVertex((int)type, id, transform, p.x(), p.y(), segs, 0, colorH.x(), colorH.y(), colorH.z(), colorH.w());
+	}
+
+	static AssetVertex Mux(int transform, int selected, const Eigen::Vector2i& p, const ColourType& colorSelected, int id = 0) {
+		return AssetVertex((int)ID::Mux, id, transform, p.x(), p.y(), selected, 0, colorSelected.x(), colorSelected.y(), colorSelected.z(), colorSelected.w());
+	}
+
+	static AssetVertex Pin(bool input, int transform, const Eigen::Vector2i& p, const ColourType& color, int id = 0) {
+		return AssetVertex(int(input ? ID::InputPin : ID::OutputPin), id, transform, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), color.w());
+	}
+
+	static AssetVertex RoundPin(bool input, int transform, const Eigen::Vector2i& p, int id = 0) {
+		return AssetVertex(int(input ? ID::InputRoundPin : ID::OutputRoundPin), id, transform, p.x(), p.y(), 0, 0, 0.0, 0.0, 0.0, 0.0);
+	}
+
+	static constexpr const std::array<int, 16> NumberTo7Flags = {
+		0b0111111,//0
+		0b0000110,//1
+		0b1011011,//2
+		0b1001111,//3
+		0b1100110,//4
+		0b1101101,//5
+		0b1111101,//6
+		0b0000111,//7
+		0b1111111,//8
+		0b1101111,//9
+		0b1110111,//A
+		0b1111100,//b
+		0b0111001,//C
+		0b1011110,//d
+		0b1111001,//E
+		0b1110001,//F
+	};
+	
+	static constexpr const std::array<int, 128> NumberTo16Flags = {
+		0b0,//0
+		0b0,//1
+		0b0,//2
+		0b0,//3
+		0b0,//4
+		0b0,//5
+		0b0,//6
+		0b0,//7
+		0b0,//8
+		0b0,//9
+		0b0,//10
+		0b0,//11
+		0b0,//12
+		0b0,//13
+		0b0,//14
+		0b0,//15
+		0b0,//16
+		0b0,//17
+		0b0,//18
+		0b0,//19
+		0b0,//20
+		0b0,//21
+		0b0,//22
+		0b0,//23
+		0b0,//24
+		0b0,//25
+		0b0,//26
+		0b0,//27
+		0b0,//28
+		0b0,//29
+		0b0,//30
+		0b0,//31
+		0b0,//32
+		0b10100100000000000,//!
+		0b0000100010000000,//"
+		0b0100101100111100,//#
+		0b0100101110111011,//$
+		0b1011011110001000,//%
+		0b1000011101110011,//&
+		0b0001000000000000,//'
+		0b1001000000000000,//(
+		0b0010010000000000,//)
+		0b1111111100000000,//*
+		0b0100101100000000,//+
+		0b0010000000000000,//,
+		0b0000001100000000,//-
+		0b10000000000000000,//.
+		0b0011000000000000,///
+		0b0011000011111111,//0
+		0b0001000000001100,//1
+		0b1101110111,//2
+		0b1100111111,//3
+		0b1110001100,//4
+		0b1110111011,//5
+		0b1111111011,//6
+		0b0000001111,//7
+		0b1111111111,//8
+		0b1110111111,//9
+		0b0000100001,//:
+		0b0010000000000001,//;
+		0b1110000011,//<
+		0b1100000011,//=
+		0b1100000111,//>
+		0b10100001000000111,//?
+		0b0100000101111111,//@
+		0b1111001111,//A
+		0b0001001111111011,//B
+		0b0011110011,//C
+		0b0100100000111111,//D
+		0b0111110011,//E
+		0b0111000011,//F
+		0b1011111011,//G
+		0b1111001100,//H
+		0b0100100000110011,//I
+		0b0001111100,//J
+		0b1001000111000000,//K
+		0b0011110000,//L
+		0b0001010011001100,//M
+		0b1000010011001100,//N
+		0b0011111111,//O
+		0b1111000111,//P
+		0b1000000011111111,//Q
+		0b1000001111000111,//R
+		0b1110111011,//S
+		0b0100100000000011,//T
+		0b0011111100,//U
+		0b0011000011000000,//V
+		0b1010000011001100,//W
+		0b1011010000000000,//X
+		0b0101010000000000,//Y
+		0b0011001100110011,//Z
+		0b0100100000010010,//[
+		0b1000010000000000,//backslash 
+		0b0100100000100001,//]
+		0b0001000000000100,//^
+		0b0000110000,//_
+		0b0000010000000000,//`
+		0b0100000101110000,//a
+		0b1000000111110000,//b
+		0b1101110000,//c
+		0b0010001000111100,//d
+		0b0010000101110000,//e
+		0b0001001111000011,//f
+		0b0000011000111111,//g
+		0b1111001000,//h
+		0b0001000000,//i
+		0b0000111100,//j
+		0b1000001111000000,//k
+		0b0001110000,//l
+		0b0100001101001000,//m
+		0b1000000101000000,//n
+		0b1101111000,//o
+		0b0001000111000011,//p
+		0b0000011000001111,//q
+		0b1101000000,//r
+		0b1000001000110000,//s
+		0b0111110000,//t
+		0b0001111000,//u
+		0b0010000001000000,//v
+		0b1010000001001000,//w
+		0b1010001100000000,//x
+		0b0000011000111100,//y
+		0b0010000100110000,//z
+		0b1001000100000000,//{
+		0b0100100000000000,//|
+		0b0010011000000000,//}
+		0b11,//~
+		0b0,//127
+	};
 };

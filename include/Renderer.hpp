@@ -69,10 +69,10 @@ private:
 
 	PathVAOs& GetPathVAOs(bool Preview);
 
-	VertexArrayObject SevenSegVAO;
-	VertexArrayObject SixteenSegVAO;
+	// VertexArrayObject SevenSegVAO;
+	// VertexArrayObject SixteenSegVAO;
 
-	VertexArrayObject MuxVAO;
+	// VertexArrayObject MuxVAO;
 
 #ifdef RenderCollisionGrid
 	VertexArrayObject CollisionGridVAO;

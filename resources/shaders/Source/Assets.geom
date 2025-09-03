@@ -17,6 +17,7 @@ in vec4  VSColorA[1];
 
 flat out int  ID;
 flat out int  Index;
+flat out int  I1;
 flat out vec2 FPoint;
 flat out vec4 ColorA;
 
@@ -71,25 +72,56 @@ vec4 getRect(int Index) {
         case 2://Or
         case 3://Xor
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+        case 4://Seven
+        case 5://Sixteen
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2, 3)));
+        case 6://Mux
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+        case 7://InpuptPin
+        case 8://outputPin
+        case 9://InpuptRoundPin
+        case 10://outputRoundPin
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
     }
 }
 
-vec2 getMargins(int Index) {
+float[4] getMargins(int Index) {
     switch (Index) {
         case 0://Box
-        return 0.5;
+        case 4://Seven
+        case 5://Sixteen
+        return float[4](0.0, 0.0, 0.0, 0.0);
         case 1://And
         case 2://Or
+        return float[4](1.0, 0.0, 1.0, 0.0);
         case 3://Xor
-        return 0.5;
+        return float[4](1.0, 0.0, 1.5, 0.0);
+        case 6://Mux
+        return float[4](0.0, 0.5, 0.0, 0.5);
+        case 7://InputPin
+        case 8://OutputPin
+        return float[4](-0.125, -0.125, 0.2, -0.125);
+        case 9://InputRoundPin
+        case 10://OutputRoundPin
+        return float[4](-0.125, -0.125, -0.125, -0.125);
     }
-    return -0.5;
+    return float[4](0.0, 0.0, 0.0, 0.0);
 }
+
+
+ivec2 lookup[4] = ivec2[4](
+    ivec2(1,0),        
+    ivec2(1,2),        
+    ivec2(3,0),        
+    ivec2(3,2)        
+);
+
 
 void main() {
     ID =     VSID[0];
     Index =  VSIndex[0];
     ColorA = VSColorA[0];
+    I1 =     VSIPoint2[0].x;
 
     int Transform = VSTransform[0];
     int Rot = Transform & 0x3;
@@ -97,16 +129,17 @@ void main() {
 
     vec4 rect = getRect(Index);
     
-    vec2 size = vec2(rect.zw - rect.xy) / 2.0 + getMargins(Index);
+    vec2 size = vec2(rect.zw - rect.xy) / 2.0 + 0.5;
 
-    // FPoint = (rect.zw - rect.xy) / 2.0 + getRectOffset(Index);
     FPoint = (rect.zw - rect.xy) / 2.0;
 
     vec2 base = vec2(rect.xy + rect.zw) / 2.0;
 
+    float diff[4] = getMargins(Index);
+    
     for (int i = 0; i < 4; ++i) {
-        Pos = size * signes[i];
-        vec2 Off = (size) * signes[i];
+        Pos = (size + vec2(diff[lookup[i].x],diff[lookup[i].y])) * signes[i];
+        vec2 Off = (size + vec2(diff[lookup[i].x],diff[lookup[i].y])) * signes[i];
         Off -= vec2(-size.x, size.y) + vec2(1, -1) / 2.0;
         Off *= rot(Rot);
         Off *= flip(Flip);
