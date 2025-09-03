@@ -160,7 +160,7 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	ConflictPoints.clear();
 
 	//Calculate Edges and SpecialPoints
-	std::unordered_set<PointIRGBVertex> specialPoints;
+	std::unordered_set<PointType> specialPoints;
 	/*Edges.reserve(Data.Lines.size());
 
 	auto hr = Data.toHumanReadable();
@@ -212,10 +212,10 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 			if (!MyRectI::FromCorners(A, B).Intersectes(BB)) continue;
 
 			if (BB.Contains(A) && p.ConnectionCount() >= 2) {
-				specialPoints.emplace(A, MyColor);
+				specialPoints.emplace(A);
 			}
 			if (BB.Contains(B) && other.ConnectionCount() >= 2) {
-				specialPoints.emplace(B, MyColor);
+				specialPoints.emplace(B);
 			}
 
 			/*if (Marked) {
@@ -239,7 +239,10 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 		}
 	}
 
-	SpecialPoints = std::vector(specialPoints.begin(), specialPoints.end());
+	SpecialPoints.reserve(specialPoints.size());
+	for(const auto& p : specialPoints){
+		SpecialPoints.emplace_back(p, MyColor);
+	}
 
 	auto IsNormal = [](const float& r, const float& g, const float& b) {
 		return r != 1.0f || g != 0.0f || b != 1.0f;
