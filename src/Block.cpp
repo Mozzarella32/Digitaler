@@ -1406,10 +1406,10 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				continue;
 			}
 			else if (IndexContained == SB.Mux) {
-				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{1.0, 0.7, 0.4, 1.0}));
+				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{1.0f, 0.7f, 0.4f, 1.0f}));
 			}
 			else {
-		AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.5,0.5,1.0,1.0 }));
+		AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.5f,0.5f,1.0f,1.0f }));
 				ShowBlockLabl(BlockSize, Meta, Name);
 			}
 
