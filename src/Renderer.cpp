@@ -567,6 +567,7 @@ void Renderer::Render() {
 
       GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
       VAO.DrawAs(GL_POINTS);
+      GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
 
       FBOPathColorTexture.bind();
       assetShader.apply("UWirePass", Shader::Data1i(false));
