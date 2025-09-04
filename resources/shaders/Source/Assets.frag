@@ -418,12 +418,17 @@ vec4 get() {
         case 9://InputPin
         case 10://OutputPin
         return sdRoundPin(Pos);
-        // return vec4(1.0,0.0,1.0, sdBox(Pos, FPoint + 0.3));
+        case 11://PathEdge
+        return vec4(1.0,0.0,1.0, sdBox(Pos, FPoint + 0.3));
     }
     return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
 }
 
 void main () {
+    if(Index == 11){
+        FragColor = vec4(1.0,0.0,1.0,1.0);
+        return;
+    }
     vec4 col = get();
     FragColor = vec4(col.rgb, 1.0 - 10.0 * col.a);
     // if(Index == 6) discard;

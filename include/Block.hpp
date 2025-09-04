@@ -36,16 +36,16 @@ private:
 	DataResourceManager* ResourceManager;
 	Renderer* renderer;
 
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> Edges;
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> EdgesMarked;
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> EdgesUnmarked;
-	BufferedVertexVec<PointIRGBVertex> SpecialPoints;
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> Verts;
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> ConflictPoints;
+	BufferedVertexVec<AssetVertex> Edges;
+	BufferedVertexVec<AssetVertex> EdgesMarked;
+	BufferedVertexVec<AssetVertex> EdgesUnmarked;
+	BufferedVertexVec<AssetVertex> IntersectionPoints;
+	BufferedVertexVec<AssetVertex> Verts;
+	// BufferedVertexVec<TwoPointIRGBRHGHBHVertex> ConflictPoints;
 
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> FloatingEdges;
-	BufferedVertexVec<PointIRGBVertex> FloatingSpecialPoints;
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex> FloatingVerts;
+	BufferedVertexVec<AssetVertex> FloatingEdges;
+	BufferedVertexVec<AssetVertex> FloatingIntersectionPoints;
+	BufferedVertexVec<AssetVertex> FloatingVerts;
 
 	BufferedVertexVec<TextVertex> StaticTextVBO;
 	BufferedVertexVec<TextVertex> DynamicTextVBO;
@@ -56,17 +56,17 @@ private:
 	//BufferedVertexVec <TwoPointIRGBAVertex> Boxes;
 
 public:
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetEdges(bool Floating);
+	BufferedVertexVec<AssetVertex>& GetEdges(bool Floating);
 
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetEdgesMarked(bool Floating);
+	BufferedVertexVec<AssetVertex>& GetEdgesMarked(bool Floating);
 
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetEdgesUnmarked(bool Floating);
+	BufferedVertexVec<AssetVertex>& GetEdgesUnmarked(bool Floating);
 
-	BufferedVertexVec<PointIRGBVertex>& GetSpecialPoints(bool Floating);
+	BufferedVertexVec<AssetVertex>& GetIntersectionPoints(bool Floating);
 
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetVerts(bool Floating);
+	BufferedVertexVec<AssetVertex>& GetVerts(bool Floating);
 
-	BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetConflictPoints(bool Floating);
+	// BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetConflictPoints(bool Floating);
 
 	//const std::vector<TwoPointIRGBAVertex>& GetBoxes() const;
 
@@ -106,8 +106,6 @@ private:
 	bool ApplyToMarkedPath(const PathApplyer& PathApplyer);
 
 public:
-
-
 
 	//Returns if need is to redraw
 	bool SetHighlited(int Highlited);

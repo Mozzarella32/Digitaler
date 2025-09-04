@@ -58,10 +58,10 @@ private:
 		VertexArrayObject EdgesMarkedVAO;
 
 		VertexArrayObject EdgesUnmarkedVAO;
-		VertexArrayObject SpecialPointsVAO;
+		VertexArrayObject IntersectionPointsVAO;
 		VertexArrayObject VertsVAO;
 
-		VertexArrayObject ConflictPointsVAO;
+		// VertexArrayObject ConflictPointsVAO;
 	};
 
 	PathVAOs VAOsPath;

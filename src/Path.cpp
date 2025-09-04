@@ -140,7 +140,7 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	if (!Data.BoundingBox.Intersectes(BB)) {
 		EdgesUnmarked.clear();
 		EdgesMarked.clear();
-		SpecialPoints.clear();
+		IntersectionPoints.clear();
 		Verts.clear();
 		return;
 	}
@@ -155,12 +155,12 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	Dirty = false;
 	EdgesUnmarked.clear();
 	EdgesMarked.clear();
-	SpecialPoints.clear();
+	IntersectionPoints.clear();
 	Verts.clear();
-	ConflictPoints.clear();
+	// ConflictPoints.clear();
 
 	//Calculate Edges and SpecialPoints
-	std::unordered_set<PointType> specialPoints;
+	std::unordered_set<PointType> intersectionPoints;
 	/*Edges.reserve(Data.Lines.size());
 
 	auto hr = Data.toHumanReadable();
@@ -195,9 +195,14 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 
 	ColourType MyColor = GetColour(Data.GetId());
 
+	Verts.reserve(Data.Points.size());
+
 	for (PointIndex i = 0; i < Data.Points.size(); i++) {
 		const PointNode& p = Data.Points[i];
 		if (p.IsFree())continue;
+
+		Verts.push_back(AssetVertex::PathVertex(p.Pos, MyColor));
+
 		for (LineIndexInPoint j = 0; j < 4; j++) {
 			const PointIndex& OtherIndex = p.Connections[j];
 			if (OtherIndex < i)continue;
@@ -212,10 +217,10 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 			if (!MyRectI::FromCorners(A, B).Intersectes(BB)) continue;
 
 			if (BB.Contains(A) && p.ConnectionCount() >= 2) {
-				specialPoints.emplace(A);
+				intersectionPoints.emplace(A);
 			}
 			if (BB.Contains(B) && other.ConnectionCount() >= 2) {
-				specialPoints.emplace(B);
+				intersectionPoints.emplace(B);
 			}
 
 			/*if (Marked) {
@@ -224,99 +229,104 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 			}*/
 
 			if (Preview) {
-				EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 0.0f,1.0f,0.2f,0.0f });
+				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				// EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 0.0f,1.0f,0.2f,0.0f });
 				continue;
 			}
 			if (MarkedBoundingBox && LineMarked.at({ i,OtherIndex })) {
-				EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f, 0.0f, 1.0f, 1.0f });
+				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				// EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f, 0.0f, 1.0f, 1.0f });
 				continue;
 			}
 			if (Hover && !HasMarked() && !DontShowHover) {
-				EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f,1.0f,0.0f,0.0f });
+				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				// EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f,1.0f,0.0f,0.0f });
 				continue;
 			}
-			EdgesUnmarked.emplace_back(A, B, MyColor, ColourType::Zero());
+				EdgesUnmarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+			// EdgesUnmarked.emplace_back(A, B, MyColor, ColourType::Zero());
 		}
 	}
 
-	SpecialPoints.reserve(specialPoints.size());
-	for(const auto& p : specialPoints){
-		SpecialPoints.emplace_back(p, MyColor);
+	IntersectionPoints.reserve(intersectionPoints.size());
+	for(const auto& p : intersectionPoints) {
+		IntersectionPoints.push_back(AssetVertex::PathIntersection(p, MyColor));
+		// SpecialPoints.emplace_back(p, MyColor);
 	}
 
-	auto IsNormal = [](const float& r, const float& g, const float& b) {
-		return r != 1.0f || g != 0.0f || b != 1.0f;
-		};
+	// auto IsNormal = [](const float& r, const float& g, const float& b) {
+	// 	return r != 1.0f || g != 0.0f || b != 1.0f;
+	// 	};
 
 	//Calculate Verts
-	std::unordered_map<PointType, TwoPointIRGBRHGHBHVertex> verts;
-	verts.reserve(2 * EdgesMarked.size());
+	// std::unordered_map<PointType, TwoPointIRGBRHGHBHVertex> verts;
+	// verts.reserve(2 * EdgesMarked.size());
 
-	auto PlaceVert = [this, IsNormal, &BB, &verts](const int& x, const int& y, const float& r, const float& g, const float& b, const float& rh, const float& gh, const float& bh, bool marked) {
-		if (!BB.Contains({ x, y })) return;
-		auto it = verts.find({ x, y });
+	// auto PlaceVert = [this, IsNormal, &BB, &verts](const int& x, const int& y, const float& r, const float& g, const float& b, const float& rh, const float& gh, const float& bh, bool marked) {
+	// 	if (!BB.Contains({ x, y })) return;
+	// 	auto it = verts.find({ x, y });
 
-		if (it == verts.end()) {
-			if (!marked)return;
-			verts[{x, y}] = { x, y, x, y, r, g, b, rh, gh, bh };
-			return;
-		}
+	// 	if (it == verts.end()) {
+	// 		if (!marked)return;
+	// 		verts[{x, y}] = { x, y, x, y, r, g, b, rh, gh, bh };
+	// 		return;
+	// 	}
 
-		bool ThisNormal = IsNormal(rh, gh, bh);
-		bool OtherNormal = IsNormal(it->second.rh, it->second.gh, it->second.bh);
-		if (OtherNormal != ThisNormal) {
-			if (!OtherNormal) {
-				ConflictPoints.emplace_back(x, y, x, y, it->second.r, it->second.g, it->second.b, it->second.rh, it->second.gh, it->second.bh);
-			}
-			else {
-				ConflictPoints.emplace_back(x, y, x, y, r, g, b, rh, gh, bh);
-			}
-			verts.erase(it);
-			return;
-		}
-		if (!marked)return;
-		if (!ThisNormal) {
-			if (OtherNormal) {
-				verts.erase(it);
-				verts[{x, y}] = { x, y, x, y, r,g,b,rh, gh, bh };
-			}
-		}
-		};
+	// 	bool ThisNormal = IsNormal(rh, gh, bh);
+	// 	bool OtherNormal = IsNormal(it->second.rh, it->second.gh, it->second.bh);
+	// 	if (OtherNormal != ThisNormal) {
+	// 		if (!OtherNormal) {
+	// 			ConflictPoints.emplace_back(x, y, x, y, it->second.r, it->second.g, it->second.b, it->second.rh, it->second.gh, it->second.bh);
+	// 		}
+	// 		else {
+	// 			ConflictPoints.emplace_back(x, y, x, y, r, g, b, rh, gh, bh);
+	// 		}
+	// 		verts.erase(it);
+	// 		return;
+	// 	}
+	// 	if (!marked)return;
+	// 	if (!ThisNormal) {
+	// 		if (OtherNormal) {
+	// 			verts.erase(it);
+	// 			verts[{x, y}] = { x, y, x, y, r,g,b,rh, gh, bh };
+	// 		}
+	// 	}
+	// 	};
 
-	for (const auto& edge : EdgesMarked) {
-		PlaceVert(edge.x1, edge.y1, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, true);
-		PlaceVert(edge.x2, edge.y2, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, true);
-	}
-	for (const auto& edge : EdgesUnmarked) {
-		PlaceVert(edge.x1, edge.y1, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, false);
-		PlaceVert(edge.x2, edge.y2, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, false);
-	}
+	// for (const auto& edge : EdgesMarked) {
+	// 	PlaceVert(edge.x1, edge.y1, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, true);
+	// 	PlaceVert(edge.x2, edge.y2, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, true);
+	// }
+	// for (const auto& edge : EdgesUnmarked) {
+	// 	PlaceVert(edge.x1, edge.y1, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, false);
+	// 	PlaceVert(edge.x2, edge.y2, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, false);
+	// }
 
-	Verts.reserve(verts.size());
-	for (const auto& pair : verts) {
-		Verts.emplace_back(pair.second);
-	}
+	// Verts.reserve(verts.size());
+	// for (const auto& pair : verts) {
+	// 	Verts.emplace_back(pair.second);
+	// }
 }
 
-const std::vector<TwoPointIRGBRHGHBHVertex>& VisualPath::getEdgesUnmarked() const {
+const std::vector<AssetVertex>& VisualPath::getEdgesUnmarked() const {
 	return EdgesUnmarked;
 }
 
-const std::vector<TwoPointIRGBRHGHBHVertex>& VisualPath::getEdgesMarked() const {
+const std::vector<AssetVertex>& VisualPath::getEdgesMarked() const {
 	return EdgesMarked;
 }
 
-const std::vector<PointIRGBVertex>& VisualPath::getSpecialPoints() const {
-	return SpecialPoints;
+const std::vector<AssetVertex>& VisualPath::getIntersectionPoints() const {
+	return IntersectionPoints;
 }
 
-const std::vector<TwoPointIRGBRHGHBHVertex>& VisualPath::getVerts() const {
+const std::vector<AssetVertex>& VisualPath::getVerts() const {
 	return Verts;
 }
 
-const std::vector<TwoPointIRGBRHGHBHVertex>& VisualPath::getConflictPoints() const {
-	return ConflictPoints;
-}
+// const std::vector<TwoPointIRGBRHGHBHVertex>& VisualPath::getConflictPoints() const {
+// 	return ConflictPoints;
+// }
 
 bool VisualPath::Intercept(const PointType& Pos) const {
 	return Data.Intercept(Pos) != InvalidLineIndex;
@@ -350,7 +360,7 @@ void VisualPath::Free(const PathIndex& head) {
 	CachedBoundingBox = {};
 	EdgesMarked.clear();
 	EdgesUnmarked.clear();
-	SpecialPoints.clear();
+	IntersectionPoints.clear();
 	Verts.clear();
 	ClearMarkedArea();
 	Dirty = true;

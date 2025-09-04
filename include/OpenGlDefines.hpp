@@ -361,6 +361,9 @@ struct AssetVertex {
 		OutputPin,
 		InputRoundPin,
 		OutputRoundPin,
+		PathEdge,
+		PathIntersection,
+		PathVertex
 	};
 
 	static AssetVertex Box(int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, int id = 0) {
@@ -387,6 +390,18 @@ struct AssetVertex {
 
 	static AssetVertex RoundPin(bool input, int transform, const Eigen::Vector2i& p, int id = 0) {
 		return AssetVertex(int(input ? ID::InputRoundPin : ID::OutputRoundPin), id, transform, p.x(), p.y(), 0, 0, 0.0, 0.0, 0.0, 0.0);
+	}
+
+	static AssetVertex PathEdge(const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& color, int id = 0) {
+		return AssetVertex((int)ID::PathEdge, id, 0, p1.x(), p1.y(), p2.x(), p2.y(), color.x(), color.y(), color.z(), 0.0);
+	}
+
+	static AssetVertex PathIntersection(const Eigen::Vector2i& p, const ColourType& color, int id = 0) {
+		return AssetVertex((int)ID::PathIntersection, id, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
+	}
+
+	static AssetVertex PathVertex(const Eigen::Vector2i& p, const ColourType& color, int id = 0) {
+		return AssetVertex((int)ID::PathVertex, id, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
 	}
 
 	static constexpr const std::array<int, 16> NumberTo7Flags = {

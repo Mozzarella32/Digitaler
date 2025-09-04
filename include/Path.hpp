@@ -29,15 +29,27 @@ public:
 	VisualPathData Data;
 private:
 
-	std::vector<TwoPointIRGBRHGHBHVertex> EdgesUnmarked;
-	std::vector<TwoPointIRGBRHGHBHVertex> EdgesMarked;
+	// std::vector<TwoPointIRGBRHGHBHVertex> EdgesUnmarked;
+	// std::vector<TwoPointIRGBRHGHBHVertex> EdgesMarked;
+
+	// //If a vert is touched by at leas two lines
+	// std::vector<PointIRGBVertex> SpecialPoints;
+	// std::vector<TwoPointIRGBRHGHBHVertex> Verts;
+
+	// //If a vert toutches a marked and a unmarked line
+	// std::vector<TwoPointIRGBRHGHBHVertex> ConflictPoints;
+
+	
+	std::vector<AssetVertex> EdgesUnmarked;
+	std::vector<AssetVertex> EdgesMarked;
 
 	//If a vert is touched by at leas two lines
-	std::vector<PointIRGBVertex> SpecialPoints;
-	std::vector<TwoPointIRGBRHGHBHVertex> Verts;
+	std::vector<AssetVertex> IntersectionPoints;
+	std::vector<AssetVertex> Verts;
 
 	//If a vert toutches a marked and a unmarked line
-	std::vector<TwoPointIRGBRHGHBHVertex> ConflictPoints;
+	// std::vector<TwoPointIRGBRHGHBHVertex> ConflictPoints;
+
 
 	MyRectI CachedBoundingBox;
 
@@ -80,11 +92,10 @@ public:
 	//Cached therfore not const
 	void ComputeAll(const MyRectI& BB);
 
-	const std::vector<TwoPointIRGBRHGHBHVertex>& getEdgesUnmarked() const;
-	const std::vector<TwoPointIRGBRHGHBHVertex>& getEdgesMarked() const;
-	const std::vector<PointIRGBVertex>& getSpecialPoints() const;
-	const std::vector<TwoPointIRGBRHGHBHVertex>& getVerts() const;
-	const std::vector<TwoPointIRGBRHGHBHVertex>& getConflictPoints() const;
+	const std::vector<AssetVertex>& getEdgesUnmarked() const;
+	const std::vector<AssetVertex>& getEdgesMarked() const;
+	const std::vector<AssetVertex>& getIntersectionPoints() const;
+	const std::vector<AssetVertex>& getVerts() const;
 
 	bool Intercept(const PointType& Pos) const;
 

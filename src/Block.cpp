@@ -13,49 +13,49 @@
 int VisualBlockInterior::BoxSize = 5;
 #endif
 
-BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetEdges(bool Floating) {
+BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetEdges(bool Floating) {
 	if (Floating) {
 		return FloatingEdges;
 	}
 	return Edges;
 }
 
-BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetEdgesMarked(bool Floating) {
+BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetEdgesMarked(bool Floating) {
 	if (Floating) {
 		return FloatingEdges;
 	}
 	return EdgesMarked;
 }
 
-static BufferedVertexVec<TwoPointIRGBRHGHBHVertex> EmptyPathVec = {};
+static BufferedVertexVec<AssetVertex> EmptyPathVec = {};
 
-BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetEdgesUnmarked(bool Floating) {
+BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetEdgesUnmarked(bool Floating) {
 	if (Floating) {
 		return EmptyPathVec;
 	}
 	return EdgesUnmarked;
 }
 
-BufferedVertexVec<PointIRGBVertex>& VisualBlockInterior::GetSpecialPoints(bool Floating) {
+BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetIntersectionPoints(bool Floating) {
 	if (Floating) {
-		return FloatingSpecialPoints;
+		return FloatingIntersectionPoints;
 	}
-	return SpecialPoints;
+	return IntersectionPoints;
 }
 
-BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetVerts(bool Floating) {
+BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetVerts(bool Floating) {
 	if (Floating) {
 		return FloatingVerts;
 	}
 	return Verts;
 }
 
-BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& VisualBlockInterior::GetConflictPoints(bool Floating) {
-	if (Floating) {
-		return EmptyPathVec;
-	}
-	return ConflictPoints;
-}
+// BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetConflictPoints(bool Floating) {
+// 	if (Floating) {
+// 		return EmptyPathVec;
+// 	}
+// 	return ConflictPoints;
+// }
 
 //
 //const std::vector<TwoPointIRGBAIDVertex>& VisualBlockInterior::GetBlockVerts() const {
@@ -590,11 +590,11 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 	Edges.clear();
 	EdgesMarked.clear();
 	EdgesUnmarked.clear();
-	SpecialPoints.clear();
+	IntersectionPoints.clear();
 	Verts.clear();
-	ConflictPoints.clear();
+	// ConflictPoints.clear();
 	FloatingEdges.clear();
-	FloatingSpecialPoints.clear();
+	FloatingIntersectionPoints.clear();
 	FloatingVerts.clear();
 	StaticTextVBO.clear();
 	DynamicTextVBO.clear();
@@ -700,9 +700,9 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 	Edges.clear();
 	EdgesMarked.clear();
 	EdgesUnmarked.clear();
-	SpecialPoints.clear();
+	IntersectionPoints.clear();
 	Verts.clear();
-	ConflictPoints.clear();
+	// ConflictPoints.clear();
 
 	MyRectI ViewRectI = MyRectI::FromCorners(
 		ViewRect.Position.cast<int>() - PointType(1, 1),
@@ -715,8 +715,8 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		EdgesMarked.append(p.getEdgesMarked());
 		EdgesUnmarked.append(p.getEdgesUnmarked());
 		Verts.append(p.getVerts());
-		SpecialPoints.append(p.getSpecialPoints());
-		ConflictPoints.append(p.getConflictPoints());
+		IntersectionPoints.append(p.getIntersectionPoints());
+		// ConflictPoints.append(p.getConflictPoints());
 	}
 
 	Edges.appendOther(EdgesMarked, EdgesUnmarked);
@@ -728,14 +728,14 @@ void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, co
 	if (!HasPreview()) {
 		FloatingEdges.clear();
 		FloatingVerts.clear();
-		FloatingSpecialPoints.clear();
+		FloatingIntersectionPoints.clear();
 
 		for (auto& p : Paths) {
 			if (p.IsFree()) continue;
 			if (!p.IsFullyMarked()) continue;
 			FloatingEdges.append(p.getEdgesMarked());
 			FloatingVerts.append(p.getVerts());
-			FloatingSpecialPoints.append(p.getSpecialPoints());
+			FloatingIntersectionPoints.append(p.getIntersectionPoints());
 		}
 		return;
 	}
@@ -770,7 +770,7 @@ void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, co
 
 		FloatingEdges.clear();
 		FloatingVerts.clear();
-		FloatingSpecialPoints.clear();
+		FloatingIntersectionPoints.clear();
 
 		if (!PreviewCached.has_value()) return;
 
@@ -786,7 +786,7 @@ void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, co
 		Preview.ComputeAll(ViewRectI);
 		FloatingEdges.append(Preview.getEdgesMarked());
 		FloatingVerts.append(Preview.getVerts());
-		FloatingSpecialPoints.append(Preview.getSpecialPoints());
+		FloatingIntersectionPoints.append(Preview.getIntersectionPoints());
 	}
 }
 
@@ -1074,7 +1074,7 @@ void VisualBlockInterior::EndDrag() {
 	PreviewCached.reset();
 	FloatingEdges.clear();
 	FloatingVerts.clear();
-	FloatingSpecialPoints.clear();
+	FloatingIntersectionPoints.clear();
 	PreviewIsDirty = true;
 	if (!PathOpt) {
 		return;

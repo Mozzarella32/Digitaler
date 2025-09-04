@@ -82,7 +82,10 @@ vec4 getRect(int Index) {
         case 9://InpuptRoundPin
         case 10://outputRoundPin
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
+        case 11://PathEdge
+        return vec4(VSIPoint1[0], VSIPoint2[0]);
     }
+    return vec4(VSIPoint1[0], VSIPoint2[0]);
 }
 
 float[4] getMargins(int Index) {
@@ -104,6 +107,8 @@ float[4] getMargins(int Index) {
         case 9://InputRoundPin
         case 10://OutputRoundPin
         return float[4](-0.125, -0.125, -0.125, -0.125);
+        case 11://EdgesMarked
+        return float[4](0.0, 0.0, 0.0, 0.0);
     }
     return float[4](0.0, 0.0, 0.0, 0.0);
 }
