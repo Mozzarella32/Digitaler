@@ -265,21 +265,25 @@ set(SRC_DIR "${PROJECT_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(LIB_DIR "${PROJECT_SOURCE_DIR}/lib")
 
-set(SHADER_DIR "${PROJECT_SOURCE_DIR}/resources/shaders/Source")
-set(PNG_DIR "${PROJECT_SOURCE_DIR}/resources/art/Source")
+# set(SHADER_DIR "${PROJECT_SOURCE_DIR}/resources/shaders/Source")
+# set(PNG_DIR "${PROJECT_SOURCE_DIR}/resources/art/Source")
 
 set(PCH_HEADERS "${INCLUDE_DIR}/pch.hpp")
 
-file(GLOB_RECURSE MY_SOURCE CONFIGURE_DEPENDS "${SRC_DIR}/*")
-file(GLOB_RECURSE MY_HEADERS CONFIGURE_DEPENDS "${INCLUDE_DIR}/*")
-
-#To trigger rebuild on changes//out of date comment
-file(GLOB_RECURSE MY_SHADERS "${SHADER_DIR}/*")
-file(GLOB_RECURSE MY_PNGS "${PNG_DIR}/*")
-
-
-list(REMOVE_ITEM MY_SOURCE ${PCH_HEADERS})
-list(REMOVE_ITEM MY_HEADERS ${PCH_HEADERS})
+set(MY_SOURCE
+    src/BlockAndPathData.cpp
+    src/DataResourceManager.cpp
+    src/MyFrame.cpp
+    src/Renderer.cpp
+    src/Block.cpp
+    src/IOHandler.cpp
+    src/Path.cpp
+    src/RenderTextUtility.cpp
+    src/BlockSelector.cpp
+    src/Main.cpp
+    src/PngManager.cpp
+    src/ShaderManager.cpp
+)
 
 # Create Executable
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/app)
