@@ -712,6 +712,7 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		if (p.IsFree()) continue;
 		p.ComputeAll(ViewRectI);
 		if (p.IsFullyMarked()) continue;
+		Edges.append(p.getEdges());
 		EdgesMarked.append(p.getEdgesMarked());
 		EdgesUnmarked.append(p.getEdgesUnmarked());
 		Verts.append(p.getVerts());
@@ -719,7 +720,6 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		// ConflictPoints.append(p.getConflictPoints());
 	}
 
-	Edges.appendOther(EdgesMarked, EdgesUnmarked);
 }
 
 void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, const PointType& Mouse) {

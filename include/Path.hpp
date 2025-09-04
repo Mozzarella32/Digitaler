@@ -39,7 +39,8 @@ private:
 	// //If a vert toutches a marked and a unmarked line
 	// std::vector<TwoPointIRGBRHGHBHVertex> ConflictPoints;
 
-	
+	//Importent for order
+	std::vector<AssetVertex> Edges;
 	std::vector<AssetVertex> EdgesUnmarked;
 	std::vector<AssetVertex> EdgesMarked;
 
@@ -92,6 +93,7 @@ public:
 	//Cached therfore not const
 	void ComputeAll(const MyRectI& BB);
 
+	const std::vector<AssetVertex>& getEdges() const;
 	const std::vector<AssetVertex>& getEdgesUnmarked() const;
 	const std::vector<AssetVertex>& getEdgesMarked() const;
 	const std::vector<AssetVertex>& getIntersectionPoints() const;

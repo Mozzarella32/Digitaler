@@ -24,6 +24,7 @@ flat out vec2 FPoint;
 flat out vec4 ColorA;
 
 out vec2 Pos;
+out vec2 TextureCoord;
 
 vec2 signes[4] = vec2[4](
     vec2(1, 1),
@@ -86,6 +87,9 @@ ivec4 getRect(int Index) {
         return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
         case 11://PathEdge
         return ivec4(VSIPoint2[0], VSIPoint1[0]);
+        case 12://PathIntersectionPoints
+        case 13://PathVertex
+        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
     }
     return ivec4(VSIPoint1[0], VSIPoint2[0]);
 }
@@ -109,13 +113,17 @@ float[4] getMargins(int Index) {
         case 9://InputRoundPin
         case 10://OutputRoundPin
         return float[4](-0.125, -0.125, -0.125, -0.125);
-        case 11://EdgesMarked
+        case 11://PathEdge
         {
             float v = float(VSIPoint1[0].x == VSIPoint2[0].x);
-            float v1 = mix(-0.35, -0.5, v);
-            float v2 = mix(-0.5, -0.35, v);
+            float v1 = mix(-0.0, -0.5, v);
+            float v2 = mix(-0.5, -0.0, v);
             return float[4](v1, v2, v1, v2);
         }
+        case 12://PathIntersectionPoints
+        return float[4](0.0, 0.0, 0.0, 0.0);
+        case 13://PathVertex
+        return float[4](-0.35, -0.35, -0.35, -0.35);
     }
     return float[4](0.0, 0.0, 0.0, 0.0);
 }
@@ -169,6 +177,7 @@ void main() {
         Off *= rot(Rot);
         Off *= flip(Flip);
         Off += vec2(-size.x, size.y) + vec2(1, -1) / 2.0;
+        TextureCoord = ((base + Off + UOffset)/UZoom + 1.0) / 2.0;
         gl_Position = vec4((base + Off + UOffset)/UZoom, 0.0, 1.0);
         EmitVertex();
     }

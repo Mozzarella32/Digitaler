@@ -138,6 +138,7 @@ void VisualPath::ClearNeedsMerging() {
 
 void VisualPath::ComputeAll(const MyRectI& BB) {
 	if (!Data.BoundingBox.Intersectes(BB)) {
+		Edges.clear();
 		EdgesUnmarked.clear();
 		EdgesMarked.clear();
 		IntersectionPoints.clear();
@@ -153,6 +154,7 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	if (!Dirty) return;
 
 	Dirty = false;
+	Edges.clear();
 	EdgesUnmarked.clear();
 	EdgesMarked.clear();
 	IntersectionPoints.clear();
@@ -227,6 +229,8 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 				EdgesMarked.emplace_back(A, B, ColourType{ 1.0f,0.0f,1.0f,1.0f });
 				continue;
 			}*/
+
+			Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
 
 			if (Preview) {
 				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
@@ -308,6 +312,10 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	// }
 }
 
+const std::vector<AssetVertex>& VisualPath::getEdges() const {
+	return Edges;
+}
+
 const std::vector<AssetVertex>& VisualPath::getEdgesUnmarked() const {
 	return EdgesUnmarked;
 }
@@ -358,6 +366,7 @@ VisualPath::PathIndex VisualPath::Init(VisualPathData&& pd) {
 void VisualPath::Free(const PathIndex& head) {
 	Data = {};
 	CachedBoundingBox = {};
+	Edges.clear();
 	EdgesMarked.clear();
 	EdgesUnmarked.clear();
 	IntersectionPoints.clear();

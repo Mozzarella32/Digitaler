@@ -199,6 +199,8 @@ void Renderer::RenderWires() {
       if(!b.HasFloating()) {
         continue;
       }
+      GLCALL(glStencilMask(0xFF));
+      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
     }
 
     auto& VAOs = GetPathVAOs(Floating);
@@ -206,10 +208,36 @@ void Renderer::RenderWires() {
     auto& edges = b.GetEdges(Floating);
 
     if(!edges.empty()) {
+      GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
+      GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
+      GLCALL(glStencilMask(0xFF));
+      
       VAOs.EdgesVAO.bind();
       edges.replaceBuffer(VAOs.EdgesVAO, 0);
       VAOs.EdgesVAO.DrawAs(GL_POINTS);
       VAOs.EdgesVAO.unbind();
+
+      GLCALL(glStencilMask(0x00));
+      GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
+
+      VAOs.VertsVAO.bind();
+      b.GetVerts(Floating).replaceBuffer(VAOs.VertsVAO, 0);
+      VAOs.VertsVAO.DrawAs(GL_POINTS);
+      VAOs.VertsVAO.unbind();
+
+      GLCALL(glStencilFunc(GL_EQUAL, 2, 0xFF));
+      GLCALL(glBlendFunc(GL_ONE, GL_ZERO));
+
+      FBOBackgroundTexture.bind(AssetShader,"UBackground","", 0);
+
+      VAOs.IntersectionPointsVAO.bind();
+      b.GetIntersectionPoints(Floating).replaceBuffer(VAOs.IntersectionPointsVAO, 0);
+      VAOs.IntersectionPointsVAO.DrawAs(GL_POINTS);
+      VAOs.IntersectionPointsVAO.unbind();
+
+      FBOBackgroundTexture.unbind();
+
+      GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     }
 
   }
@@ -419,8 +447,8 @@ void Renderer::RenderWires() {
   GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
 
   // Recreate Stencli Buffer
-  Shader& PathShader = ShaderManager::GetShader(ShaderManager::Path);
-  PathShader.bind();
+  Shader& AssetsShader = ShaderManager::GetShader(ShaderManager::Assets);
+  AssetsShader.bind();
   for (bool Floating : {false, true}) {
 
     if (b.GetEdges(Floating).empty())
@@ -431,11 +459,11 @@ void Renderer::RenderWires() {
     EdgesVAO.bind();
     // Is importent as it might not have been replaced by drawing wires and the
     // buffer was cleared
-    b.GetEdges(Floating).replaceBuffer(EdgesVAO, 1);
-    EdgesVAO.DrawAs(GL_TRIANGLE_STRIP);
+    b.GetEdges(Floating).replaceBuffer(EdgesVAO, 0);
+    EdgesVAO.DrawAs(GL_POINTS);
     EdgesVAO.unbind();
   }
-  PathShader.unbind();
+  AssetsShader.unbind();
 
   PROFILE_SCOPE_ID_END(3);
 }
@@ -507,19 +535,16 @@ void Renderer::Render() {
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   GLCALL(glStencilMask(0x00));
 
-  auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName,
-                       size_t BufferIndex = 1,
-                       GLenum primitive = GL_TRIANGLE_STRIP) {
-    if (!VertsGetter().empty()) {
-      Shader &shader = ShaderManager::GetShader(ShaderName);
+  auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
 
-      shader.bind();
+  assetShader.bind();
+
+  auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
+    if (!VertsGetter().empty()) {
       VAO.bind();
-      VertsGetter().replaceBuffer(VAO, BufferIndex);
-      VAO.DrawAs(primitive);
+      VertsGetter().replaceBuffer(VAO, 0);
+      VAO.DrawAs(GL_POINTS);
       VAO.unbind();
-      shader.unbind();
     }
   };
 
@@ -527,13 +552,37 @@ void Renderer::Render() {
   //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
   //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
 
-  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO,
-             ShaderManager::Assets, 0, GL_POINTS);
-  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
-             ShaderManager::Assets, 0, GL_POINTS);
+  
+  auto WirePass = [this,&assetShader](auto VertsGetter, VertexArrayObject &VAO) {
+    if (!VertsGetter().empty()) {
+      VAO.bind();
+      VertsGetter().replaceBuffer(VAO, 0);  
 
-  SimplePass([&b]() { return b.GetRoundPinVBO(); }, RoundPinVAO,
-             ShaderManager::Assets, 0, GL_POINTS);
+      assetShader.apply("UWirePass", Shader::Data1i(false));
+      GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
+      VAO.DrawAs(GL_POINTS);
+
+      assetShader.apply("UWirePass", Shader::Data1i(true));
+      FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
+
+      GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
+      VAO.DrawAs(GL_POINTS);
+
+      FBOPathColorTexture.bind();
+      assetShader.apply("UWirePass", Shader::Data1i(false));
+  
+      VAO.unbind();
+    }
+  };
+
+
+  WirePass([&b](){return b.GetPinVBO(); }, PinVAO);
+
+  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO);
+
+  WirePass([&b](){return b.GetRoundPinVBO(); }, RoundPinVAO);
+
+  assetShader.unbind();
 
   PROFILE_SCOPE_ID_END(4);
 

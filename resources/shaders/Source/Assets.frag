@@ -13,8 +13,14 @@ flat in int  I1;
 flat in vec4 ColorA;
 
 in vec2 Pos;
+in vec2 TextureCoord;
 
 out vec4 FragColor;
+
+uniform sampler2D UBackground;
+uniform sampler2D UPath;
+
+uniform bool UWirePass;
 
 float dot2(vec2 v) {
     return dot(v, v);
@@ -421,23 +427,33 @@ vec4 get() {
         case 10://OutputPin
         return sdRoundPin(Pos);
         case 11://PathEdge
-        return vec4(ColorA.rgb, 5.0 * sdSegment(Pos, FPoint1, FPoint2) - 0.5);
+        return vec4(ColorA.rgb, 2.5 * sdSegment(Pos, FPoint1, FPoint2) - 0.25);
+        case 12://PathIntersectionPoints
+        return vec4(ColorA.rgb,
+        1.0 - 2.5 * length(abs(Pos) - vec2(0.5)));
+        case 13://PathVertex
+        return vec4(ColorA.rgb, 2.5 * length(Pos) - 0.25);
     }
     return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
 }
 
 void main () {
-    // if(Index == 11){
-    //     FragColor = vec4(Pos,0.0,1.0);
-    //     return;
+    // if(Index == 13){
+        // FragColor = vec4(Pos,0.0,1.0);
+        // return;
     // }
     vec4 col = get();
+    if(Index == 12) {
+        vec4 pix = texture(UBackground, TextureCoord);
+        FragColor = vec4(mix(pix.rgb, col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0)), 1.0);
+        return;
+    }
     FragColor = vec4(col.rgb, 1.0 - 10.0 * col.a);
     // if(Index == 6) discard;
     // FragColor = vec4(col.rgb, col.a);
-    if(1.0 - 10.0 * col.a < 0.0){
-        FragColor = vec4(1.0,0.0,0.0,0.1);
-    }
+    // if(1.0 - 10.0 * col.a < 0.0){
+    //     FragColor = vec4(1.0,0.0,0.0,0.5);
+    // }
     // FragColor = vec4(ColorA.rgb, min(sd, ColorA.a));
     // FragColor = vec4(Pos.xy, -Pos.x, 1.0);
     // FragColor = ColorA;

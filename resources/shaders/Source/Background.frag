@@ -45,20 +45,21 @@ void main(){
 		return;
 	}
 
-//	vec3 offset = vec3(
-//		10*ScreenPos.x,
-//		10*ScreenPos.y,
-//		10*(ScreenPos.x+ScreenPos.y)
-//	);
+	// vec3 offset = vec3(
+	// 	10*ScreenPos.x,
+	// 	10*ScreenPos.y,
+	// 	10*(ScreenPos.x+ScreenPos.y)
+	// );
 ////	offset += vec3(
 ////		UTime*M_PI*2.0,
 ////		UTime*M_PI*2.0 + M_PI / 3.0,
 ////		UTime*M_PI*2.0 + 2.0 * M_PI / 3.0
 ////	);
-//	vec3 colour = (sin(offset) + 1 )/2.0;
+	// vec3 colour = (sin(offset) + 1 )/2.0;
 ////	vec3 colour = (sin(offset) + 1 )/2.0;
-//	FragColor = vec4(colour ,1.0);
-////	vec2 offset = vec2(cos(UTime*2*M_PI),sin(UTime*2*M_PI));
+	// FragColor = vec4(colour ,1.0);
+	// return;
+//	vec2 offset = vec2(cos(UTime*2*M_PI),sin(UTime*2*M_PI));
 ////	FragColor = vec4((ScreenPos+offset)*0.25,0.0,1.0);
 //	return;
 
@@ -70,7 +71,7 @@ void main(){
 	float box = sdBoxRounded(fract(ScreenPos+0.5)-0.5,vec2(0.05,0.05),0.025);
 	box *= -1;
 	FragColor = vec4(clamp(10*box+0.25,0.05,0.3)*vec3(1,1,1),1.0);
-//	FragColor = vec4(clamp(100*box+10,0.05,0.5)*vec3(1,1,1),1.0);
+	// FragColor = vec4(clamp(1000*box+250,0.05,0.5)*vec3(1,1,1),1.0);
 
 //	float c = sdCross(fract(ScreenPos+0.5)-0.5);
 //	FragColor = vec4(1.0,1.0,1.0,c);
