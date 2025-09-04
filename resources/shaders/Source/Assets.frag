@@ -6,6 +6,8 @@ precision highp float;
 
 flat in int  ID;
 flat in int  Index;
+flat in vec2 FPoint1;
+flat in vec2 FPoint2;
 flat in vec2 FPoint;
 flat in int  I1;
 flat in vec4 ColorA;
@@ -419,23 +421,23 @@ vec4 get() {
         case 10://OutputPin
         return sdRoundPin(Pos);
         case 11://PathEdge
-        return vec4(1.0,0.0,1.0, sdBox(Pos, FPoint + 0.3));
+        return vec4(ColorA.rgb, 5.0 * sdSegment(Pos, FPoint1, FPoint2) - 0.5);
     }
     return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
 }
 
 void main () {
-    if(Index == 11){
-        FragColor = vec4(1.0,0.0,1.0,1.0);
-        return;
-    }
+    // if(Index == 11){
+    //     FragColor = vec4(Pos,0.0,1.0);
+    //     return;
+    // }
     vec4 col = get();
     FragColor = vec4(col.rgb, 1.0 - 10.0 * col.a);
     // if(Index == 6) discard;
     // FragColor = vec4(col.rgb, col.a);
-    // if(1.0 - 10.0 * col.a < 0.0){
-    //     FragColor = vec4(1.0,0.0,0.0,0.5);
-    // }
+    if(1.0 - 10.0 * col.a < 0.0){
+        FragColor = vec4(1.0,0.0,0.0,0.1);
+    }
     // FragColor = vec4(ColorA.rgb, min(sd, ColorA.a));
     // FragColor = vec4(Pos.xy, -Pos.x, 1.0);
     // FragColor = ColorA;

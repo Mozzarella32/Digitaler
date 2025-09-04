@@ -208,7 +208,7 @@ void Renderer::RenderWires() {
     if(!edges.empty()) {
       VAOs.EdgesVAO.bind();
       edges.replaceBuffer(VAOs.EdgesVAO, 0);
-      VAOs.EdgesVAO.DrawAs(GL_POINT);
+      VAOs.EdgesVAO.DrawAs(GL_POINTS);
       VAOs.EdgesVAO.unbind();
     }
 

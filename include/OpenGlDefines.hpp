@@ -393,7 +393,7 @@ struct AssetVertex {
 	}
 
 	static AssetVertex PathEdge(const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& color, int id = 0) {
-		return AssetVertex((int)ID::PathEdge, id, 0, p1.x(), p1.y(), p2.x(), p2.y(), color.x(), color.y(), color.z(), 0.0);
+		return AssetVertex((int)ID::PathEdge, id, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
 	}
 
 	static AssetVertex PathIntersection(const Eigen::Vector2i& p, const ColourType& color, int id = 0) {

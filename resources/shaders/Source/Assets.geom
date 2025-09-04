@@ -18,6 +18,8 @@ in vec4  VSColorA[1];
 flat out int  ID;
 flat out int  Index;
 flat out int  I1;
+flat out vec2 FPoint1;
+flat out vec2 FPoint2;
 flat out vec2 FPoint;
 flat out vec4 ColorA;
 
@@ -64,28 +66,28 @@ vec4 rectFromPointAndSize(vec2 pos, vec2 size) {
     return vec4(pos - vec2(0, size.y), pos + vec2(size.x, 0));
 }
 
-vec4 getRect(int Index) {
+ivec4 getRect(int Index) {
     switch (Index) {
         case 0://Box
-        return vec4(VSIPoint1[0], VSIPoint2[0]);
+        return ivec4(VSIPoint1[0], VSIPoint2[0]);
         case 1://And
         case 2://Or
         case 3://Xor
-        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
         case 4://Seven
         case 5://Sixteen
-        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2, 3)));
+        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(2, 3)));
         case 6://Mux
-        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
         case 7://InpuptPin
         case 8://outputPin
         case 9://InpuptRoundPin
         case 10://outputRoundPin
-        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
+        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
         case 11://PathEdge
-        return vec4(VSIPoint1[0], VSIPoint2[0]);
+        return ivec4(VSIPoint2[0], VSIPoint1[0]);
     }
-    return vec4(VSIPoint1[0], VSIPoint2[0]);
+    return ivec4(VSIPoint1[0], VSIPoint2[0]);
 }
 
 float[4] getMargins(int Index) {
@@ -108,7 +110,12 @@ float[4] getMargins(int Index) {
         case 10://OutputRoundPin
         return float[4](-0.125, -0.125, -0.125, -0.125);
         case 11://EdgesMarked
-        return float[4](0.0, 0.0, 0.0, 0.0);
+        {
+            float v = float(VSIPoint1[0].x == VSIPoint2[0].x);
+            float v1 = mix(-0.35, -0.5, v);
+            float v2 = mix(-0.5, -0.35, v);
+            return float[4](v1, v2, v1, v2);
+        }
     }
     return float[4](0.0, 0.0, 0.0, 0.0);
 }
@@ -123,16 +130,29 @@ ivec2 lookup[4] = ivec2[4](
 
 
 void main() {
-    ID =     VSID[0];
-    Index =  VSIndex[0];
-    ColorA = VSColorA[0];
-    I1 =     VSIPoint2[0].x;
+    ID =      VSID[0];
+    Index =   VSIndex[0];
+    ColorA =  VSColorA[0];
+    I1 =      VSIPoint2[0].x;
+
+    VSIPoint1[0].x == VSIPoint2[0].x;
+
+    FPoint1 =
+        vec2(0, (VSIPoint1[0].y - VSIPoint2[0].y) / 2.0) *
+        float(VSIPoint1[0].x == VSIPoint2[0].x) +
+        vec2((VSIPoint1[0].x - VSIPoint2[0].x) / 2.0, 0) *
+        float(VSIPoint1[0].y == VSIPoint2[0].y);
+    FPoint2 =
+        vec2(0, (VSIPoint2[0].y - VSIPoint1[0].y) / 2.0) *
+        float(VSIPoint1[0].x == VSIPoint2[0].x) +
+        vec2((VSIPoint2[0].x - VSIPoint1[0].x) / 2.0, 0) *
+        float(VSIPoint1[0].y == VSIPoint2[0].y);
 
     int Transform = VSTransform[0];
     int Rot = Transform & 0x3;
     int Flip = Transform >> 2;
 
-    vec4 rect = getRect(Index);
+    ivec4 rect = getRect(Index);
     
     vec2 size = vec2(rect.zw - rect.xy) / 2.0 + 0.5;
 
