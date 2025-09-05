@@ -166,16 +166,10 @@ void Renderer::RenderIDMap() {
     }
   };
 
-  //SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
-  //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
-  //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
   SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Assets, GL_POINTS);
   SimplePass([&b]() { return b.GetPinVBO(); }, RoundPinVAO, ShaderManager::Assets, GL_POINTS);
-  // SimplePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
-             // ShaderManager::RoundPin);
   SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
              ShaderManager::Assets, GL_POINTS);
-  // SimplePass([&b]() { return b.GetMuxVBO(); }, MuxVAO, ShaderManager::Mux);
 
   GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
@@ -186,6 +180,8 @@ void Renderer::RenderWires() {
   PROFILE_FUNKTION;
 
   VisualBlockInterior &b = Frame->BlockManager->Interior;
+
+  FBOMain.bind(FrameBufferObject::Draw);
 
   Shader& AssetShader = ShaderManager::GetShader(ShaderManager::Assets);
   AssetShader.bind();
@@ -243,191 +239,11 @@ void Renderer::RenderWires() {
   }
   AssetShader.unbind();
 
-  // for (bool Floating : {false, true}) {
-  //   if (Floating) {
-  //     GLCALL(glStencilMask(0xFF));
-  //     GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-  //     b.UpdateVectsForVAOsFloating(BoundingBox, MouseIndex);
-  //   } else {
-  //     b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
-  //   }
-
-  //   Shader &PathHightlightShader =
-  //       ShaderManager::GetShader(ShaderManager::HighlightPath);
-
-  //   PathHightlightShader.bind();
-  //   FBOBackgroundTexture.bind(PathHightlightShader, "UBackground", "", 0);
-
-  //   GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
-  //   GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
-  //   GLCALL(glStencilMask(0xFF));
-
-  //   // Put Unmarked on Stencil Buffer
-  //   if (b.HasUnmarked(Floating)) {
-  //     GLCALL(glBlendFunc(GL_ONE, GL_ZERO));
-  //     GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-
-  //     auto &EdgesUnmarkedVAO = GetPathVAOs(Floating).EdgesUnmarkedVAO;
-
-  //     EdgesUnmarkedVAO.bind();
-  //     b.GetEdgesUnmarked(Floating).replaceBuffer(EdgesUnmarkedVAO, 1);
-  //     EdgesUnmarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //     EdgesUnmarkedVAO.unbind();
-
-  //     GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-  //     GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-  //     if (!b.HasMark(Floating)) {
-  //       PathHightlightShader.unbind();
-
-  //       GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-  //       GLCALL(glStencilMask(0x00));
-  //       GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-  //     }
-  //   }
-
-  //   if (b.HasMark(Floating)) {
-  //     auto &EdgesMarkedVAO = GetPathVAOs(Floating).EdgesMarkedVAO;
-
-  //     // Draw Highlight Stem
-  //     EdgesMarkedVAO.bind();
-  //     b.GetEdgesMarked(Floating).replaceBuffer(EdgesMarkedVAO, 1, !Floating);
-  //     EdgesMarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //     EdgesMarkedVAO.unbind();
-
-  //     GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-  //     GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-  //     GLCALL(glStencilMask(0x00));
-
-  //     auto &VertsVAO = GetPathVAOs(Floating).VertsVAO;
-
-  //     if (!b.GetVerts(Floating).empty()) {
-  //       // Draw Roundings at Stencil 0
-  //       VertsVAO.bind();
-  //       b.GetVerts(Floating).replaceBuffer(VertsVAO, 1);
-  //       VertsVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //     }
-
-  //     PathHightlightShader.unbind();
-
-  //     if (!b.GetVerts(Floating).empty()) {
-  //       Shader& HighlightPathCornerOverdrawShader =
-  //           ShaderManager::GetShader(
-  //               ShaderManager::HighlightPathCornerOverdraw);
-
-  //       HighlightPathCornerOverdrawShader.bind();
-  
-  //       HighlightPathCornerOverdrawShader.apply("UColor", Shader::Data3f{1.0,1.0,0.0});
-
-  //       FBOBackgroundTexture.bind(HighlightPathCornerOverdrawShader,
-  //                                 "UBackground", "", 0);
-
-  //       GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-  //       GLCALL(glStencilFunc(GL_EQUAL, 2, 0xFF));
-  //       GLCALL(glBlendFunc(GL_ONE, GL_ZERO));
-
-  //       // Draw Hyperbolas at Stencli 2
-  //       VertsVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //       VertsVAO.unbind();
-
-  //       HighlightPathCornerOverdrawShader.unbind();
-  //     }
-
-  //     if (!b.GetConflictPoints(Floating).empty()) {
-
-  //       GLCALL(glStencilMask(0xFF));
-  //       GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-
-  //       GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
-  //       GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
-  //       GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-  //       GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-  //       PathHightlightShader.bind();
-
-  //       EdgesMarkedVAO.bind();
-  //       EdgesMarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //       EdgesMarkedVAO.unbind();
-
-  //       GLCALL(glStencilMask(0x00));
-  //       GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-  //       GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-
-  //       FBOBackgroundTexture.bind(PathHightlightShader, "UBackground", "",
-  //                                 0);
-
-  //       auto &ConflictPointsVAO = GetPathVAOs(Floating).ConflictPointsVAO;
-  //       ConflictPointsVAO.bind();
-  //       b.GetConflictPoints(Floating).replaceBuffer(ConflictPointsVAO, 1);
-  //       ConflictPointsVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //       ConflictPointsVAO.unbind();
-
-  //       GLCALL(glStencilMask(0xFF));
-  //       GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
-  //       GLCALL(glBlendFunc(GL_ONE, GL_ZERO));
-  //       GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-
-  //       auto &EdgesUnmarkedVAO = GetPathVAOs(Floating).EdgesUnmarkedVAO;
-
-  //       EdgesUnmarkedVAO.bind();
-  //       EdgesUnmarkedVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //       EdgesUnmarkedVAO.unbind();
-
-  //       PathHightlightShader.unbind();
-
-  //       GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-  //       GLCALL(glStencilMask(0x00));
-  //       GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-  //       GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-  //       GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-  //     }
-
-  //     GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-  //     GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-  //   }
-
-  //   // Draw Path Edges
-  //   if (!b.GetEdges(Floating).empty()) {
-
-  //     Shader &PathShader = ShaderManager::GetShader(ShaderManager::Path);
-      
-  //     PathShader.bind();
-
-  //     auto &EdgesVAO = GetPathVAOs(Floating).EdgesVAO;
-
-  //     EdgesVAO.bind();
-  //     b.GetEdges(Floating).replaceBuffer(EdgesVAO, 1);
-  //     EdgesVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //     EdgesVAO.unbind();
-  //     PathShader.unbind();
-  //   }
-
-  //   // Draw Path Rounded Inner Corners
-  //   if (!b.GetSpecialPoints(Floating).empty()) {
-  //     Shader &IntersectionPathShader =
-  //         ShaderManager::GetShader(ShaderManager::IntersectionPath);
-
-  //     IntersectionPathShader.bind();
-
-  //     GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-  //     GLCALL(glStencilFunc(GL_LEQUAL, 2, 0xFF));
-
-  //     auto &SpecialPointsVAO = GetPathVAOs(Floating).SpecialPointsVAO;
-
-  //     SpecialPointsVAO.bind();
-  //     b.GetSpecialPoints(Floating).replaceBuffer(SpecialPointsVAO, 1);
-  //     SpecialPointsVAO.DrawAs(GL_TRIANGLE_STRIP);
-  //     SpecialPointsVAO.unbind();
-
-  //     IntersectionPathShader.unbind();
-
-  //     GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-  //     GLCALL(glStencilMask(0x00));
-  //   }
-  // }
-
   PROFILE_SCOPE_ID_START("Copy To FBO Path", 2);
 
+  FBOMain.unbind();
+
+  FBOMain.bind(FrameBufferObject::Read);
   FBOPath.bind(FrameBufferObject::Draw);
 
   GLCALL(glBlitFramebuffer(
@@ -435,6 +251,7 @@ void Renderer::RenderWires() {
       CanvasSize.y(), GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST));
 
   FBOPath.unbind();
+  FBOMain.unbind();
 
   PROFILE_SCOPE_ID_END(2);
 
@@ -445,6 +262,8 @@ void Renderer::RenderWires() {
   GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
   GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
   GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
+
+  FBOMain.bind(FrameBufferObject::Draw);
 
   // Recreate Stencli Buffer
   Shader& AssetsShader = ShaderManager::GetShader(ShaderManager::Assets);
@@ -457,11 +276,16 @@ void Renderer::RenderWires() {
     auto &EdgesVAO = GetPathVAOs(Floating).EdgesVAO;
 
     EdgesVAO.bind();
-    // Is importent as it might not have been replaced by drawing wires and the
-    // buffer was cleared
     b.GetEdges(Floating).replaceBuffer(EdgesVAO, 0);
     EdgesVAO.DrawAs(GL_POINTS);
     EdgesVAO.unbind();
+
+    auto& VertsVAO = GetPathVAOs(Floating).VertsVAO;
+
+    VertsVAO.bind();
+    b.GetVerts(Floating).replaceBuffer(VertsVAO, 0);
+    VertsVAO.DrawAs(GL_POINTS);
+    VertsVAO.unbind();
   }
   AssetsShader.unbind();
 
@@ -524,11 +348,12 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
 
-  if (!Frame->Canvas->BindContext()) {
+  /*if (!Frame->Canvas->BindContext()) {
       wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
-  }
+  }*/
 
-  FBOMain.bind(FrameBufferObject::Draw);
+
+  //FBOMain.bind(FrameBufferObject::Draw);
 
   // GLCALL(glDepthMask(GL_TRUE));
   GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
@@ -551,7 +376,6 @@ void Renderer::Render() {
   //SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
   //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
   //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
-
   
   auto WirePass = [this,&assetShader](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {

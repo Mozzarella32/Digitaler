@@ -387,8 +387,20 @@ vec4 sdMux(vec2 Pos) {
     return vec4(mix(outer.rgb, inner.rgb,  max(0, 1.0 - 10.0 * inner.a)), outer.a);
 }
 
+vec3 PathCornerColor = vec3(0.3, 1.4, 0.7);
+
+vec4 holeColor() {
+    vec4 Return = vec4(vec3(0.05), max(5.0 * length(Pos) - 0.5, 0.0));
+    if(UWirePass) {
+        Return.rgb = texture(UPath, TextureCoord).rgb;
+        vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
+        return vec4(mix(Return.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), Return.a);
+    }
+    return Return;
+}
+
 vec4 sdPin(vec2 Pos) {
-    vec4 hole = vec4(0.05, 0.05, 0.05, max(5.0 * length(Pos) - 0.5, 0.0));
+    vec4 hole = holeColor();
     vec4 mark = vec4(ColorA.rgb, max(5.0 * sdSegment(Pos, vec2(0.0, 0.0), vec2(0.0, -1.0)) - 0.5, 0.0));
     vec3 bodyColor = Index == 7 ? vec3(0.7, 0.0, 0.0) : vec3(0.0, 0.7, 0.0);
     vec4 body = vec4(bodyColor, sdTunnel(Pos, vec2(0.2, 1.0)));
@@ -397,12 +409,32 @@ vec4 sdPin(vec2 Pos) {
 }
 
 vec4 sdRoundPin(vec2 Pos) {
-    vec4 hole = vec4(0.05, 0.05, 0.05, max(5.0 * length(Pos) - 0.5, 0.0));
+    vec4 hole = holeColor();
     vec3 bodyColor = Index == 9 ? vec3(0.7, 0.0, 0.0) : vec3(0.0, 0.7, 0.0);
     vec4 body = vec4(bodyColor, length(Pos) - 0.2);
     return vec4(mix(body.rgb, hole.rgb,  max(0, 1.0 - 10.0 * hole.a)), body.a);
 }
 
+vec4 sdPathEdge(vec2 Pos) {
+    vec4 corner = vec4(PathCornerColor, sdUnion(
+          5.0 * length(Pos - FPoint1) - 0.25,
+          5.0 * length(Pos - FPoint2) - 0.25  
+        ));
+    vec4 segment = vec4(ColorA.rgb, 2.5 * sdSegment(Pos, FPoint1, FPoint2) - 0.25);
+    return vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+}
+
+vec4 sdPathIntersectionPoints(vec2 Pos) {
+    vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
+    vec4 segment = vec4(ColorA.rgb, 1.0 - 2.5 * length(abs(Pos) - vec2(0.5)));
+    return vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+}
+
+vec4 sdPathVertex(vec2 Pos) {
+    vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
+    vec4 segment = vec4(ColorA.rgb, 2.5 * length(Pos) - 0.25);
+    return vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+}
 // r g b sdf
 vec4 get() {
     switch (Index) {
@@ -427,12 +459,11 @@ vec4 get() {
         case 10://OutputPin
         return sdRoundPin(Pos);
         case 11://PathEdge
-        return vec4(ColorA.rgb, 2.5 * sdSegment(Pos, FPoint1, FPoint2) - 0.25);
+        return sdPathEdge(Pos);
         case 12://PathIntersectionPoints
-        return vec4(ColorA.rgb,
-        1.0 - 2.5 * length(abs(Pos) - vec2(0.5)));
+        return sdPathIntersectionPoints(Pos);
         case 13://PathVertex
-        return vec4(ColorA.rgb, 2.5 * length(Pos) - 0.25);
+        return sdPathVertex(Pos);
     }
     return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
 }
@@ -443,6 +474,7 @@ void main () {
         // return;
     // }
     vec4 col = get();
+
     if(Index == 12) {
         vec4 pix = texture(UBackground, TextureCoord);
         FragColor = vec4(mix(pix.rgb, col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0)), 1.0);
