@@ -445,14 +445,20 @@ vec4 sdPathVertex(vec2 Pos) {
 }
 
 vec4 sdAreaSelect(vec2 Pos) {
-    float sd = 10.0 * sdBox(Pos, FPoint-0.1) - 1.0;
+    Pos = abs(Pos);
+    float sd = -max(Pos.x - FPoint.x, Pos.y - FPoint.y);
+    // return vec4(UZoomFactor * 100.0, 0.0, 0.0, -1.0/0.0);
+    if(sd < UZoomFactor * 5.0) {
+        return vec4(ColorA.rgb, 0.015);
+    //     // return vec4(ColorA.rgb, sd);
+    }
     // sd += 1.0;
     // if(sd > 0.0) {
     //     return vec4(0.0, 0.0, 0.0, 0.1);
     // }
-    if(sd > -100.0 * UZoomFactor) {
-        return vec4(ColorA.rgb, max(0.025, 20.0 * sdBox(Pos, FPoint - 0.1) - 1.95));
-    }
+    // if(sd > -100.0 * UZoomFactor) {
+    //     return vec4(ColorA.rgb, max(0.025, 20.0 * sdBox(Pos, FPoint - 0.1) - 1.95));
+    // }
     return vec4(ColorA.rgb, 0.085);
 }
 

@@ -115,7 +115,7 @@ public:
 	bool HasMarkedPathAt(const PointType& Mouse) const;
 
 	//using BlockBoundingBoxCallback = std::function<const std::array<MyRectF, 4>& (const CompressedBlockDataIndex&)>;
-	const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbi);
+	// const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbi);
 
 	//Bind Context befor this
 	void MarkArea(const MyRectF& Area/*, BlockBoundingBoxCallback bbbc*/);
@@ -140,6 +140,8 @@ public:
 
 	//Returnes if Modifyed
 	bool DeleteMarked();
+
+	void BBUpdate();
 
 	VisualBlockInterior(DataResourceManager* ResourceManager, Renderer* renderer);
 
@@ -238,9 +240,12 @@ private:
 	BufferedVertexVec<AssetVertex> RoundPinVBO;
 
 #ifdef ShowBasePositionOfBlocks
-	BufferedVertexVec<PointFRGBVertex> BasePositionVBO;
+	BufferedVertexVec<AssetFVertex> BasePositionVBO;
 #endif
 
+#ifdef ShowBoundingBoxes
+	BufferedVertexVec<AssetFVertex> BBVBO;
+#endif
 
 public:
 	using BlockIndex = std::pair<CompressedBlockDataIndex, unsigned int>;
@@ -275,6 +280,10 @@ public:
 	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
 
 #ifdef ShowBasePositionOfBlocks
-	BufferedVertexVec<PointFRGBVertex>& GetBasePotitionOfBlocksVBO();
+	BufferedVertexVec<AssetFVertex>& GetBasePotitionOfBlocksVBO();
+#endif
+
+#ifdef ShowBoundingBoxes
+	BufferedVertexVec<AssetFVertex>& GetBBVBO();
 #endif
 };

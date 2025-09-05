@@ -75,6 +75,10 @@ private:
 
 	VertexArrayObject AreaSelectVAO;
 
+#ifdef ShowBoundingBoxes
+	VertexArrayObject BBVAO;
+#endif
+
 #ifdef ShowBasePositionOfBlocks
 	VertexArrayObject BlockBasePositionVAO;
 #endif

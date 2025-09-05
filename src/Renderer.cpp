@@ -12,6 +12,8 @@
 #include "DataResourceManager.hpp"
 
 #include "BlockSelector.hpp"
+#include <chrono>
+#include <fstream>
 
 void Renderer::RenderBackground() {
   PROFILE_FUNKTION;
@@ -295,6 +297,8 @@ void Renderer::Render() {
   if (!Dirty)
     return;
 #endif
+
+
   Dirty = false;
   IdMapDirty = true;
 
@@ -525,17 +529,27 @@ void Renderer::Render() {
 
     PROFILE_SCOPE("BasePotitionOfBlocks");
 
-    Shader &AreaSelectShader =
-        ShaderManager::GetShader(ShaderManager::AreaSelect);
-
-    AreaSelectShader.bind();
+    assetShader.bind();
 
     BlockBasePositionVAO.bind();
     b.GetBasePotitionOfBlocksVBO().replaceBuffer(BlockBasePositionVAO, 0);
     BlockBasePositionVAO.DrawAs(GL_POINTS);
     BlockBasePositionVAO.unbind();
 
-    AreaSelectShader.unbind();
+    assetShader.unbind();
+  }
+#endif
+
+#ifdef ShowBoundingBoxes
+  if(!b.GetBBVBO().empty()){
+    assetShader.bind();
+
+    BBVAO.bind();
+    b.GetBBVBO().replaceBuffer(BBVAO, 0);
+    BBVAO.DrawAs(GL_POINTS);
+    BBVAO.unbind();
+    
+    assetShader.unbind();
   }
 #endif
 
@@ -656,6 +670,9 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       PinVAO(CreateVAO<AssetVertex>()),
       RoundPinVAO(CreateVAO<AssetVertex>()),
       AreaSelectVAO(CreateVAO<AssetFVertex>()),
+#ifdef ShowBoundingBoxes
+      BBVAO(CreateVAO<AssetFVertex>()),
+#endif
 #ifdef ShowBasePositionOfBlocks
       BlockBasePositionVAO(CreateVAO<AssetVertex>()),
 #endif
@@ -975,6 +992,8 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     BlockBoundingBoxes[cbdi] = BBs;
 
     Dirty = true;
+    VisualBlockInterior &b = Frame->BlockManager->Interior;
+    b.BBUpdate();
     delete vec;
   });
   ul_Funcs.unlock();

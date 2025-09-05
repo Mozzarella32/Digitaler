@@ -11,7 +11,8 @@
 // #undef RenderCollisionGrid
 // #endif
 
-// #define ShowBasePositionOfBlocks
+#define ShowBasePositionOfBlocks
+#define ShowBoundingBoxes
 
 #define HotShaderReload
 

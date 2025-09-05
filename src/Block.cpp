@@ -535,6 +535,11 @@ bool VisualBlockInterior::DeleteMarked() {
 	return HadMarkedBlocks || FoundPath;
 }
 
+void VisualBlockInterior::BBUpdate() {
+	Dirty = true;
+	DirtyBlocks = true;
+}
+
 VisualBlockInterior::VisualBlockInterior(DataResourceManager* ResourceManager, Renderer* renderer)
 	:ResourceManager(ResourceManager), renderer(renderer)
 {
@@ -1258,6 +1263,9 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	AssetVBO.clear();
 	RoundPinVBO.clear();
 	StaticTextVBO.clear();
+#ifdef ShowBoundingBoxes
+	BBVBO.clear();
+#endif
 #ifdef ShowBasePositionOfBlocks
 	BasePositionVBO.clear();
 #endif
@@ -1293,12 +1301,17 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			auto BB = BBs[Meta.Rotation];
 			BB.Position += Eigen::Vector2f{ Meta.Pos.x(), Meta.Pos.y() };
 
+			BBVBO.append(AssetFVertex::AreaSelect(
+			    BB.Position + Eigen::Vector2f{0, 0},
+			    BB.Position + Eigen::Vector2f{BB.Size.x(), BB.Size.y()},
+					ColourType{1.0,0.0,1.0,1.0}));
+
 			if (!CachedBoundingBox.Intersectes(BB)) {
 				continue;
 			}
 
 #ifdef ShowBasePositionOfBlocks
-			BasePositionVBO.emplace(Base.cast<float>() + Eigen::Vector2f(0.1, 0.1), Base.cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });
+			BasePositionVBO.append(AssetFVertex::AreaSelect(Base.cast<float>() + Eigen::Vector2f(0.1, 0.1), Base.cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f }));
 #endif
 
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
@@ -1384,8 +1397,14 @@ BufferedVertexVec<TextVertex>& VisualBlockInterior::GetDynamicTextVBO() {
 }
 
 #ifdef ShowBasePositionOfBlocks
-BufferedVertexVec<PointFRGBVertex>& VisualBlockInterior::GetBasePotitionOfBlocksVBO() {
+BufferedVertexVec<AssetFVertex>& VisualBlockInterior::GetBasePotitionOfBlocksVBO() {
 	return BasePositionVBO;
+}
+#endif
+
+#ifdef ShowBoundingBoxes
+BufferedVertexVec<AssetFVertex>& VisualBlockInterior::GetBBVBO() {
+	return BBVBO;
 }
 #endif
 
