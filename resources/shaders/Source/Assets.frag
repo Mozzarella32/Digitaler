@@ -427,7 +427,10 @@ vec4 sdPathEdge(vec2 Pos) {
 vec4 sdPathIntersectionPoints(vec2 Pos) {
     vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
     vec4 segment = vec4(ColorA.rgb, 1.0 - 2.5 * length(abs(Pos) - vec2(0.5)));
-    return vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+
+    vec4 col = vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+    vec4 pix = texture(UBackground, TextureCoord);
+    return vec4(mix(pix.rgb, col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0)), -1.0 / 0.0);
 }
 
 vec4 sdPathVertex(vec2 Pos) {
@@ -475,12 +478,7 @@ void main () {
     // }
     vec4 col = get();
 
-    if(Index == 12) {
-        vec4 pix = texture(UBackground, TextureCoord);
-        FragColor = vec4(mix(pix.rgb, col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0)), 1.0);
-        return;
-    }
-    FragColor = vec4(col.rgb, 1.0 - 10.0 * col.a);
+    FragColor = vec4(col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0));
     // if(Index == 6) discard;
     // FragColor = vec4(col.rgb, col.a);
     // if(1.0 - 10.0 * col.a < 0.0){

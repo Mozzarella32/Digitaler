@@ -222,7 +222,6 @@ void Renderer::RenderWires() {
       VAOs.VertsVAO.unbind();
 
       GLCALL(glStencilFunc(GL_EQUAL, 2, 0xFF));
-      GLCALL(glBlendFunc(GL_ONE, GL_ZERO));
 
       FBOBackgroundTexture.bind(AssetShader,"UBackground","", 0);
 
@@ -232,8 +231,6 @@ void Renderer::RenderWires() {
       VAOs.IntersectionPointsVAO.unbind();
 
       FBOBackgroundTexture.unbind();
-
-      GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     }
 
   }
