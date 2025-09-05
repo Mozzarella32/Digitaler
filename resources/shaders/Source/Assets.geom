@@ -14,8 +14,8 @@ in int   VSTransform[1];
 in ivec2 VSIPoint1[1];
 in ivec2 VSIPoint2[1];
 in vec4  VSColorA[1];
-in ivec2 VSFPoint1[1];
-in ivec2 VSFPoint2[1];
+in vec2 VSFPoint1[1];
+in vec2 VSFPoint2[1];
 
 flat out int  ID;
 flat out int  Index;
@@ -129,7 +129,7 @@ float[4] getMargins(int Index) {
         case 13://PathVertex
         return float[4](-0.35, -0.35, -0.35, -0.35);
         case 14://AreaSelect
-        return float[4](0.0, 0.0, 0.0, 0.0);
+        return float[4](-0.5, -0.5, -0.5, -0.5);
     }
     return float[4](0.0, 0.0, 0.0, 0.0);
 }
@@ -170,7 +170,11 @@ void main() {
     
     vec2 size = vec2(rect.zw - rect.xy) / 2.0 + 0.5;
 
-    FPoint = (rect.zw - rect.xy) / 2.0;
+    FPoint = abs((rect.zw - rect.xy) / 2.0);
+
+    if(ID == 14) {//AreaSelect
+        FPoint = (VSFPoint2[0] - VSFPoint1[0]) / 2.0;
+    }
 
     vec2 base = vec2(rect.xy + rect.zw) / 2.0;
 

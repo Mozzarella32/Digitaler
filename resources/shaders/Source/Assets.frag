@@ -15,6 +15,9 @@ flat in vec4 ColorA;
 in vec2 Pos;
 in vec2 TextureCoord;
 
+//Uniform
+uniform float UZoomFactor;
+ 
 layout(location = 0)out vec4 FragColor;
 layout(location = 1)out uint Id;
 
@@ -440,6 +443,19 @@ vec4 sdPathVertex(vec2 Pos) {
     vec4 segment = vec4(ColorA.rgb, 2.5 * length(Pos) - 0.25);
     return vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
 }
+
+vec4 sdAreaSelect(vec2 Pos) {
+    float sd = 10.0 * sdBox(Pos, FPoint-0.1) - 1.0;
+    // sd += 1.0;
+    // if(sd > 0.0) {
+    //     return vec4(0.0, 0.0, 0.0, 0.1);
+    // }
+    if(sd > -100.0 * UZoomFactor) {
+        return vec4(ColorA.rgb, max(0.025, 20.0 * sdBox(Pos, FPoint - 0.1) - 1.95));
+    }
+    return vec4(ColorA.rgb, 0.085);
+}
+
 // r g b sdf
 vec4 get() {
     switch (Index) {
@@ -469,15 +485,17 @@ vec4 get() {
         return sdPathIntersectionPoints(Pos);
         case 13://PathVertex
         return sdPathVertex(Pos);
+        case 14://AreaSelct
+        return sdAreaSelect(Pos);
     }
     return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
 }
 
 void main () {
-    if(Index == 14){
-        FragColor = vec4(Pos,0.0,1.0);
-        return;
-    }
+    // if(Index == 14){
+    //     FragColor = vec4(Pos,0.0,1.0);
+    //     return;
+    // }
     vec4 col = get();
 
     if(UIDRun) {
