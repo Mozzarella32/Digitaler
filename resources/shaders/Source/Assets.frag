@@ -474,10 +474,10 @@ vec4 get() {
 }
 
 void main () {
-    // if(Index == 13){
-        // FragColor = vec4(Pos,0.0,1.0);
-        // return;
-    // }
+    if(Index == 14){
+        FragColor = vec4(Pos,0.0,1.0);
+        return;
+    }
     vec4 col = get();
 
     if(UIDRun) {

@@ -510,17 +510,14 @@ void Renderer::Render() {
 
     PROFILE_SCOPE("AreaSelect");
 
-    Shader& AreaSelectShader =
-        ShaderManager::GetShader(ShaderManager::AreaSelect);
-
-    AreaSelectShader.bind();
+    assetShader.bind();
 
     AreaSelectVAO.bind();
-    AreaSelectVerts.replaceBuffer(AreaSelectVAO, 0, false);
+    AreaSelectVerts.replaceBuffer(AreaSelectVAO, 0);
     AreaSelectVAO.DrawAs(GL_POINTS);
     AreaSelectVAO.unbind();
 
-    AreaSelectShader.unbind();
+    assetShader.unbind();
   }
 
 #ifdef ShowBasePositionOfBlocks
@@ -658,9 +655,9 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       AssetVAO(CreateVAO<AssetVertex>()),
       PinVAO(CreateVAO<AssetVertex>()),
       RoundPinVAO(CreateVAO<AssetVertex>()),
-      AreaSelectVAO(CreateVAO<PointFRGBVertex>()),
+      AreaSelectVAO(CreateVAO<AssetFVertex>()),
 #ifdef ShowBasePositionOfBlocks
-      BlockBasePositionVAO(CreateVAO<PointFRGBVertex>()),
+      BlockBasePositionVAO(CreateVAO<AssetVertex>()),
 #endif
       StaticTextVAO(CreateVAOInstancing4<TextVertex>()),
       DynamicTextVAO(CreateVAOInstancing4<TextVertex>()),
@@ -700,7 +697,7 @@ void Renderer::UpdateSize() {
   Render();
 }
 
-BufferedVertexVec<PointFRGBVertex> &Renderer::GetAreaSelectVerts() {
+BufferedVertexVec<AssetFVertex> &Renderer::GetAreaSelectVerts() {
   return AreaSelectVerts;
 }
 

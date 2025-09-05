@@ -14,6 +14,8 @@ in int   VSTransform[1];
 in ivec2 VSIPoint1[1];
 in ivec2 VSIPoint2[1];
 in vec4  VSColorA[1];
+in ivec2 VSFPoint1[1];
+in ivec2 VSFPoint2[1];
 
 flat out int  ID;
 flat out int  Index;
@@ -67,31 +69,33 @@ vec4 rectFromPointAndSize(vec2 pos, vec2 size) {
     return vec4(pos - vec2(0, size.y), pos + vec2(size.x, 0));
 }
 
-ivec4 getRect(int Index) {
+vec4 getRect(int Index) {
     switch (Index) {
         case 0://Box
-        return ivec4(VSIPoint1[0], VSIPoint2[0]);
+        return vec4(VSIPoint1[0], VSIPoint2[0]);
         case 1://And
         case 2://Or
         case 3://Xor
-        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
         case 4://Seven
         case 5://Sixteen
-        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(2, 3)));
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2, 3)));
         case 6://Mux
-        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
         case 7://InpuptPin
         case 8://outputPin
         case 9://InpuptRoundPin
         case 10://outputRoundPin
-        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
         case 11://PathEdge
-        return ivec4(VSIPoint2[0], VSIPoint1[0]);
+        return vec4(VSIPoint2[0], VSIPoint1[0]);
         case 12://PathIntersectionPoints
         case 13://PathVertex
-        return ivec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
+        case 14:
+        return vec4(VSFPoint1[0], VSFPoint2[0]);
     }
-    return ivec4(VSIPoint1[0], VSIPoint2[0]);
+    return vec4(VSIPoint1[0], VSIPoint2[0]);
 }
 
 float[4] getMargins(int Index) {
@@ -124,6 +128,8 @@ float[4] getMargins(int Index) {
         return float[4](0.0, 0.0, 0.0, 0.0);
         case 13://PathVertex
         return float[4](-0.35, -0.35, -0.35, -0.35);
+        case 14://AreaSelect
+        return float[4](0.0, 0.0, 0.0, 0.0);
     }
     return float[4](0.0, 0.0, 0.0, 0.0);
 }
@@ -160,7 +166,7 @@ void main() {
     int Rot = Transform & 0x3;
     int Flip = Transform >> 2;
 
-    ivec4 rect = getRect(Index);
+    vec4 rect = getRect(Index);
     
     vec2 size = vec2(rect.zw - rect.xy) / 2.0 + 0.5;
 

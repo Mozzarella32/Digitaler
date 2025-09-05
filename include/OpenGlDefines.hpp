@@ -6,165 +6,6 @@
 
 #include "BlockAndPathData.hpp"
 
-// Path: Edges EdgesMarked EdgesUnmarked Verts
-struct TwoPointIRGBRHGHBHVertex {
-
-	int x1;
-	int y1;
-
-	int x2;
-	int y2;
-
-	float r;
-	float g;
-	float b;
-
-	float rh;
-	float gh;
-	float bh;
-	//int flags = 0;//flags
-
-	//enum Flags {
-	//	Marked = 1 << 0,
-	//	//Colour = 1 << 1,
-	//};
-
-	//int colour = 1;//colour
-
-	//int marked = false;
-
-	TwoPointIRGBRHGHBHVertex(int x1, int y1, int x2, int y2, float r, float g, float b, float rh, float gh, float bh)
-		:
-		x1(std::min(x1, x2)),
-		y1(std::min(y1, y2)),
-		x2(std::max(x1, x2)),
-		y2(std::max(y1, y2)),
-		r(r),
-		g(g),
-		b(b),
-		rh(rh),
-		gh(gh),
-		bh(bh)
-		//flags(flags) 
-	{
-	}
-
-	TwoPointIRGBRHGHBHVertex(const PointType& p1, const PointType& p2, const ColourType& c, const ColourType& h)
-		:
-		x1(std::min(p1.x(), p2.x())),
-		y1(std::min(p1.y(), p2.y())),
-		x2(std::max(p1.x(), p2.x())),
-		y2(std::max(p1.y(), p2.y())),
-		r(c.x()),
-		g(c.y()),
-		b(c.z()),
-		rh(h.x()),
-		gh(h.y()),
-		bh(h.z())
-		//flags(flags)
-	{
-	}
-
-	TwoPointIRGBRHGHBHVertex() {};
-
-	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, x1)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, x2)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, r)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(TwoPointIRGBRHGHBHVertex), (void*)offsetof(TwoPointIRGBRHGHBHVertex, rh)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-	}
-};
-
-//Base Position Area Select
-struct PointFRGBVertex {
-
-	float x1;
-	float y1;
-
-	float x2;
-	float y2;
-
-	float r;
-	float g;
-	float b;
-
-	PointFRGBVertex() {};
-
-	PointFRGBVertex(const Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& c)
-		:
-		x1(std::min(p1.x(), p2.x())),
-		y1(std::min(p1.y(), p2.y())),
-		x2(std::max(p1.x(), p2.x())),
-		y2(std::max(p1.y(), p2.y())),
-		r(c.x()),
-		g(c.y()),
-		b(c.z())
-	{
-	}
-
-	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 2, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, x1)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 2, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, x2)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointFRGBVertex), (void*)offsetof(PointFRGBVertex, r)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-	}
-};
-
-// Path: special points
-struct PointIRGBVertex {
-
-	int x1;
-	int y1;
-
-	float r;
-	float g;
-	float b;
-
-	PointIRGBVertex() {}
-
-	PointIRGBVertex(int x1, int y1, float r, float g, float b)
-		:
-		x1(x1),
-		y1(y1),
-		r(r),
-		g(g),
-		b(b)
-	{
-	}
-
-	PointIRGBVertex(const PointType& p1, const ColourType& c)
-		:
-		x1(p1.x()),
-		y1(p1.y()),
-		r(c.x()),
-		g(c.y()),
-		b(c.z())
-	{
-	}
-
-	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(PointIRGBVertex), (void*)offsetof(PointIRGBVertex, x1)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(PointIRGBVertex), (void*)offsetof(PointIRGBVertex, r)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-	}
-};
-
 // Text
 struct TextVertex {
 	/*float x;
@@ -328,25 +169,25 @@ struct AssetVertex {
 
 	AssetVertex() {}
 
-	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, index)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, id)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, transform)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi1)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi2)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(AssetVertex), (void*)offsetof(AssetVertex, colorAr)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
+	static void PrepareVBO([[maybe_unused]]GLuint& Position, GLuint Instancingdivisor) {
+		GLCALL(glEnableVertexAttribArray(0));
+		GLCALL(glVertexAttribIPointer(0, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, index)));
+		GLCALL(glVertexAttribDivisor(0, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(1));
+		GLCALL(glVertexAttribIPointer(1, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, id)));
+		GLCALL(glVertexAttribDivisor(1, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(2));
+		GLCALL(glVertexAttribIPointer(2, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, transform)));
+		GLCALL(glVertexAttribDivisor(2, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(3));
+		GLCALL(glVertexAttribIPointer(3, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi1)));
+		GLCALL(glVertexAttribDivisor(3, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(4));
+		GLCALL(glVertexAttribIPointer(4, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi2)));
+		GLCALL(glVertexAttribDivisor(4, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(5));
+		GLCALL(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(AssetVertex), (void*)offsetof(AssetVertex, colorAr)));
+		GLCALL(glVertexAttribDivisor(5, Instancingdivisor));
 	}
 
 	enum class ID : unsigned int {
@@ -363,7 +204,8 @@ struct AssetVertex {
 		OutputRoundPin,
 		PathEdge,
 		PathIntersection,
-		PathVertex
+		PathVertex,
+		IDSize
 	};
 
 	static AssetVertex Box(int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, int id = 0) {
@@ -553,4 +395,83 @@ struct AssetVertex {
 		0b11,//~
 		0b0,//127
 	};
+};
+
+struct AssetFVertex {
+	int index;
+	int id;
+	int transform;
+
+	float xf1;
+	float yf1;
+
+	float xf2;
+	float yf2;
+
+	float colorAr;
+	float colorAg;
+	float colorAb;
+	float colorAa;
+
+	private:
+
+	AssetFVertex(
+	int index,
+	int id,
+	int transform,
+	float xf1,
+	float yf1,
+	float xf2,
+	float yf2,
+	float colorAr,
+	float colorAg,
+	float colorAb,
+	float colorAa
+) :
+	index(index),
+	id(id),
+	transform(transform),
+	xf1(xf1),
+	yf1(yf1),
+	xf2(xf2),
+	yf2(yf2),
+	colorAr(colorAr),
+	colorAg(colorAg),
+	colorAb(colorAb),
+	colorAa(colorAa)
+	{}
+
+	public:
+
+	AssetFVertex() {}
+
+	static void PrepareVBO([[maybe_unused]]GLuint& Position, GLuint Instancingdivisor) {
+		GLCALL(glEnableVertexAttribArray(0));
+		GLCALL(glVertexAttribIPointer(0, 1, GL_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, index)));
+		GLCALL(glVertexAttribDivisor(0, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(1));
+		GLCALL(glVertexAttribIPointer(1, 1, GL_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, id)));
+		GLCALL(glVertexAttribDivisor(1, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(2));
+		GLCALL(glVertexAttribIPointer(2, 1, GL_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, transform)));
+		GLCALL(glVertexAttribDivisor(2, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(5));
+		GLCALL(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, colorAr)));
+		GLCALL(glVertexAttribDivisor(5, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(6));
+		GLCALL(glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf1)));
+		GLCALL(glVertexAttribDivisor(6, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(7));
+		GLCALL(glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf2)));
+		GLCALL(glVertexAttribDivisor(7, Instancingdivisor));
+	}
+
+
+	enum class ID : unsigned int {
+		AreaSelect = (unsigned int)AssetVertex::ID::IDSize
+	};
+
+	static AssetFVertex AreaSelect(const Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& color) {
+		return AssetFVertex((int)ID::AreaSelect, 0, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
+	}
 };
