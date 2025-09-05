@@ -15,12 +15,14 @@ flat in vec4 ColorA;
 in vec2 Pos;
 in vec2 TextureCoord;
 
-out vec4 FragColor;
+layout(location = 0)out vec4 FragColor;
+layout(location = 1)out uint Id;
 
 uniform sampler2D UBackground;
 uniform sampler2D UPath;
 
 uniform bool UWirePass;
+uniform bool UIDRun;
 
 float dot2(vec2 v) {
     return dot(v, v);
@@ -477,6 +479,16 @@ void main () {
         // return;
     // }
     vec4 col = get();
+
+    if(UIDRun) {
+        if(1.0 - 10.0 * col.a < 0) {
+            Id = ID;
+            return;
+        }
+        else{
+            discard;
+        }
+    }
 
     FragColor = vec4(col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0));
     // if(Index == 6) discard;

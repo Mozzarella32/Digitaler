@@ -16,21 +16,10 @@ class Renderer;
 struct PointNode;
 class DataResourceManager;
 
-//
-//class VisualBlockExterior {
-//
-//};
 
 //There schould only exist one
 //exept for multiple editors
 class VisualBlockInterior {
-private:
-	/*enum DragDirection {
-		Horizontal,
-		Vertical,
-		Unset
-	};*/
-
 private:
 
 	DataResourceManager* ResourceManager;
@@ -41,7 +30,6 @@ private:
 	BufferedVertexVec<AssetVertex> EdgesUnmarked;
 	BufferedVertexVec<AssetVertex> IntersectionPoints;
 	BufferedVertexVec<AssetVertex> Verts;
-	// BufferedVertexVec<TwoPointIRGBRHGHBHVertex> ConflictPoints;
 
 	BufferedVertexVec<AssetVertex> FloatingEdges;
 	BufferedVertexVec<AssetVertex> FloatingIntersectionPoints;
@@ -50,10 +38,7 @@ private:
 	BufferedVertexVec<TextVertex> StaticTextVBO;
 	BufferedVertexVec<TextVertex> DynamicTextVBO;
 
-	//BufferedVertexVec <std::pair<PointType, DragDirection>> PreviewData;
 	std::vector<PointType> PreviewData;//Data of the Point
-
-	//BufferedVertexVec <TwoPointIRGBAVertex> Boxes;
 
 public:
 	BufferedVertexVec<AssetVertex>& GetEdges(bool Floating);
@@ -66,10 +51,6 @@ public:
 
 	BufferedVertexVec<AssetVertex>& GetVerts(bool Floating);
 
-	// BufferedVertexVec<TwoPointIRGBRHGHBHVertex>& GetConflictPoints(bool Floating);
-
-	//const std::vector<TwoPointIRGBAVertex>& GetBoxes() const;
-
 private:
 	std::optional<VisualPath> PreviewCached;
 	bool PreviewIsDirty : 1 = true;
@@ -79,8 +60,6 @@ private:
 	bool DirtyBlocks : 1 = true;
 	bool PathNeedsMerging : 1= false;
 	bool Moving : 1 = false;//Used to know when to scann for split
-
-	//bool HasSthMarked : 1 = false;
 
 	MyRectF PreviewCachedBoundingBox;
 
@@ -150,28 +129,12 @@ private:
 	Eigen::Vector2f GetMarkedMean() const;
 
 public:
-	//Returnes Mean Position or InvalidPoint
-	//PointType RotateMarked();
-
-private:
-	//Returns the axis
-	//int FlipMarkedBlocks(bool X);
-
-	//int FlipMarkedBlocksX();
-	//int FlipMarkedBlocksY();
-public:
 
 	//Returnes if Modifyed
 	bool RotateMarked(bool CW);
 
-	//void RotateMarkedCCW(const PointType& Pos);
-
-	//void RotateMarkedHW(const PointType& Pos);
-
 	//Returnes if Modifyed
 	bool FlipMarked(bool X);
-
-	//void FlipMarkedY(const int& pos);
 
 	void MoveMarked(const PointType& Diff);
 
@@ -227,7 +190,6 @@ public:
 
 	void UnRegisterLine(const LineIndex& l, const std::vector<PointNode>& Points, const VisualPathData::VisualPathDataId& Id);
 
-	//std::vector<LineIndex> GetLinesWith(const PointType& p, const VisualPathData& pd);
 	LineIndex GetLineWith(const PointType& p, const VisualPathData& pd);
 #endif
 
@@ -257,9 +219,7 @@ public:
 	size_t GetDragSize() const;
 	void StartDrag(const PointType& p);
 
-	//std::vector<MyRectI> GetBoundingBox();
-
-	//Finised
+	//Finished
 	bool AddDrag(const PointType& mouse);
 
 	void EndDrag();
@@ -275,19 +235,11 @@ private:
 
 	BufferedVertexVec<AssetVertex> PinVBO;
 	BufferedVertexVec<AssetVertex> AssetVBO;
-	// BufferedVertexVec<SevenSegVertex> SevenSegVBO;
-	// BufferedVertexVec<SixteenSegVertex> SixteenSegVBO;
 	BufferedVertexVec<AssetVertex> RoundPinVBO;
-	// BufferedVertexVec<PointIOrientationRGBIDVertex> AndVBO;
-	// BufferedVertexVec<PointIOrientationRGBIDVertex> OrVBO;
-	// BufferedVertexVec<PointIOrientationRGBIDVertex> XOrVBO;
-	// BufferedVertexVec<MuxIDVertex> MuxVBO;
 
 #ifdef ShowBasePositionOfBlocks
 	BufferedVertexVec<PointFRGBVertex> BasePositionVBO;
 #endif
-	/*BufferedVertexVec<PointIOrientationRGBIDVertex> NotTriangleVerts;
-	BufferedVertexVec<PointIOrientationRGBIDVertex> NDotVerts;*/
 
 
 public:
@@ -318,15 +270,7 @@ public:
 
 	BufferedVertexVec<AssetVertex>& GetPinVBO();
 	BufferedVertexVec<AssetVertex>& GetAssetVBO();
-	// BufferedVertexVec<SevenSegVertex>& GetSevenSegVBO();
-	// BufferedVertexVec<SixteenSegVertex>& GetSixteenSegVBO();
 	BufferedVertexVec<AssetVertex>& GetRoundPinVBO();
-	// BufferedVertexVec<PointIOrientationRGBIDVertex>& GetAndVBO();
-	// BufferedVertexVec<PointIOrientationRGBIDVertex>& GetOrVBO();
-	// BufferedVertexVec<PointIOrientationRGBIDVertex>& GetXOrVBO();
-	/*BufferedVertexVec<PointIOrientationRGBIDVertex>& GetNotTriangleVerts();
-	BufferedVertexVec<PointIOrientationRGBIDVertex>& GetNDotVerts();*/
-	// BufferedVertexVec<MuxIDVertex>& GetMuxVBO();
 	BufferedVertexVec<TextVertex>& GetStaticTextVBO();
 	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
 

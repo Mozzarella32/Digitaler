@@ -7,20 +7,12 @@ VisualPath::VisualPath(VisualPathData&& Data)
 	:Data(std::move(Data)) {
 }
 
-// static const std::vector<TwoPointIRGBRHGHBHVertex> EmptyVerts;
-
 void VisualPath::SetHover(bool newHover) {
 	if (Hover == newHover) return;
 	Hover = newHover;
 	Dirty = true;
 }
-//
-//void VisualPath::SetMarked(bool Marked) {
-//	if (this->Marked == Marked) return;
-//	this->Marked = Marked;
-//	Dirty = true;
-//}
-//
+
 bool VisualPath::ToggleMarkedIfHover() {
 	if (!Hover) return false;
 	Dirty = true;
@@ -36,13 +28,6 @@ bool VisualPath::ToggleMarkedIfHover() {
 void VisualPath::MarkAll() {
 	SetMarkedArea(FullRectI);
 }
-//
-//void VisualPath::UnmarkAll() {
-//	if (!MarkedBoundingBox) return;
-//	MarkedBoundingBox.reset();
-//	FullyMarked = false;
-//	Dirty = true;
-//}
 
 void VisualPath::SetPreview(bool newPreview) {
 	if (Preview == newPreview) return;
@@ -159,30 +144,8 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	EdgesMarked.clear();
 	IntersectionPoints.clear();
 	Verts.clear();
-	// ConflictPoints.clear();
 
-	//Calculate Edges and SpecialPoints
 	std::unordered_set<PointType> intersectionPoints;
-	/*Edges.reserve(Data.Lines.size());
-
-	auto hr = Data.toHumanReadable();
-
-	for (const auto& pair : Data.Lines) {
-		const auto& A = Data.Points[pair.first];
-		const auto& B = Data.Points[pair.second];
-		assert(A != B && "You Messed Up, Points Of line are identical");
-
-		if (MyRectI::FromCorners(A, B).Intersectes(BB)) {
-			if (BB.Contains(A) && Data.GetConnectionCount(pair.first) >= 2) {
-				specialPoints.emplace(A);
-			}
-			if (BB.Contains(B) && Data.GetConnectionCount(pair.second) >= 2) {
-				specialPoints.emplace(B);
-			}
-			Edges.emplace_back(A, B);
-		}
-	}
-	Edges.shrink_to_fit();*/
 
 	static std::unordered_map<int, ColourType> ColourMap;
 	auto GetColour = [&](const int& i) {
@@ -255,61 +218,7 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	IntersectionPoints.reserve(intersectionPoints.size());
 	for(const auto& p : intersectionPoints) {
 		IntersectionPoints.push_back(AssetVertex::PathIntersection(p, MyColor));
-		// SpecialPoints.emplace_back(p, MyColor);
 	}
-
-	// auto IsNormal = [](const float& r, const float& g, const float& b) {
-	// 	return r != 1.0f || g != 0.0f || b != 1.0f;
-	// 	};
-
-	//Calculate Verts
-	// std::unordered_map<PointType, TwoPointIRGBRHGHBHVertex> verts;
-	// verts.reserve(2 * EdgesMarked.size());
-
-	// auto PlaceVert = [this, IsNormal, &BB, &verts](const int& x, const int& y, const float& r, const float& g, const float& b, const float& rh, const float& gh, const float& bh, bool marked) {
-	// 	if (!BB.Contains({ x, y })) return;
-	// 	auto it = verts.find({ x, y });
-
-	// 	if (it == verts.end()) {
-	// 		if (!marked)return;
-	// 		verts[{x, y}] = { x, y, x, y, r, g, b, rh, gh, bh };
-	// 		return;
-	// 	}
-
-	// 	bool ThisNormal = IsNormal(rh, gh, bh);
-	// 	bool OtherNormal = IsNormal(it->second.rh, it->second.gh, it->second.bh);
-	// 	if (OtherNormal != ThisNormal) {
-	// 		if (!OtherNormal) {
-	// 			ConflictPoints.emplace_back(x, y, x, y, it->second.r, it->second.g, it->second.b, it->second.rh, it->second.gh, it->second.bh);
-	// 		}
-	// 		else {
-	// 			ConflictPoints.emplace_back(x, y, x, y, r, g, b, rh, gh, bh);
-	// 		}
-	// 		verts.erase(it);
-	// 		return;
-	// 	}
-	// 	if (!marked)return;
-	// 	if (!ThisNormal) {
-	// 		if (OtherNormal) {
-	// 			verts.erase(it);
-	// 			verts[{x, y}] = { x, y, x, y, r,g,b,rh, gh, bh };
-	// 		}
-	// 	}
-	// 	};
-
-	// for (const auto& edge : EdgesMarked) {
-	// 	PlaceVert(edge.x1, edge.y1, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, true);
-	// 	PlaceVert(edge.x2, edge.y2, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, true);
-	// }
-	// for (const auto& edge : EdgesUnmarked) {
-	// 	PlaceVert(edge.x1, edge.y1, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, false);
-	// 	PlaceVert(edge.x2, edge.y2, edge.r, edge.g, edge.b, edge.rh, edge.gh, edge.bh, false);
-	// }
-
-	// Verts.reserve(verts.size());
-	// for (const auto& pair : verts) {
-	// 	Verts.emplace_back(pair.second);
-	// }
 }
 
 const std::vector<AssetVertex>& VisualPath::getEdges() const {
@@ -331,10 +240,6 @@ const std::vector<AssetVertex>& VisualPath::getIntersectionPoints() const {
 const std::vector<AssetVertex>& VisualPath::getVerts() const {
 	return Verts;
 }
-
-// const std::vector<TwoPointIRGBRHGHBHVertex>& VisualPath::getConflictPoints() const {
-// 	return ConflictPoints;
-// }
 
 bool VisualPath::Intercept(const PointType& Pos) const {
 	return Data.Intercept(Pos) != InvalidLineIndex;
@@ -376,7 +281,6 @@ void VisualPath::Free(const PathIndex& head) {
 	FullyMarked = false;
 	Hover = false;
 	Preview = false;
-	//Marked = false;
 	CachedBoundingBox.Position.x() = head;
 	ThisIsFree = true;
 }
@@ -392,22 +296,6 @@ void VisualPath::Rotate(const PointType& Pos, bool CW) {
 	MarkAll();
 	NeedsMergingAfterMove = true;
 }
-//
-//void VisualPath::RotateCCW(const PointType& Pos) {
-//	assert(IsFullyMarked());
-//	Data.RotateAroundCCW(Pos);
-//	ClearMarkedArea();
-//	MarkAll();
-//	NeedsMergingAfterMove = true;
-//}
-//
-//void VisualPath::RotateHW(const PointType& Pos) {
-//	assert(IsFullyMarked());
-//	Data.RotateAroundHW(Pos);
-//	ClearMarkedArea();
-//	MarkAll();
-//	NeedsMergingAfterMove = true;
-//}
 
 void VisualPath::Flip(const int& pos, bool X) {
 	assert(IsFullyMarked());
@@ -416,14 +304,6 @@ void VisualPath::Flip(const int& pos, bool X) {
 	MarkAll();
 	NeedsMergingAfterMove = true;
 }
-//
-//void VisualPath::FlipY(const int& pos) {
-//	assert(IsFullyMarked());
-//	Data.FlipY(pos);
-//	ClearMarkedArea();
-//	MarkAll();
-//	NeedsMergingAfterMove = true;
-//}
 
 void VisualPath::Move(const PointType& Diff) {
 	assert(IsFullyMarked());

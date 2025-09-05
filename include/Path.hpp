@@ -29,16 +29,6 @@ public:
 	VisualPathData Data;
 private:
 
-	// std::vector<TwoPointIRGBRHGHBHVertex> EdgesUnmarked;
-	// std::vector<TwoPointIRGBRHGHBHVertex> EdgesMarked;
-
-	// //If a vert is touched by at leas two lines
-	// std::vector<PointIRGBVertex> SpecialPoints;
-	// std::vector<TwoPointIRGBRHGHBHVertex> Verts;
-
-	// //If a vert toutches a marked and a unmarked line
-	// std::vector<TwoPointIRGBRHGHBHVertex> ConflictPoints;
-
 	//Importent for order
 	std::vector<AssetVertex> Edges;
 	std::vector<AssetVertex> EdgesUnmarked;
@@ -48,10 +38,6 @@ private:
 	std::vector<AssetVertex> IntersectionPoints;
 	std::vector<AssetVertex> Verts;
 
-	//If a vert toutches a marked and a unmarked line
-	// std::vector<TwoPointIRGBRHGHBHVertex> ConflictPoints;
-
-
 	MyRectI CachedBoundingBox;
 
 	std::optional<MyRectI> MarkedBoundingBox;
@@ -60,22 +46,17 @@ private:
 
 public:
 	VisualPath(VisualPathData&& Data);
-	//VisualPath(const VisualPath& Other) 
-	//	:Data(Other.Data),CachedBoundingBox(MyRectI()){}
 
-	//bool IsMarked() { return Marked; }
-	//const bool IsMarked() const { return Marked; }
 	void SetHover(bool Hover);
-	//void SetMarked(bool Marked);
 
 	bool ToggleMarkedIfHover();
 	void MarkAll();
-	//void UnmarkAll();
 
 	void SetPreview(bool Preview);
 
 	//Returns if sth has changed
 	bool SetMarkedArea(const MyRectI& MarkedBB);
+
 	//Returnes if previously marked
 	bool ClearMarkedArea();
 	bool HasMarked() const;
@@ -104,11 +85,8 @@ public:
 	bool TryAbsorb(VisualPathData& Other);
 
 	void Rotate(const PointType& Pos, bool CW);
-	//void RotateCCW(const PointType& Pos);
-	//void RotateHW(const PointType& Pos);
 
 	void Flip(const int& pos, bool X);
-	//void FlipY(const int& pos);
 
 	void Move(const PointType& Diff);
 

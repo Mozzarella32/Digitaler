@@ -9,8 +9,6 @@
 #include "PngManager.hpp"
 #include "ShaderManager.hpp"
 
-// #include "RenderTextUtility.hpp"
-
 #include "DataResourceManager.hpp"
 
 #include "BlockSelector.hpp"
@@ -153,23 +151,22 @@ void Renderer::RenderIDMap() {
   GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName,
-                       GLenum primitive = GL_TRIANGLE_STRIP) {
+                       ShaderManager::Shaders ShaderName) {
     if (!VertsGetter().empty()) {
       Shader &shader = ShaderManager::GetShader(ShaderName);
 
       shader.bind();
       VAO.bind();
-      VAO.DrawAs(primitive);
+      VAO.DrawAs(GL_POINTS);
       VAO.unbind();
       shader.unbind();
     }
   };
 
-  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Assets, GL_POINTS);
-  SimplePass([&b]() { return b.GetPinVBO(); }, RoundPinVAO, ShaderManager::Assets, GL_POINTS);
+  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Assets);
   SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
-             ShaderManager::Assets, GL_POINTS);
+             ShaderManager::Assets);
+  SimplePass([&b]() { return b.GetRoundPinVBO(); }, RoundPinVAO, ShaderManager::Assets);
 
   GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
@@ -313,7 +310,6 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_START("Blit Background", 0);
 
-  // Frame->Canvas->SetCurrent(*App->GlContext.get());
   if (!Frame->Canvas->BindContext()) {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
   }
@@ -345,14 +341,6 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
 
-  /*if (!Frame->Canvas->BindContext()) {
-      wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
-  }*/
-
-
-  //FBOMain.bind(FrameBufferObject::Draw);
-
-  // GLCALL(glDepthMask(GL_TRUE));
   GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   GLCALL(glStencilMask(0x00));
@@ -370,10 +358,6 @@ void Renderer::Render() {
     }
   };
 
-  //SimplePass([&b]() { return b.GetAndVBO(); }, AndVAO, ShaderManager::And);
-  //SimplePass([&b]() { return b.GetOrVBO(); }, OrVAO, ShaderManager::Or);
-  //SimplePass([&b]() { return b.GetXOrVBO(); }, XOrVAO, ShaderManager::XOr);
-  
   auto WirePass = [this,&assetShader](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {
       VAO.bind();
@@ -410,50 +394,12 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_START("Pins", 5);
 
-  // GLCALL(glDepthMask(GL_FALSE));
-
-  // auto WirePass = [this](auto VertsGetter, VertexArrayObject &VAO,
-  //                        ShaderManager::Shaders ShaderName) {
-  //   if (!VertsGetter().empty()) {
-
-  //     Shader &shader = ShaderManager::GetShader(ShaderName);
-
-  //     shader.bind();
-
-  //     FBOPathColorTexture.bind(shader, "UPath", "", 0);
-
-  //     VAO.bind();
-  //     VertsGetter().replaceBuffer(VAO, 1);
-
-  //     GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
-  //     shader.apply("UHasWire",Shader::Data1i{true});
-  //     VAO.DrawAs(GL_TRIANGLE_STRIP);
-
-  //     GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-  //     shader.apply("UHasWire",Shader::Data1i{false});
-  //     VAO.DrawAs(GL_TRIANGLE_STRIP);
-
-  //     VAO.unbind();
-
-  //     shader.unbind();
-  //   }
-  // };
-
-  // WirePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Assets);
-  // WirePass([&b]() { return b.GetRoundedPinVBO(); }, RoundPinVAO,
-           // ShaderManager::RoundPin);
-
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   GLCALL(glStencilMask(0x00));
   // GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   // GLCALL(glStencilMask(0x00));
 
   PROFILE_SCOPE_ID_END(5);
-
-  // SimplePass([&b]() { return b.GetSevenSegVBO(); }, SevenSegVAO,
-  //            ShaderManager::SevenSeg);
-  // SimplePass([&b]() { return b.GetSixteenSegVBO(); }, SixteenSegVAO,
-  //            ShaderManager::SixteenSeg);
 
 // #ifdef RenderCollisionGrid
 //   BufferedVertexVec<AssetV> Blocks;
@@ -500,23 +446,6 @@ void Renderer::Render() {
 //   // SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO,
 //   //            ShaderManager::Block);
 // #endif
-
-  // SimplePass([&b]() { return b.GetMuxVerts(); }, MuxVAO, ShaderManager::Mux);
-
-  // auto& shaderAssets = ShaderManager::GetShader(ShaderManager::Assets);
-
-  // shaderAssets.bind();
-  // BufferedVertexVec<AssetVertex> assetVBO;
-  // assetVBO.append(AssetVertex::Box(0, {0,0}, {2,3}));
-
-  // static VertexArrayObject assetVAO = CreateVAO<AssetVertex>();
-  // assetVAO.bind();
-  // assetVBO.replaceBuffer(assetVAO, 0);
-  // assetVAO.DrawAs(GL_POINTS);
-  // assetVAO.unbind();
-
-  // shaderAssets.unbind();
-  
 
   if (!b.GetStaticTextVBO().empty() || !b.GetDynamicTextVBO().empty() ||
       (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty())) {
@@ -573,35 +502,9 @@ void Renderer::Render() {
 
   PROFILE_SCOPE("Swap Buffers");
 
-  /*std::stringstream ss;
-  ss << "E: " << b.GetEdges(false).Size();
-  ss << ", Em:" << b.GetEdgesMarked(false).Size();
-  ss << ", Eum:" << b.GetEdgesUnmarked(false).Size();
-  ss << ", Sp:" << b.GetSpecialPoints(false).Size();
-  ss << ", V:" << b.GetVerts(false).Size();
-  ss << ", hm:" << b.HasMark(false);
-  ss << ", hum:" << b.HasUnmarked(false);
-  ss << ", PE: " << b.GetEdges(true).Size();
-  ss << ", PEm:" << b.GetEdgesMarked(true).Size();
-  ss << ", PEum:" << b.GetEdgesUnmarked(true).Size();
-  ss << ", PSp:" << b.GetSpecialPoints(true).Size();
-  ss << ", PV:" << b.GetVerts(true).Size();
-  ss << ", hPm:" << b.HasMark(true);
-  ss << ", hPum:" << b.HasUnmarked(true);
-  static int TIMES = 0;
-  ss << ", T:" << TIMES++;
-  ss << ", Zoom:" << Zoom;*/
-
-  // FBOID.unbind();
-
   title = "Zoom: " + std::to_string(Zoom) +
           " Off: " + std::to_string(Offset.x()) + ", " +
           std::to_string(Offset.y());
-
-  // AreaSelectVerts.Clear();
-  // AreaSelectVerts.Emplace(BoundingBox.Position,BoundingBox.Position +
-  // BoundingBox.Size,ColourType{1.0,1.0,0.0,0.0}); PointFRGBVertex(const
-  // Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& c)
 
   if (!AreaSelectVerts.empty()) {
 
@@ -709,19 +612,9 @@ void Renderer::RenderPlacholder(MyFrame& frame, Eigen::Vector2f CanvasSize) {
 Renderer::Renderer(MyApp *App, MyFrame *Frame)
     : App(App), Frame(Frame), FBOBackgroundTexture(1, 1),
       FBOBackground({&FBOBackgroundTexture}),
-      FBOPathStencileDepthTexture(1, 1, nullptr,
-                                  []() {
-                                    Texture::Descriptor desc;
-                                    desc.Format = GL_DEPTH_STENCIL;
-                                    desc.Internal_Format = GL_DEPTH24_STENCIL8;
-                                    desc.Depth_Stencil_Texture_Mode =
-                                        GL_STENCIL_INDEX;
-                                    desc.Type = GL_UNSIGNED_INT_24_8;
-                                    return desc;
-                                  }()),
       FBOPathColorTexture(1, 1),
-      FBOPath({&FBOPathColorTexture, &FBOPathStencileDepthTexture},
-              {GL_COLOR_ATTACHMENT0, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOPath({&FBOPathColorTexture},
+              {GL_COLOR_ATTACHMENT0}),
       FBOMainStencileDepthTexture(1, 1, nullptr,
                                   []() {
                                     Texture::Descriptor desc;
@@ -751,7 +644,6 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
           .EdgesUnmarkedVAO = CreateVAO<AssetVertex>(),
           .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
           .VertsVAO = CreateVAO<AssetVertex>(),
-          // .ConflictPointsVAO = CreateVAO<AssetVertex>(),
       }),
       VAOsPathPreview(PathVAOs{
           .EdgesVAO = CreateVAO<AssetVertex>(),
@@ -759,22 +651,13 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
           .EdgesUnmarkedVAO = CreateVAO<AssetVertex>(),
           .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
           .VertsVAO = CreateVAO<AssetVertex>(),
-          // .ConflictPointsVAO = CreateVAO<AssetVertex>(),
       }),
 #ifdef RenderCollisionGrid
       CollisionGridVAO(CreateVAO<AssetVertex>()),
 #endif
-      // SevenSegVAO(CreateVAOInstancing4<SevenSegVertex>()),
-      // SixteenSegVAO(CreateVAOInstancing4<SixteenSegVertex>()),
-      // MuxVAO(CreateVAOInstancing4<MuxIDVertex>()),
       AssetVAO(CreateVAO<AssetVertex>()),
       PinVAO(CreateVAO<AssetVertex>()),
       RoundPinVAO(CreateVAO<AssetVertex>()),
-      //AndVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
-      /*NotTriangleVAO(CreatePointIOrientationVAO()),
-      NDotVAO(CreatePointIOrientationVAO()),*/
-      //OrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
-      //XOrVAO(CreateVAOInstancing4<PointIOrientationRGBIDVertex>()),
       AreaSelectVAO(CreateVAO<PointFRGBVertex>()),
 #ifdef ShowBasePositionOfBlocks
       BlockBasePositionVAO(CreateVAO<PointFRGBVertex>()),
@@ -805,14 +688,11 @@ void Renderer::UpdateSize() {
 
   FBOBackgroundTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
-  FBOPathStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOPathColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOMainStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOMainColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
-  // FBONonDefaultStencilDepthTexture.Resize(CanvasSize.x(),CanvasSize.y());
-  // FBONonDefaultColorTexture.Resize(CanvasSize.x(),CanvasSize.y());
   FBOIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   UpdateViewProjectionMatrix();
@@ -861,7 +741,6 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
 
   auto Size = Frame->Canvas->GetSize();
 
-  // std::array<GLushort,4> s;
   GLuint i;
   GLCALL(glReadPixels(Mouse.x(), Size.y - Mouse.y(), 1, 1, GL_RED_INTEGER,
                       GL_UNSIGNED_INT, &i));
@@ -869,12 +748,6 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
   GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
   FBOID.unbind();
-
-  // title.clear();
-
-  // std::stringstream ss;
-  // ss << "R: " << s[0] << " G: " << s[1] << " B: " << s[2] << " A: " << s[3];
-  // title = ss.str();
 
   return i;
 }
@@ -889,17 +762,11 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   auto AltZoom = Zoom;
   auto AltOffset = Offset;
   auto AltCanvasSize = CanvasSize;
-  // auto AltMouseIndex = MouseIndex;
 
   Offset = Eigen::Vector2f{0, 0};
   float TargetZoom = 0.01f;
 
   Zoom = TargetZoom;
-
-  // UpdateMouseIndex({ -1,-1 });
-
-  // Also binds context
-  // UpdateViewProjectionMatrix();
 
   auto &SB = Frame->BlockManager->GetSpecialBlockIndex();
 
@@ -916,26 +783,13 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
                            Eigen::Vector2f{BlockSize.x(), -BlockSize.y()} +
                                Eigen::Vector2f{1.5, -1.5});
 
-  // auto rectHorizontal =
-  //     MyRectF::FromCorners(Eigen::Vector2f{-1.5, 1.5},
-  //                          Eigen::Vector2f{BlockSize.y(), -BlockSize.x()} +
-  //                              Eigen::Vector2f{1.5, -1.5});
-
   if (!UIDRun) {
     UIDRun = true;
     ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
   }
 
-  // auto Rotation = MyDirection::Up;
-
-  PointType ViewportSize;
-  // if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
-  //   ViewportSize = {int(rectHorizontal.Size.x()) * 1.0 / Zoom,
-  //                   int(rectHorizontal.Size.y()) * 1.0 / Zoom};
-  // } else {
-    ViewportSize = {int(rectVertical.Size.x()) * 1.0 / Zoom,
+  PointType ViewportSize = {int(rectVertical.Size.x()) * 1.0 / Zoom,
                     int(rectVertical.Size.y()) * 1.0 / Zoom};
-  // }
 
   FBOIDTexture.Resize(ViewportSize.x(), ViewportSize.y());
 

@@ -39,7 +39,6 @@ private:
 
 	void RenderBackground();
 
-	Texture FBOPathStencileDepthTexture;
 	Texture FBOPathColorTexture;
 	FrameBufferObject FBOPath;
 
@@ -60,19 +59,12 @@ private:
 		VertexArrayObject EdgesUnmarkedVAO;
 		VertexArrayObject IntersectionPointsVAO;
 		VertexArrayObject VertsVAO;
-
-		// VertexArrayObject ConflictPointsVAO;
 	};
 
 	PathVAOs VAOsPath;
 	PathVAOs VAOsPathPreview;
 
 	PathVAOs& GetPathVAOs(bool Preview);
-
-	// VertexArrayObject SevenSegVAO;
-	// VertexArrayObject SixteenSegVAO;
-
-	// VertexArrayObject MuxVAO;
 
 #ifdef RenderCollisionGrid
 	VertexArrayObject CollisionGridVAO;
@@ -81,11 +73,6 @@ private:
 	VertexArrayObject PinVAO;
 	VertexArrayObject RoundPinVAO;
 
-	//VertexArrayObject AndVAO;
-	//VertexArrayObject OrVAO;
-	//VertexArrayObject XorVAO;
-	//VertexArrayObject NotTriangleVAO;
-	//VertexArrayObject NDotVAO;
 	VertexArrayObject AreaSelectVAO;
 
 #ifdef ShowBasePositionOfBlocks
@@ -101,24 +88,6 @@ private:
 
 	template<typename VertexType>
 	static VertexArrayObject CreateVAO();
-
-	//static VertexArrayObject CreateTwoPointIRGBVAO();
-
-	//static VertexArrayObject CreatePointIVAO();
-
-	//static VertexArrayObject CreateSevenSegVAO();
-	//static VertexArrayObject CreateSixteenSegVAO();
-
-	//static VertexArrayObject CreateMuxVAO();
-
-	//static VertexArrayObject CreateBlockRGBAVAO();
-
-	//static VertexArrayObject CreatePointIOrientationRGBVAO();
-	//static VertexArrayObject CreatePointIOrientationVAO();
-
-	//static VertexArrayObject CreatePointIRGBIDVAO();
-	//static VertexArrayObject CreatePointFRGBVAO();
-	//static VertexArrayObject CreateTextVAO();
 
 	VertexArrayObject StaticTextVAO;
 	VertexArrayObject DynamicTextVAO;
