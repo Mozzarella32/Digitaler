@@ -674,7 +674,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       BBVAO(CreateVAO<AssetFVertex>()),
 #endif
 #ifdef ShowBasePositionOfBlocks
-      BlockBasePositionVAO(CreateVAO<AssetVertex>()),
+      BlockBasePositionVAO(CreateVAO<AssetFVertex>()),
 #endif
       StaticTextVAO(CreateVAOInstancing4<TextVertex>()),
       DynamicTextVAO(CreateVAOInstancing4<TextVertex>()),

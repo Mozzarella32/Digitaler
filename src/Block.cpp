@@ -1301,17 +1301,19 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			auto BB = BBs[Meta.Rotation];
 			BB.Position += Eigen::Vector2f{ Meta.Pos.x(), Meta.Pos.y() };
 
-			BBVBO.append(AssetFVertex::AreaSelect(
-			    BB.Position + Eigen::Vector2f{0, 0},
-			    BB.Position + Eigen::Vector2f{BB.Size.x(), BB.Size.y()},
-					ColourType{1.0,0.0,1.0,1.0}));
-
 			if (!CachedBoundingBox.Intersectes(BB)) {
 				continue;
 			}
 
+#ifdef ShowBoundingBoxes
+			BBVBO.append(AssetFVertex::AreaSelect(
+				BB.Position + Eigen::Vector2f{ 0, 0 },
+				BB.Position + Eigen::Vector2f{ BB.Size.x(), BB.Size.y() },
+				ColourType{ 1.0,0.0,1.0,1.0 }));
+#endif
+
 #ifdef ShowBasePositionOfBlocks
-			BasePositionVBO.append(AssetFVertex::AreaSelect(Base.cast<float>() + Eigen::Vector2f(0.1, 0.1), Base.cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f }));
+			BasePositionVBO.append(AssetFVertex::AreaSelect(Base.cast<float>() + Eigen::Vector2f(0.2, 0.2), Base.cast<float>() - Eigen::Vector2f(0.2, 0.2), ColourType{ 1.0f,1.0f,0.0f,1.0f }));
 #endif
 
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
