@@ -1293,9 +1293,9 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			auto BB = BBs[Meta.Rotation];
 			BB.Position += Eigen::Vector2f{ Meta.Pos.x(), Meta.Pos.y() };
 
-			// if (!CachedBoundingBox.Intersectes(BB)) {
-				// continue;
-			// }
+			if (!CachedBoundingBox.Intersectes(BB)) {
+				continue;
+			}
 
 #ifdef ShowBasePositionOfBlocks
 			BasePositionVBO.emplace(Base.cast<float>() + Eigen::Vector2f(0.1, 0.1), Base.cast<float>() - Eigen::Vector2f(0.1, 0.1), ColourType{ 1.0f,1.0f,0.0f,1.0f });

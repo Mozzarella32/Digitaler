@@ -822,94 +822,71 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   //   shader.unbind();
   // };
 
-  // ColourType NoColor = {0, 0, 0, 0};
+  ColourType NoColor = {0, 0, 0, 0};
 
   BlockMetadata Meta;
   Meta.Pos = {};
   Meta.Rotation = MyDirection::Up;
 
-  PointType TopLeft;
-  PointType BottomRight;
-  // if (Rotation == MyDirection::Left || Rotation == MyDirection::Right) {
-  //   // Meta.Pos =
-  //   TopLeft = Meta.Pos +
-  //             PointType{-1, -1} * int((BlockSize.y() - BlockSize.x()) / 2.0);
-  //   BottomRight = TopLeft + PointType{BlockSize.y(), -BlockSize.x()};
-  // } else {
-    // Meta.Pos =
-    // TopLeft = Meta.Pos;
-    TopLeft = {};
-    BottomRight = TopLeft + PointType{BlockSize.x(), -BlockSize.y()};
-  // }
+  PointType Pos1 = {};
+  Pos1.y() -= BlockSize.y();
+  PointType Pos2 = {};
+  Pos2.x() += BlockSize.x();
+
+  BufferedVertexVec<AssetVertex> VBO;
 
   if (cbdi == SB.And || cbdi == SB.Or || cbdi == SB.Xor) {
-    //if (cbdi == SB.And) {
-    //  BufferedVertexVec<PointIOrientationRGBIDVertex> AndBuffer;
-    //  AndBuffer.emplace(1u, Meta, NoColor);
-    //  SimplePass(AndBuffer, AndVAO, ShaderManager::And);
-    //}
-    //if (cbdi == SB.Or) {
-    //  //BufferedVertexVec<PointIOrientationRGBIDVertex> OrBuffer;
-    //  //OrBuffer.emplace(1u, Meta, NoColor);
-    //  //SimplePass(OrBuffer, OrVAO, ShaderManager::Or);
-    //}
-    //if (cbdi == SB.Xor) {
-    //  //BufferedVertexVec<PointIOrientationRGBIDVertex> AssetVBO;
-    //  //XOrBuffer.emplace(1u, Meta, NoColor);
-    //  //SimplePass(XOrBuffer, XorVAO, ShaderManager::XOr);
-    //  //AssetVBO.append(AssetVertex::Gate(0, TopLeft, BottomRight, NoColor));
-    //  //SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
-    //}
+    if (cbdi == SB.And) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1));
+    else if (cbdi == SB.Or) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1));
+    else if (cbdi == SB.Xor) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1));
 
-    // BufferedVertexVec<PointIRGBIDVertex> RoundedPinBuffer;
-    // for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-    //   RoundedPinBuffer.emplace(
-    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-    //       NoColor);
-    // }
-    // for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-    //   RoundedPinBuffer.emplace(
-    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-    //       NoColor);
-    // }
-    // SimplePass(RoundedPinBuffer, RoundPinVAO,
-    //            ShaderManager::RoundPin);
+    for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
+        BlockMetadata PinMeta;
+        PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+        VBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
+    }
+    for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
+        BlockMetadata PinMeta;
+        PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+        VBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
+    }
   } else if (cbdi == SB.Mux) {
-    // BufferedVertexVec<MuxIDVertex> MuxBuffer;
-    // MuxBuffer.emplace(1u, Meta, 2, 0, NoColor);
-    // SimplePass(MuxBuffer, MuxVAO, ShaderManager::Mux);
+      VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1));
 
-    // BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
-    // for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-    //   PinBuffer.emplace(
-    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    // }
-    // for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-    //   PinBuffer.emplace(
-    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    // }
-    // SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
-  } else {
-    //BufferedVertexVec<AssetVertex> AssetVBO;
-    //AssetVBO.append(AssetVertex::Box(0, TopLeft, BottomRight, NoColor));
-    //// BlockBuffer.emplace(1u, TopLeft, BottomRight, NoColor, NoColor);
-    //SimplePass(AssetVBO, AssetVAO, ShaderManager::Assets, 0, GL_POINTS);
-
-    // BufferedVertexVec<PointIOrientationRGBRHGHBHIDVertex> PinBuffer;
-    // for (const auto &Pin : ContainedExterior.blockExteriorData.InputPin) {
-    //   PinBuffer.emplace(
-    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    // }
-    // for (const auto &Pin : ContainedExterior.blockExteriorData.OutputPin) {
-    //   PinBuffer.emplace(
-    //       1u, VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1),
-    //       VisualBlockInterior::GetPinRotation(Meta, Pin), NoColor, NoColor);
-    // }
-    // SimplePass(PinBuffer, PinVAO, ShaderManager::Pin);
+      for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
+          BlockMetadata PinMeta;
+          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+      }
+      for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
+          BlockMetadata PinMeta;
+          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+      }
+  } 
+  else {
+      VBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, NoColor, 1));
+      for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
+          BlockMetadata PinMeta;
+          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+      }
+      for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
+          BlockMetadata PinMeta;
+          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+      }
   }
+
+  Shader &assetShader = ShaderManager::GetShader(ShaderManager::Assets);
+
+  assetShader.bind();
+  AssetVAO.bind();
+  VBO.replaceBuffer(AssetVAO, 0);
+  AssetVAO.DrawAs(GL_POINTS);
+  AssetVAO.unbind();
+  assetShader.unbind();
+
   FBOID.unbind();
 
   FBOID.bind(FrameBufferObject::Read);

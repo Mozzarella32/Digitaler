@@ -481,7 +481,7 @@ void main () {
     vec4 col = get();
 
     if(UIDRun) {
-        if(1.0 - 10.0 * col.a < 0) {
+        if(1.0 - 10.0 * col.a > 0) {
             Id = ID;
             return;
         }
