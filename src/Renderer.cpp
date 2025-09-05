@@ -405,51 +405,47 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_END(5);
 
-// #ifdef RenderCollisionGrid
-//   BufferedVertexVec<AssetV> Blocks;
+#ifdef RenderCollisionGrid
+  BufferedVertexVec<AssetVertex> Blocks;
 
-//   static std::unordered_map<int, std::tuple<float, float, float>> ColourMap;
-//   auto GetColour = [&](const int &i) {
-//     if (i == 0)
-//       return std::make_tuple(1.0f, 1.0f, 1.0f);
-//     auto it = ColourMap.find(i);
-//     if (it == ColourMap.end()) {
-//       ColourMap[i] = std::make_tuple(float(rand()) / (float)RAND_MAX,
-//                                      float(rand()) / (float)RAND_MAX,
-//                                      float(rand()) / (float)RAND_MAX);
-//       return ColourMap[i];
-//     }
-//     return it->second;
-//   };
+  static std::unordered_map<int, std::tuple<float, float, float>> ColourMap;
+  auto GetColour = [&](const int &i) {
+    if (i == 0)
+      return std::make_tuple(1.0f, 1.0f, 1.0f);
+    auto it = ColourMap.find(i);
+    if (it == ColourMap.end()) {
+      ColourMap[i] = std::make_tuple(float(rand()) / (float)RAND_MAX,
+                                     float(rand()) / (float)RAND_MAX,
+                                     float(rand()) / (float)RAND_MAX);
+      return ColourMap[i];
+    }
+    return it->second;
+  };
 
-//   for (const auto &pair : b.CollisionMap) {
-//     MyRectI BB = MyRectI::FromCorners(
-//         pair.first, pair.first + PointType{VisualBlockInterior::BoxSize,
-//                                            VisualBlockInterior::BoxSize});
-//     if (BoundingBox.Intersectes(
-//             MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
-//       const auto &size = pair.second.size();
-//       if (size == 0) {
-//         BlockMetadata Meta;
-//         V
-//         // Blocks.emplace(0, BB.Position,
-//         //                PointType(BB.Position.x() + BB.Size.x() - 1,
-//         //                          BB.Position.y() + BB.Size.y() - 1),
-//         //                ColourType(0.5, 0.5, 0.5, 0.1), ColourType(0, 0, 0, 0));
-//       } else {
-//         auto [r, g, b] = GetColour(size);
-//         Blocks.emplace(0, BB.Position,
-//                        PointType(BB.Position.x() + BB.Size.x() - 1,
-//                                  BB.Position.y() + BB.Size.y() - 1),
-//                        // r, g, b, 0.5,
-//                        ColourType(r, g, b, 0.5), ColourType(0, 0, 0, 0));
-//       }
-//     }
-//   }
+  for (const auto &pair : b.CollisionMap) {
+    MyRectI BB = MyRectI::FromCorners(
+        pair.first, pair.first + PointType{VisualBlockInterior::BoxSize,
+                                           VisualBlockInterior::BoxSize});
+    if (BoundingBox.Intersectes(
+            MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
+      const auto &size = pair.second.size();
 
-//   // SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO,
-//   //            ShaderManager::Block);
-// #endif
+      const auto& Pos1 = Eigen::Vector2i{std::max(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::max(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
+      const auto& Pos2 = Eigen::Vector2i{std::min(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::min(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
+      
+      if (size == 0) {
+        BlockMetadata Meta{};
+        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5)));
+      } else {
+        BlockMetadata Meta{};
+        auto [r, g, b] = GetColour(size);
+        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(r, g, b, 0.5)));
+      }
+    }
+  }
+
+  SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO);
+#endif
 
   if (!b.GetStaticTextVBO().empty() || !b.GetDynamicTextVBO().empty() ||
       (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty())) {

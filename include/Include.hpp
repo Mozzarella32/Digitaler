@@ -5,11 +5,11 @@
 
 
 //Not working
-// #define RenderCollisionGrid
+#define RenderCollisionGrid
 
-// #ifndef UseCollisionGrid
-// #undef RenderCollisionGrid
-// #endif
+#ifndef UseCollisionGrid
+#undef RenderCollisionGrid
+#endif
 
 #define ShowBasePositionOfBlocks
 #define ShowBoundingBoxes

@@ -132,23 +132,8 @@ void IOHandler::MoveViewUpdate() {
 
 	if (Keyboarddata.W || Keyboarddata.A || Keyboarddata.S || Keyboarddata.D || Keyboarddata.E) {
 		r.UpdateViewProjectionMatrix();
-		UpdateMouseIndex({ (int)Keyboarddata.MousePosition.x(),(int)Keyboarddata.MousePosition.y() });
-
-		r.Render();
-
-		if (state == State::Normal || state == State::Marking) {
-			VisualBlockInterior& b = Frame->BlockManager->Interior;
-			if (b.SetHighlited(r.GetHighlited({ (int)Keyboarddata.MousePosition.x(),(int)Keyboarddata.MousePosition.y() }))) {
-				r.Dirty = true;
-				r.Render();
-			}
-		}
+		OnMouseMove(Keyboarddata.MousePosition);
 	}
-
-
-	/*if (Keyboarddata.Shift && state == Deleting) {
-		DeleteUnderCursor();
-	}*/
 }
 
 void IOHandler::SetState(const State& newState) {
