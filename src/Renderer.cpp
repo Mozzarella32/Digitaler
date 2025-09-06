@@ -440,11 +440,11 @@ void Renderer::Render() {
 
       if (size == 0) {
         BlockMetadata Meta{};
-        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5)));
+        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5), 0, 0));
       } else {
         BlockMetadata Meta{};
         auto [cr, cg, cb] = GetColour(size);
-        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(cr, cg, cb, 0.5)));
+        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(cr, cg, cb, 0.5), 0, 0));
       }
     }
   }
