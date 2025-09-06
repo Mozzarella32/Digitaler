@@ -26,21 +26,30 @@ ShaderManager::ShaderManager()
     : shaders{
 
 #define X(Vert, Frag) \
-Shader(ErrorHandler, {\
-       Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{std::string(CONCAT(Vert, _vert))}},\
-       Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{std::string(CONCAT(Frag, _frag))}}\
-     }),
+    ([]() { \
+        auto vert_src = std::string(CONCAT(Vert, _vert)); \
+        auto frag_src = std::string(CONCAT(Frag, _frag)); \
+        return Shader(ErrorHandler, { \
+            Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
+            Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{frag_src}} \
+        }); \
+    })(),
 
 XList_Shaders_VertFrag
 
 #undef X
 
 #define X(Vert, Geom, Frag) \
-Shader(ErrorHandler, {\
-       Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{std::string(CONCAT(Vert, _vert))}},\
-       Shader::ShaderInfo{Shader::ShaderType::Geometry, Shader::ShaderSource{std::string(CONCAT(Geom, _geom))}},\
-       Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{std::string(CONCAT(Frag, _frag))}}\
-     }),
+    ([]() { \
+        auto vert_src = std::string(CONCAT(Vert, _vert)); \
+        auto geom_src = std::string(CONCAT(Geom, _geom)); \
+        auto frag_src = std::string(CONCAT(Frag, _frag)); \
+        return Shader(ErrorHandler, { \
+            Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
+            Shader::ShaderInfo{Shader::ShaderType::Geometry, Shader::ShaderSource{geom_src}}, \
+            Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{frag_src}} \
+        }); \
+    })(),
 
 XList_Shaders_VertGeomFrag
 
