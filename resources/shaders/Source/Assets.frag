@@ -388,7 +388,7 @@ vec4 sdMux(vec2 Pos) {
 
     inner = vec4(mix(inner.rgb, sel.rgb,  max(0, 1.0 - 10.0 * sel.a)), inner.a);
 
-    vec4 outer = vec4(0.1, 0.7, 0.1, sd);
+    vec4 outer = vec4(0.8, 0.8, 0.15, sd);
 
     return vec4(mix(outer.rgb, inner.rgb,  max(0, 1.0 - 10.0 * inner.a)), outer.a);
 }
@@ -408,7 +408,7 @@ vec4 holeColor() {
 vec4 sdPin(vec2 Pos) {
     vec4 hole = holeColor();
     vec4 mark = vec4(ColorA.rgb, max(5.0 * sdSegment(Pos, vec2(0.0, 0.0), vec2(0.0, -1.0)) - 0.5, 0.0));
-    vec3 bodyColor = Index == 7 ? vec3(0.7, 0.0, 0.0) : vec3(0.0, 0.7, 0.0);
+    vec3 bodyColor = Index == 7 ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
     vec4 body = vec4(bodyColor, sdTunnel(Pos, vec2(0.2, 1.0)));
     body = vec4(mix(body.rgb, mark.rgb,  max(0, 1.0 - 10.0 * mark.a)), body.a);
     return vec4(mix(body.rgb, hole.rgb,  max(0, 1.0 - 10.0 * hole.a)), body.a);
@@ -416,7 +416,7 @@ vec4 sdPin(vec2 Pos) {
 
 vec4 sdRoundPin(vec2 Pos) {
     vec4 hole = holeColor();
-    vec3 bodyColor = Index == 9 ? vec3(0.7, 0.0, 0.0) : vec3(0.0, 0.7, 0.0);
+    vec3 bodyColor = Index == 9 ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
     vec4 body = vec4(bodyColor, length(Pos) - 0.2);
     return vec4(mix(body.rgb, hole.rgb,  max(0, 1.0 - 10.0 * hole.a)), body.a);
 }
@@ -467,13 +467,14 @@ vec4 sdAreaSelect(vec2 Pos) {
 vec4 get() {
     switch (Index) {
         case 0://Box
-        return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
+        return vec4(ColorA.rgb, max((-ColorA.a + 1.0) / 10.0, sdBox(Pos, FPoint + 0.3)));
+        // return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
         case 1://And
-        return vec4(1.0,0.0,0.0, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
+        return vec4(0.7,0.15,0.15, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
         case 2://Or
-        return vec4(0.0,1.0,0.0, sdOr(Pos));
+        return vec4(0.15,0.7,0.15, sdOr(Pos));
         case 3://Xor
-        return vec4(0.0,0.0,1.0, sdXor(Pos));
+        return vec4(0.15,0.15,0.7, sdXor(Pos));
         case 4://Seven
         return sdSevenSeg(Pos);
         case 5://Sixteen

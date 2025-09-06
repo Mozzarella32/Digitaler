@@ -428,9 +428,16 @@ void Renderer::Render() {
             MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
       const auto &size = pair.second.size();
 
-      const auto& Pos1 = Eigen::Vector2i{std::max(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::max(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
-      const auto& Pos2 = Eigen::Vector2i{std::min(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::min(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
+      //const auto& Pos1 = Eigen::Vector2i{std::max(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::max(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
+      //const auto& Pos2 = Eigen::Vector2i{std::min(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::min(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
       
+      BB.Position.y() += BB.Size.y() - 1;
+
+      PointType Pos1 = BB.Position;
+      Pos1.y() -= BB.Size.y() - 1;
+      PointType Pos2 = BB.Position;
+      Pos2.x() += BB.Size.x() - 1;
+
       if (size == 0) {
         BlockMetadata Meta{};
         Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5)));
@@ -828,7 +835,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   //   shader.unbind();
   // };
 
-  ColourType NoColor = {0, 0, 0, 0};
+  ColourType NoColor = {0.0, 0.0, 0.0, 1.0};
 
   BlockMetadata Meta;
   Meta.Pos = {};
