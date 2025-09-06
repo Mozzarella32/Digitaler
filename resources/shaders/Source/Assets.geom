@@ -8,17 +8,19 @@ layout(triangle_strip, max_vertices = 4) out;
 uniform vec2 UOffset;
 uniform vec2 UZoom;
 
-in int   VSIndex[1];
-in int   VSID[1];
-in int   VSTransform[1];
-in ivec2 VSIPoint1[1];
-in ivec2 VSIPoint2[1];
-in vec4  VSColorA[1];
-in vec2 VSFPoint1[1];
-in vec2 VSFPoint2[1];
+in uint   VSIndex[1];
+in uint   VSID[1];
+in uint   VSFlags[1];
+in uint   VSTransform[1];
+in ivec2  VSIPoint1[1];
+in ivec2  VSIPoint2[1];
+in vec4   VSColorA[1];
+in vec2   VSFPoint1[1];
+in vec2   VSFPoint2[1];
 
-flat out int  ID;
-flat out int  Index;
+flat out uint  Index;
+flat out uint  ID;
+flat out uint  Flags;
 flat out int  I1;
 flat out vec2 FPoint1;
 flat out vec2 FPoint2;
@@ -35,7 +37,7 @@ vec2 signes[4] = vec2[4](
     vec2(-1, -1)
 );
 
-mat2 rot(int i) {
+mat2 rot(uint i) {
     if(i == 0) {
         return mat2(1, 0, 0, 1);
     }
@@ -50,7 +52,7 @@ mat2 rot(int i) {
     }
 }
 
-mat2 flip(int i) {
+mat2 flip(uint i) {
     if(i == 0) {
         return mat2(1, 0, 0, 1);
     }
@@ -69,7 +71,7 @@ vec4 rectFromPointAndSize(vec2 pos, vec2 size) {
     return vec4(pos - vec2(0, size.y), pos + vec2(size.x, 0));
 }
 
-vec4 getRect(int Index) {
+vec4 getRect(uint Index) {
     switch (Index) {
         case 0://Box
         return vec4(VSIPoint1[0], VSIPoint2[0]);
@@ -98,7 +100,7 @@ vec4 getRect(int Index) {
     return vec4(VSIPoint1[0], VSIPoint2[0]);
 }
 
-float[4] getMargins(int Index) {
+float[4] getMargins(uint Index) {
     switch (Index) {
         case 0://Box
         case 4://Seven
@@ -162,9 +164,9 @@ void main() {
         vec2((VSIPoint2[0].x - VSIPoint1[0].x) / 2.0, 0) *
         float(VSIPoint1[0].y == VSIPoint2[0].y);
 
-    int Transform = VSTransform[0];
-    int Rot = Transform & 0x3;
-    int Flip = Transform >> 2;
+    uint Transform = VSTransform[0];
+    uint Rot = Transform & 0x3;
+    uint Flip = Transform >> 2;
 
     vec4 rect = getRect(Index);
     

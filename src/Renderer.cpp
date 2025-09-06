@@ -12,8 +12,6 @@
 #include "DataResourceManager.hpp"
 
 #include "BlockSelector.hpp"
-#include <chrono>
-#include <fstream>
 
 void Renderer::RenderBackground() {
   PROFILE_FUNKTION;
@@ -648,14 +646,12 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       VAOsPath(PathVAOs{
           .EdgesVAO = CreateVAO<AssetVertex>(),
           .EdgesMarkedVAO = CreateVAO<AssetVertex>(),
-          .EdgesUnmarkedVAO = CreateVAO<AssetVertex>(),
           .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
           .VertsVAO = CreateVAO<AssetVertex>(),
       }),
       VAOsPathPreview(PathVAOs{
           .EdgesVAO = CreateVAO<AssetVertex>(),
           .EdgesMarkedVAO = CreateVAO<AssetVertex>(),
-          .EdgesUnmarkedVAO = CreateVAO<AssetVertex>(),
           .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
           .VertsVAO = CreateVAO<AssetVertex>(),
       }),
@@ -846,45 +842,45 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   BufferedVertexVec<AssetVertex> VBO;
 
   if (cbdi == SB.And || cbdi == SB.Or || cbdi == SB.Xor) {
-    if (cbdi == SB.And) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1));
-    else if (cbdi == SB.Or) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1));
-    else if (cbdi == SB.Xor) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1));
+    if (cbdi == SB.And) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1, 0));
+    else if (cbdi == SB.Or) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1, 0));
+    else if (cbdi == SB.Xor) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1, 0));
 
     for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
         BlockMetadata PinMeta;
         PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-        VBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
+        VBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1, 0));
     }
     for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
         BlockMetadata PinMeta;
         PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-        VBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
+        VBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1, 0));
     }
   } else if (cbdi == SB.Mux) {
-      VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1));
+      VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1, 0));
 
       for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
       }
       for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
       }
   } 
   else {
-      VBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, NoColor, 1));
+      VBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, NoColor, 1, 0));
       for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
       }
       for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
       }
   }
 

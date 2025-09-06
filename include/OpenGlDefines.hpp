@@ -122,9 +122,10 @@ struct IndexVertex {
 
 
 struct AssetVertex {
-	int index;
-	int id;
-	int transform;
+	unsigned int index;
+	unsigned int id;
+	unsigned int flags;
+	unsigned int transform;
 
 	int xi1;
 	int yi1;
@@ -140,9 +141,10 @@ struct AssetVertex {
 	private:
 
 	AssetVertex(
-	int index,
-	int id,
-	int transform,
+	unsigned int index,
+	unsigned int id,
+	unsigned int flags,
+	unsigned int transform,
 	int xi1,
 	int yi1,
 	int xi2,
@@ -154,6 +156,7 @@ struct AssetVertex {
 ) :
 	index(index),
 	id(id),
+	flags(flags),
 	transform(transform),
 	xi1(xi1),
 	yi1(yi1),
@@ -171,23 +174,26 @@ struct AssetVertex {
 
 	static void PrepareVBO([[maybe_unused]]GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(0));
-		GLCALL(glVertexAttribIPointer(0, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, index)));
+		GLCALL(glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, index)));
 		GLCALL(glVertexAttribDivisor(0, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(1));
-		GLCALL(glVertexAttribIPointer(1, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, id)));
+		GLCALL(glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, id)));
 		GLCALL(glVertexAttribDivisor(1, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(2));
-		GLCALL(glVertexAttribIPointer(2, 1, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, transform)));
+		GLCALL(glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, flags)));
 		GLCALL(glVertexAttribDivisor(2, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(3));
-		GLCALL(glVertexAttribIPointer(3, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi1)));
+		GLCALL(glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, transform)));
 		GLCALL(glVertexAttribDivisor(3, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(4));
-		GLCALL(glVertexAttribIPointer(4, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi2)));
+		GLCALL(glVertexAttribIPointer(4, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi1)));
 		GLCALL(glVertexAttribDivisor(4, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(5));
-		GLCALL(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(AssetVertex), (void*)offsetof(AssetVertex, colorAr)));
+		GLCALL(glVertexAttribIPointer(5, 2, GL_INT, sizeof(AssetVertex), (void*)offsetof(AssetVertex, xi2)));
 		GLCALL(glVertexAttribDivisor(5, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(6));
+		GLCALL(glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(AssetVertex), (void*)offsetof(AssetVertex, colorAr)));
+		GLCALL(glVertexAttribDivisor(6, Instancingdivisor));
 	}
 
 	enum class ID : unsigned int {
@@ -208,42 +214,48 @@ struct AssetVertex {
 		IDSize
 	};
 
-	static AssetVertex Box(int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, int id = 0) {
-		return AssetVertex((int)ID::Box, id, transform, p1.x(), p1.y(), p2.x(), p2.y(), colorA.x(), colorA.y(), colorA.z(), colorA.w());
+	enum Flags : unsigned int {
+		Preview =   0x1,
+		Highlight = 0x2,
+		Marked =    0x4,
+	};
+
+	static AssetVertex Box(unsigned int transform, const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& colorA, unsigned int id, unsigned int flags) {
+		return AssetVertex((unsigned int)ID::Box, id, flags, transform, p1.x(), p1.y(), p2.x(), p2.y(), colorA.x(), colorA.y(), colorA.z(), colorA.w());
 	}
 
-	static AssetVertex Gate(ID type, int transform, const Eigen::Vector2i& p, int id = 0) {
+	static AssetVertex Gate(ID type, unsigned int transform, const Eigen::Vector2i& p, unsigned int id, unsigned int flags) {
 		assert(type == ID::And || type == ID::Or || type == ID::Xor);
-		return AssetVertex((int)type, id, transform, p.x(), p.y(), 0, 0, 0, 0, 0, 0);
+		return AssetVertex((unsigned int)type, id, flags, transform, p.x(), p.y(), 0, 0, 0, 0, 0, 0);
 	}
 
-	static AssetVertex Display(ID type, int transform, int segs, const Eigen::Vector2i& p, const ColourType& colorH, int id = 0) {
+	static AssetVertex Display(ID type, unsigned int transform, int segs, const Eigen::Vector2i& p, const ColourType& colorH, unsigned int id, unsigned int flags) {
 		assert(type == ID::SevenSeg || type == ID::SixteenSeg);
-		return AssetVertex((int)type, id, transform, p.x(), p.y(), segs, 0, colorH.x(), colorH.y(), colorH.z(), colorH.w());
+		return AssetVertex((unsigned int)type, id, flags, transform, p.x(), p.y(), segs, 0, colorH.x(), colorH.y(), colorH.z(), colorH.w());
 	}
 
-	static AssetVertex Mux(int transform, int selected, const Eigen::Vector2i& p, const ColourType& colorSelected, int id = 0) {
-		return AssetVertex((int)ID::Mux, id, transform, p.x(), p.y(), selected, 0, colorSelected.x(), colorSelected.y(), colorSelected.z(), colorSelected.w());
+	static AssetVertex Mux(unsigned int transform, int selected, const Eigen::Vector2i& p, const ColourType& colorSelected, unsigned int id, unsigned int flags) {
+		return AssetVertex((unsigned int)ID::Mux, id, flags, transform, p.x(), p.y(), selected, 0, colorSelected.x(), colorSelected.y(), colorSelected.z(), colorSelected.w());
 	}
 
-	static AssetVertex Pin(bool input, int transform, const Eigen::Vector2i& p, const ColourType& color, int id = 0) {
-		return AssetVertex(int(input ? ID::InputPin : ID::OutputPin), id, transform, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), color.w());
+	static AssetVertex Pin(bool input, unsigned int transform, const Eigen::Vector2i& p, const ColourType& color, unsigned int id, unsigned int flags) {
+		return AssetVertex((unsigned int)(input ? ID::InputPin : ID::OutputPin), id, flags, transform, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), color.w());
 	}
 
-	static AssetVertex RoundPin(bool input, int transform, const Eigen::Vector2i& p, int id = 0) {
-		return AssetVertex(int(input ? ID::InputRoundPin : ID::OutputRoundPin), id, transform, p.x(), p.y(), 0, 0, 0.0, 0.0, 0.0, 0.0);
+	static AssetVertex RoundPin(bool input, unsigned int transform, const Eigen::Vector2i& p, unsigned int id, unsigned int flags) {
+		return AssetVertex((unsigned int)(input ? ID::InputRoundPin : ID::OutputRoundPin), id, flags, transform, p.x(), p.y(), 0, 0, 0.0, 0.0, 0.0, 0.0);
 	}
 
-	static AssetVertex PathEdge(const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& color, int id = 0) {
-		return AssetVertex((int)ID::PathEdge, id, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
+	static AssetVertex PathEdge(const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& color, unsigned int flags) {
+		return AssetVertex((unsigned int)ID::PathEdge, 0, flags, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
 	}
 
-	static AssetVertex PathIntersection(const Eigen::Vector2i& p, const ColourType& color, int id = 0) {
-		return AssetVertex((int)ID::PathIntersection, id, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
+	static AssetVertex PathIntersection(const Eigen::Vector2i& p, const ColourType& color) {
+		return AssetVertex((unsigned int)ID::PathIntersection, 0, 0, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
 	}
 
-	static AssetVertex PathVertex(const Eigen::Vector2i& p, const ColourType& color, int id = 0) {
-		return AssetVertex((int)ID::PathVertex, id, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
+	static AssetVertex PathVertex(const Eigen::Vector2i& p, const ColourType& color) {
+		return AssetVertex((unsigned int)ID::PathVertex, 0, 0, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
 	}
 
 	static constexpr const std::array<int, 16> NumberTo7Flags = {
@@ -398,9 +410,10 @@ struct AssetVertex {
 };
 
 struct AssetFVertex {
-	int index;
-	int id;
-	int transform;
+	unsigned int index;
+	unsigned int id;
+	// unsigned int flags;
+	unsigned int transform;
 
 	float xf1;
 	float yf1;
@@ -416,9 +429,10 @@ struct AssetFVertex {
 	private:
 
 	AssetFVertex(
-	int index,
-	int id,
-	int transform,
+	unsigned int index,
+	unsigned int id,
+	// unsigned int flags,
+	unsigned int transform,
 	float xf1,
 	float yf1,
 	float xf2,
@@ -430,6 +444,7 @@ struct AssetFVertex {
 ) :
 	index(index),
 	id(id),
+	// flags(flags),
 	transform(transform),
 	xf1(xf1),
 	yf1(yf1),
@@ -447,23 +462,26 @@ struct AssetFVertex {
 
 	static void PrepareVBO([[maybe_unused]]GLuint& Position, GLuint Instancingdivisor) {
 		GLCALL(glEnableVertexAttribArray(0));
-		GLCALL(glVertexAttribIPointer(0, 1, GL_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, index)));
+		GLCALL(glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, index)));
 		GLCALL(glVertexAttribDivisor(0, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(1));
-		GLCALL(glVertexAttribIPointer(1, 1, GL_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, id)));
+		GLCALL(glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, id)));
 		GLCALL(glVertexAttribDivisor(1, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(2));
-		GLCALL(glVertexAttribIPointer(2, 1, GL_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, transform)));
-		GLCALL(glVertexAttribDivisor(2, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(5));
-		GLCALL(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, colorAr)));
-		GLCALL(glVertexAttribDivisor(5, Instancingdivisor));
+		// GLCALL(glEnableVertexAttribArray(2));
+		// GLCALL(glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, flags)));
+		// GLCALL(glVertexAttribDivisor(2, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(3));
+		GLCALL(glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, transform)));
+		GLCALL(glVertexAttribDivisor(3, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(6));
-		GLCALL(glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf1)));
+		GLCALL(glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, colorAr)));
 		GLCALL(glVertexAttribDivisor(6, Instancingdivisor));
 		GLCALL(glEnableVertexAttribArray(7));
-		GLCALL(glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf2)));
+		GLCALL(glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf1)));
 		GLCALL(glVertexAttribDivisor(7, Instancingdivisor));
+		GLCALL(glEnableVertexAttribArray(8));
+		GLCALL(glVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf2)));
+		GLCALL(glVertexAttribDivisor(8, Instancingdivisor));
 	}
 
 

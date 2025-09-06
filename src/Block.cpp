@@ -29,13 +29,6 @@ BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetEdgesMarked(bool Floatin
 
 static BufferedVertexVec<AssetVertex> EmptyPathVec = {};
 
-BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetEdgesUnmarked(bool Floating) {
-	if (Floating) {
-		return EmptyPathVec;
-	}
-	return EdgesUnmarked;
-}
-
 BufferedVertexVec<AssetVertex>& VisualBlockInterior::GetIntersectionPoints(bool Floating) {
 	if (Floating) {
 		return FloatingIntersectionPoints;
@@ -579,7 +572,6 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 
 	Edges.clear();
 	EdgesMarked.clear();
-	EdgesUnmarked.clear();
 	IntersectionPoints.clear();
 	Verts.clear();
 	FloatingEdges.clear();
@@ -680,7 +672,6 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 
 	Edges.clear();
 	EdgesMarked.clear();
-	EdgesUnmarked.clear();
 	IntersectionPoints.clear();
 	Verts.clear();
 
@@ -694,7 +685,6 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		if (p.IsFullyMarked()) continue;
 		Edges.append(p.getEdges());
 		EdgesMarked.append(p.getEdgesMarked());
-		EdgesUnmarked.append(p.getEdgesUnmarked());
 		Verts.append(p.getVerts());
 		IntersectionPoints.append(p.getIntersectionPoints());
 	}
@@ -953,11 +943,6 @@ void VisualBlockInterior::MergeAfterMove() {
 bool VisualBlockInterior::HasMark(bool Preview) {
 	return !GetEdgesMarked(Preview).empty();
 }
-
-bool VisualBlockInterior::HasUnmarked(bool Preview) {
-	return !GetEdgesUnmarked(Preview).empty();
-}
-
 
 std::optional<VisualPathData > VisualBlockInterior::GeneratePreviewPath(const PointType& Mouse) {
 	if (PreviewData.size() < 1) return std::nullopt;
@@ -1319,58 +1304,59 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
 
 			assert((ssize_t)MarkedBlocks.size() > id);
-			ColourType Color{};
+			// ColourType Color{};
+			unsigned int Flags = 0;
 			if (MarkedBlocks[id]) {
-				Color = ColourType{ 1.0f,0.0f,1.0f,1.0f };
+				Flags |= AssetVertex::Flags::Marked;
 			}
 			else if (id == Highlited) {
-				Color = ColourType{ 1.0f,1.0f,0.0f,1.0f };
+				Flags |= AssetVertex::Flags::Highlight;
 			}
 
 			if (IndexContained == SB.SevengSeg) {
-				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SevenSeg, Meta.Transform(), AssetVertex::NumberTo7Flags[time(0) % 0x10], Base, ColourType{ 0.78f,0.992f,0.0f,1.0f }, id));
+				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SevenSeg, Meta.Transform(), AssetVertex::NumberTo7Flags[time(0) % 0x10], Base, ColourType{ 0.78f,0.992f,0.0f,1.0f }, id, Flags));
 			}
 			else if (IndexContained == SB.SixteenSeg) {
 				static std::array<int, 218> Translation = { 73,99,104,32,104,97,98,101,32,106,101,116,122,116,32,101,105,110,102,117,110,107,116,105,111,110,105,101,114,101,110,100,101,115,49,54,32,83,101,103,109,101,110,116,32,68,105,115,112,108,97,121,100,97,115,32,97,108,108,101,32,97,115,99,105,105,32,90,101,105,99,104,101,110,100,97,114,115,116,101,108,108,101,110,32,107,97,110,110,58,48,49,50,51,52,53,54,55,56,57,116,104,101,32,113,117,105,99,107,32,98,114,111,119,110,32,102,111,120,32,106,117,109,112,115,32,111,118,101,114,32,116,104,101,32,108,97,122,121,32,100,111,103,84,72,69,32,81,85,73,67,75,32,66,82,79,87,78,32,70,79,88,32,74,85,77,80,83,32,79,86,69,82,32,84,72,69,32,76,65,90,89,32,68,79,71,33,64,35,36,37,94,38,42,40,41,95,45,43,123,125,124,58,34,60,62,63,96,126,91,93,92,59,39,44,46,47,126, };
-				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SixteenSeg, Meta.Transform(), AssetVertex::NumberTo16Flags[Translation[std::max(i - 5, 0)]], Base, ColourType{ 0.992f,0.43f,0.0f,1.0f }));
+				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SixteenSeg, Meta.Transform(), AssetVertex::NumberTo16Flags[Translation[std::max(i - 5, 0)]], Base, ColourType{ 0.992f,0.43f,0.0f,1.0f }, id, Flags));
 			}
 			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.Xor) {
-				if (IndexContained == SB.And) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Base, id));
-				else if (IndexContained == SB.Or) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Base, id));
-				else if (IndexContained == SB.Xor) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Base, id));
+				if (IndexContained == SB.And) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Base, id, Flags));
+				else if (IndexContained == SB.Or) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Base, id, Flags));
+				else if (IndexContained == SB.Xor) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Base, id, Flags));
 
 				for (const auto& Pin : InputPins) {
 					BlockMetadata PinMeta;
 					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					RoundPinVBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
+					RoundPinVBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id, Flags));
 				}
 				for (const auto& Pin : OutputPins) {
 					BlockMetadata PinMeta;
 					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					RoundPinVBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
+					RoundPinVBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id, Flags));
 				}
 				ShowBlockLabl(BlockSize, Meta, Name);
 				continue;
 			}
 			else if (IndexContained == SB.Mux) {
-				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{1.0f, 0.7f, 0.4f, 1.0f}, id));
+				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{1.0f, 0.7f, 0.4f, 1.0f}, id, Flags));
 			}
 			else {
-				AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.5f,0.5f,1.0f,1.0f }, id));
+				AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.5f,0.5f,1.0f,1.0f }, id, Flags));
 				ShowBlockLabl(BlockSize, Meta, Name);
 			}
 
 			for (const auto& Pin : InputPins) {
 				BlockMetadata PinMeta;
 				PinMeta.Rotation = GetPinRotation(Meta, Pin);
-				PinVBO.emplace(AssetVertex::Pin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+				PinVBO.emplace(AssetVertex::Pin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id, Flags));
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}
 			for (const auto& Pin : OutputPins) {
 				BlockMetadata PinMeta;
 				PinMeta.Rotation = GetPinRotation(Meta, Pin);
-				PinVBO.emplace(AssetVertex::Pin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+				PinVBO.emplace(AssetVertex::Pin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id, Flags));
 				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
 				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}

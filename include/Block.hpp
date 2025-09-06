@@ -27,7 +27,6 @@ private:
 
 	BufferedVertexVec<AssetVertex> Edges;
 	BufferedVertexVec<AssetVertex> EdgesMarked;
-	BufferedVertexVec<AssetVertex> EdgesUnmarked;
 	BufferedVertexVec<AssetVertex> IntersectionPoints;
 	BufferedVertexVec<AssetVertex> Verts;
 
@@ -44,8 +43,6 @@ public:
 	BufferedVertexVec<AssetVertex>& GetEdges(bool Floating);
 
 	BufferedVertexVec<AssetVertex>& GetEdgesMarked(bool Floating);
-
-	BufferedVertexVec<AssetVertex>& GetEdgesUnmarked(bool Floating);
 
 	BufferedVertexVec<AssetVertex>& GetIntersectionPoints(bool Floating);
 
@@ -212,7 +209,6 @@ public:
 
 
 	bool HasMark(bool Preview);
-	bool HasUnmarked(bool Preview);
 
 	std::optional<VisualPathData> GeneratePreviewPath(const PointType& Mouse);
 

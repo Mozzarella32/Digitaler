@@ -55,8 +55,6 @@ private:
 	struct PathVAOs {
 		VertexArrayObject EdgesVAO;
 		VertexArrayObject EdgesMarkedVAO;
-
-		VertexArrayObject EdgesUnmarkedVAO;
 		VertexArrayObject IntersectionPointsVAO;
 		VertexArrayObject VertsVAO;
 	};

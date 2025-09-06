@@ -124,7 +124,6 @@ void VisualPath::ClearNeedsMerging() {
 void VisualPath::ComputeAll(const MyRectI& BB) {
 	if (!Data.BoundingBox.Intersectes(BB)) {
 		Edges.clear();
-		EdgesUnmarked.clear();
 		EdgesMarked.clear();
 		IntersectionPoints.clear();
 		Verts.clear();
@@ -140,7 +139,6 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 
 	Dirty = false;
 	Edges.clear();
-	EdgesUnmarked.clear();
 	EdgesMarked.clear();
 	IntersectionPoints.clear();
 	Verts.clear();
@@ -193,25 +191,29 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 				continue;
 			}*/
 
-			Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
-
+			unsigned int flags = 0;
 			if (Preview) {
-				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
-				// EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 0.0f,1.0f,0.2f,0.0f });
-				continue;
+				flags |= AssetVertex::Preview;
+				// EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				// // EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 0.0f,1.0f,0.2f,0.0f });
+				// continue;
 			}
 			if (MarkedBoundingBox && LineMarked.at({ i,OtherIndex })) {
-				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
-				// EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f, 0.0f, 1.0f, 1.0f });
-				continue;
+				flags |= AssetVertex::Marked;
+				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor, AssetVertex::Flags::Marked));
+				// EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				// // EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f, 0.0f, 1.0f, 1.0f });
+				// continue;
 			}
 			if (Hover && !HasMarked() && !DontShowHover) {
-				EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
-				// EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f,1.0f,0.0f,0.0f });
-				continue;
+				flags |= AssetVertex::Highlight;
+				// EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				// // EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f,1.0f,0.0f,0.0f });
+				// continue;
 			}
-				EdgesUnmarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				// EdgesUnmarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
 			// EdgesUnmarked.emplace_back(A, B, MyColor, ColourType::Zero());
+			Edges.push_back(AssetVertex::PathEdge(A, B, MyColor, flags));
 		}
 	}
 
@@ -223,10 +225,6 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 
 const std::vector<AssetVertex>& VisualPath::getEdges() const {
 	return Edges;
-}
-
-const std::vector<AssetVertex>& VisualPath::getEdgesUnmarked() const {
-	return EdgesUnmarked;
 }
 
 const std::vector<AssetVertex>& VisualPath::getEdgesMarked() const {
@@ -273,7 +271,6 @@ void VisualPath::Free(const PathIndex& head) {
 	CachedBoundingBox = {};
 	Edges.clear();
 	EdgesMarked.clear();
-	EdgesUnmarked.clear();
 	IntersectionPoints.clear();
 	Verts.clear();
 	ClearMarkedArea();

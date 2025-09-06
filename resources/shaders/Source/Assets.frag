@@ -4,22 +4,23 @@
 
 precision highp float;
 
-flat in int  ID;
-flat in int  Index;
+flat in uint  Index;
+flat in uint  ID;
+flat in uint  Flags;
+flat in int  I1;
 flat in vec2 FPoint1;
 flat in vec2 FPoint2;
 flat in vec2 FPoint;
-flat in int  I1;
 flat in vec4 ColorA;
 
 in vec2 Pos;
 in vec2 TextureCoord;
 
-//Uniform
-uniform float UZoomFactor;
- 
 layout(location = 0)out vec4 FragColor;
 layout(location = 1)out uint Id;
+
+//Uniform
+uniform float UZoomFactor;
 
 uniform sampler2D UBackground;
 uniform sampler2D UPath;

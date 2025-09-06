@@ -3,16 +3,14 @@
 //#define Testing
 #define UseCollisionGrid
 
-
-//Not working
-#define RenderCollisionGrid
+// #define RenderCollisionGrid
+// #define ShowBasePositionOfBlocks
+// #define ShowBoundingBoxes
 
 #ifndef UseCollisionGrid
 #undef RenderCollisionGrid
 #endif
 
-#define ShowBasePositionOfBlocks
-#define ShowBoundingBoxes
 
 #define HotShaderReload
 

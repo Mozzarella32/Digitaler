@@ -31,7 +31,6 @@ private:
 
 	//Importent for order
 	std::vector<AssetVertex> Edges;
-	std::vector<AssetVertex> EdgesUnmarked;
 	std::vector<AssetVertex> EdgesMarked;
 
 	//If a vert is touched by at leas two lines
@@ -75,7 +74,6 @@ public:
 	void ComputeAll(const MyRectI& BB);
 
 	const std::vector<AssetVertex>& getEdges() const;
-	const std::vector<AssetVertex>& getEdgesUnmarked() const;
 	const std::vector<AssetVertex>& getEdgesMarked() const;
 	const std::vector<AssetVertex>& getIntersectionPoints() const;
 	const std::vector<AssetVertex>& getVerts() const;
