@@ -49,6 +49,15 @@ private:
 	Texture FBOIDTexture;
 	FrameBufferObject FBOID;
 
+	Texture FBOBlurHighlightTexture;
+	FrameBufferObject FBOBlurHighlight;
+
+	Texture FBOBlurPreviewTexture;
+	FrameBufferObject FBOBlurPreview;
+
+	Texture FBOBlurMarkedTexture;
+	FrameBufferObject FBOBlurMarked;
+
 	std::array<GLenum, 1> DrawBuffer0 = { GL_COLOR_ATTACHMENT0 };
 	std::array<GLenum, 2> DrawBuffer1 = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 
@@ -122,6 +131,23 @@ public:
 	constexpr static const float ZoomDotsBorder = 0.03f;
 	bool ShowDots = true;
 	void CheckZoomDots();
+
+	private:
+	static Texture CreateBlurTexture(){
+		Texture::Descriptor desc;
+		desc.Format = GL_RED_INTEGER;
+		desc.Internal_Format = GL_R32UI;
+		desc.Depth_Stencil_Texture_Mode = GL_STENCIL_INDEX;
+		desc.Type = GL_UNSIGNED_INT;
+		desc.Wrap_R = Texture::Descriptor::CLAMP_TO_BORDER;
+		desc.Wrap_S = Texture::Descriptor::CLAMP_TO_BORDER;
+		desc.Wrap_T = Texture::Descriptor::CLAMP_TO_BORDER;
+		desc.Min_Filter = Texture::Descriptor::LINEAR;
+		desc.Mag_Filter = Texture::Descriptor::LINEAR;
+		return Texture(1, 1, nullptr, desc);
+	}
+
+	public:
 
 	Renderer(MyApp* App, MyFrame* Frame);
 	~Renderer();

@@ -753,7 +753,7 @@ void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, co
 		);
 
 		Preview.ComputeAll(ViewRectI);
-		FloatingEdges.append(Preview.getEdgesMarked());
+		FloatingEdges.append(Preview.getEdges());
 		FloatingVerts.append(Preview.getVerts());
 		FloatingIntersectionPoints.append(Preview.getIntersectionPoints());
 	}

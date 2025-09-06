@@ -4,9 +4,9 @@
 
 precision highp float;
 
-flat in uint  Index;
-flat in uint  ID;
-flat in uint  Flags;
+flat in uint Index;
+flat in uint ID;
+flat in uint Flags;
 flat in int  I1;
 flat in vec2 FPoint1;
 flat in vec2 FPoint2;
@@ -16,8 +16,8 @@ flat in vec4 ColorA;
 in vec2 Pos;
 in vec2 TextureCoord;
 
-layout(location = 0)out vec4 FragColor;
-layout(location = 1)out uint Id;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out uint Id;
 
 //Uniform
 uniform float UZoomFactor;
@@ -27,6 +27,7 @@ uniform sampler2D UPath;
 
 uniform bool UWirePass;
 uniform bool UIDRun;
+uniform uint UHighlight;
 
 float dot2(vec2 v) {
     return dot(v, v);
@@ -505,6 +506,17 @@ void main () {
     //     return;
     // }
     vec4 col = get();
+
+    if(UHighlight != 0 && ((UHighlight & Flags) != 0)) {
+        if(1.0 - 10.0 * col.a > 0) {
+            Id = 255;
+            return;
+        }
+        else{
+            discard;
+        }
+        
+    }
 
     if(UIDRun) {
         if(1.0 - 10.0 * col.a > 0) {
