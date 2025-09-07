@@ -91,8 +91,14 @@ void ShaderManager::Work() {
 
 #define X(Vert, Frag) \
         { \
-            std::string vert_path = std::string("../resources/shaders/Source/") + STRINGIFY(Vert) + ".vert"; \
-            std::string frag_path = std::string("../resources/shaders/Source/") + STRINGIFY(Frag) + ".frag"; \
+            std::ostringstream vert_ss; \
+            vert_ss << "../resources/shaders/Source/" << STRINGIFY(Vert) << ".vert"; \
+            std::string vert_path = vert_ss.str(); \
+            \
+            std::ostringstream frag_ss; \
+            frag_ss << "../resources/shaders/Source/" << STRINGIFY(Frag) << ".frag"; \
+            std::string frag_path = frag_ss.str(); \
+            \
             UpdateShader(Frag, vert_path, std::nullopt, frag_path); \
         }
         XList_Shaders_VertFrag
@@ -100,9 +106,18 @@ void ShaderManager::Work() {
 
 #define X(Vert, Geom, Frag) \
         { \
-            std::string vert_path = std::string("../resources/shaders/Source/") + STRINGIFY(Vert) + ".vert"; \
-            std::string geom_path = std::string("../resources/shaders/Source/") + STRINGIFY(Geom) + ".geom"; \
-            std::string frag_path = std::string("../resources/shaders/Source/") + STRINGIFY(Frag) + ".frag"; \
+            std::ostringstream vert_ss; \
+            vert_ss << "../resources/shaders/Source/" << STRINGIFY(Vert) << ".vert"; \
+            std::string vert_path = vert_ss.str(); \
+            \
+            std::ostringstream geom_ss; \
+            geom_ss << "../resources/shaders/Source/" << STRINGIFY(Geom) << ".geom"; \
+            std::string geom_path = geom_ss.str(); \
+            \
+            std::ostringstream frag_ss; \
+            frag_ss << "../resources/shaders/Source/" << STRINGIFY(Frag) << ".frag"; \
+            std::string frag_path = frag_ss.str(); \
+            \
             UpdateShader(Frag, vert_path, geom_path, frag_path); \
         }
         XList_Shaders_VertGeomFrag
