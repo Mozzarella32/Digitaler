@@ -26,8 +26,12 @@ ShaderManager::ShaderManager()
     : shaders{
 #define X(Vert, Frag) \
     ([]() { \
-        auto vert_src = std::string(CONCAT(Vert, _vert), CONCAT(Vert, _vert_len)); \
-        auto frag_src = std::string(CONCAT(Frag, _frag), CONCAT(Frag, _frag_len)); \
+        const char* vert_ptr = CONCAT(Vert, _vert); \
+        size_t vert_len = CONCAT(Vert, _vert_len); \
+        auto vert_src = std::string(vert_ptr, vert_len); \
+        const char* frag_ptr = CONCAT(Frag, _frag); \
+        size_t frag_len = CONCAT(Frag, _frag_len); \
+        auto frag_src = std::string(frag_ptr, frag_len); \
         return Shader(ErrorHandler, { \
             Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
             Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{frag_src}} \
@@ -40,9 +44,15 @@ XList_Shaders_VertFrag
 
 #define X(Vert, Geom, Frag) \
     ([]() { \
-        auto vert_src = std::string{CONCAT(Vert, _vert), CONCAT(Vert, _vert_len)}; \
-        auto geom_src = std::string{CONCAT(Geom, _geom), CONCAT(Geom, _geom_len)}; \
-        auto frag_src = std::string{CONCAT(Frag, _frag), CONCAT(Frag, _frag_len)}; \
+        const char* vert_ptr = CONCAT(Vert, _vert); \
+        size_t vert_len = CONCAT(Vert, _vert_len); \
+        auto vert_src = std::string(vert_ptr, vert_len); \
+        const char* geom_ptr = CONCAT(Geom, _geom); \
+        size_t geom_len = CONCAT(Geom, _geom_len); \
+        auto geom_src = std::string(geom_ptr, geom_len); \
+        const char* frag_ptr = CONCAT(Frag, _frag); \
+        size_t frag_len = CONCAT(Frag, _frag_len); \
+        auto frag_src = std::string(frag_ptr, frag_len); \
         return Shader(ErrorHandler, { \
             Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
             Shader::ShaderInfo{Shader::ShaderType::Geometry, Shader::ShaderSource{geom_src}}, \
@@ -54,11 +64,13 @@ XList_Shaders_VertGeomFrag
 
 #undef X
 
-      } {
+      }
+{
 #ifdef HotShaderReload
-	Worker = std::thread(&ShaderManager::Work, this);
+    Worker = std::thread(&ShaderManager::Work, this);
 #endif
 }
+
 void ShaderManager::Stop() {
 	auto& This = GetInstance();
 	if (This.Running) {
