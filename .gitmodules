@@ -17,3 +17,6 @@
 [submodule "submodules/PreparePngs"]
 	path = submodules/PreparePngs
 	url = https://github.com/Mozzarella32/PreparePngs.git
+[submodule "submodules/PrepareShaders"]
+	path = submodules/PrepareShaders
+	url = https://github.com/Mozzarella32/PrepareShaders.git
