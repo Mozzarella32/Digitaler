@@ -49,17 +49,13 @@ build/
 # JetBrains
 .idea/*
 
-Png_Includes.hpp
-Png_X_List.hpp
-PngHeaders
-resources/art/PreparePngs
-resources/art/PreparePngs.exe
+resources/art/PngHeaders
+resources/art/Png_Includes.hpp
+resources/art/Png_X_List.hpp
 
-Shader_Includes.hpp
-Shader_X_List.hpp
-CharArrays
-resources/shaders/ShadersToCharArray
-resources/shaders/ShadersToCharArray.exe
+resources/shaders/ShaderHeaders
+resources/shaders/Shader_Includes.hpp
+resources/shaders/Shader_X_List.hpp
 .hash
 
 Digitaler

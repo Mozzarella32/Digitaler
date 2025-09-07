@@ -258,7 +258,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/MyWxWidgets)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/PreparePngs)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/ShadersToCharArray)
+add_subdirectory(${PROJECT_SOURCE_DIR}/submodules/PrepareShaders)
 
 # Directories
 set(SRC_DIR "${PROJECT_SOURCE_DIR}/src")
@@ -326,11 +326,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC MyWxWidgets)
 
 # Invok the pre build executable to generate Shaders and Pngs as bytarrays as there is still no #embede suppoert on msvc
 add_custom_target(
-    Invoke_ShadersToCharArray ALL
-    COMMAND $<TARGET_FILE:ShadersToCharArray> ${PROJECT_SOURCE_DIR}/resources/shaders
-    COMMENT "Calling ShadersToCharArray"
+    Invoke_PrepareShaders ALL
+    COMMAND $<TARGET_FILE:PrepareShaders> ${PROJECT_SOURCE_DIR}/resources/shaders
+    COMMENT "Calling PrepareShaders"
 )
-add_dependencies(Invoke_ShadersToCharArray ShadersToCharArray)
+add_dependencies(Invoke_PrepareShaders PrepareShaders)
 
 add_custom_target(
     Invoke_PreparePngs ALL
@@ -339,5 +339,5 @@ add_custom_target(
 )
 add_dependencies(Invoke_PreparePngs PreparePngs)
 
-add_dependencies(${PROJECT_NAME} Invoke_ShadersToCharArray Invoke_PreparePngs)
+add_dependencies(${PROJECT_NAME} Invoke_PrepareShaders Invoke_PreparePngs)
 

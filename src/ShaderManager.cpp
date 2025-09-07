@@ -24,11 +24,10 @@ ShaderManager::~ShaderManager() {
 
 ShaderManager::ShaderManager()
     : shaders{
-
 #define X(Vert, Frag) \
     ([]() { \
-        auto vert_src = std::string(CONCAT(Vert, _vert)); \
-        auto frag_src = std::string(CONCAT(Frag, _frag)); \
+        auto vert_src = std::string(CONCAT(Vert, _vert), CONCAT(Vert, _vert_len)); \
+        auto frag_src = std::string(CONCAT(Frag, _frag), CONCAT(Frag, _frag_len)); \
         return Shader(ErrorHandler, { \
             Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
             Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{frag_src}} \
@@ -41,9 +40,9 @@ XList_Shaders_VertFrag
 
 #define X(Vert, Geom, Frag) \
     ([]() { \
-        auto vert_src = std::string(CONCAT(Vert, _vert)); \
-        auto geom_src = std::string(CONCAT(Geom, _geom)); \
-        auto frag_src = std::string(CONCAT(Frag, _frag)); \
+        auto vert_src = std::string{CONCAT(Vert, _vert), CONCAT(Vert, _vert_len)}; \
+        auto geom_src = std::string{CONCAT(Geom, _geom), CONCAT(Geom, _geom_len)}; \
+        auto frag_src = std::string{CONCAT(Frag, _frag), CONCAT(Frag, _frag_len)}; \
         return Shader(ErrorHandler, { \
             Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
             Shader::ShaderInfo{Shader::ShaderType::Geometry, Shader::ShaderSource{geom_src}}, \
