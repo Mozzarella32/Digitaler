@@ -18,9 +18,9 @@ in vec4   VSColorA[1];
 in vec2   VSFPoint1[1];
 in vec2   VSFPoint2[1];
 
-flat out uint  Index;
-flat out uint  ID;
-flat out uint  Flags;
+flat out uint Index;
+flat out uint ID;
+flat out uint Flags;
 flat out int  I1;
 flat out vec2 FPoint1;
 flat out vec2 FPoint2;
@@ -148,6 +148,7 @@ ivec2 lookup[4] = ivec2[4](
 void main() {
     ID =      VSID[0];
     Index =   VSIndex[0];
+    Flags =   VSFlags[0];
     ColorA =  VSColorA[0];
     I1 =      VSIPoint2[0].x;
 

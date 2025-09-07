@@ -215,6 +215,7 @@ struct AssetVertex {
 	};
 
 	enum Flags : unsigned int {
+		None =      0x0,
 		Preview =   0x1,
 		Highlight = 0x2,
 		Marked =    0x4,
@@ -250,12 +251,12 @@ struct AssetVertex {
 		return AssetVertex((unsigned int)ID::PathEdge, 0, flags, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
 	}
 
-	static AssetVertex PathIntersection(const Eigen::Vector2i& p, const ColourType& color) {
-		return AssetVertex((unsigned int)ID::PathIntersection, 0, 0, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
+	static AssetVertex PathIntersection(const Eigen::Vector2i& p, const ColourType& color, unsigned int flags) {
+		return AssetVertex((unsigned int)ID::PathIntersection, 0, flags, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
 	}
 
-	static AssetVertex PathVertex(const Eigen::Vector2i& p, const ColourType& color) {
-		return AssetVertex((unsigned int)ID::PathVertex, 0, 0, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
+	static AssetVertex PathVertex(const Eigen::Vector2i& p, const ColourType& color, unsigned int flags) {
+		return AssetVertex((unsigned int)ID::PathVertex, 0, flags, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
 	}
 
 	static constexpr const std::array<int, 16> NumberTo7Flags = {

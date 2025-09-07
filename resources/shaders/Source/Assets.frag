@@ -440,6 +440,10 @@ vec4 sdPathIntersectionPoints(vec2 Pos) {
     return vec4(mix(pix.rgb, col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0)), -1.0 / 0.0);
 }
 
+float sdPathIntersectionPointsTrue(vec2 Pos) {
+    return 1.0 - 2.5 * length(abs(Pos) - vec2(0.5));
+}
+
 vec4 sdPathVertex(vec2 Pos) {
     vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
     vec4 segment = vec4(ColorA.rgb, 2.5 * length(Pos) - 0.25);
@@ -491,7 +495,12 @@ vec4 get() {
         case 11://PathEdge
         return sdPathEdge(Pos);
         case 12://PathIntersectionPoints
-        return sdPathIntersectionPoints(Pos);
+        if(UHighlight != 0) {
+            return vec4(0.0, 0.0, 0.0, sdPathIntersectionPointsTrue(Pos));
+        }
+        else {
+            return sdPathIntersectionPoints(Pos);
+        }
         case 13://PathVertex
         return sdPathVertex(Pos);
         case 14://AreaSelct
@@ -507,15 +516,14 @@ void main () {
     // }
     vec4 col = get();
 
-    if(UHighlight != 0 && ((UHighlight & Flags) != 0)) {
-        if(1.0 - 10.0 * col.a > 0) {
-            Id = 255;
-            return;
+    if(UHighlight != 0) {
+        if ((UHighlight & Flags) != 0) {
+            if (1.0 - 10.0 * col.a > 0) {
+                Id = 255;
+                return;
+            }
         }
-        else{
-            discard;
-        }
-        
+        discard;
     }
 
     if(UIDRun) {

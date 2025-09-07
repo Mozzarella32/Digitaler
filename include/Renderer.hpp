@@ -50,12 +50,15 @@ private:
 	FrameBufferObject FBOID;
 
 	Texture FBOBlurHighlightTexture;
+	Texture FBOBlurHighlightStencileDepthTexture;
 	FrameBufferObject FBOBlurHighlight;
 
 	Texture FBOBlurPreviewTexture;
+	Texture FBOBlurPreviewStencileDepthTexture;
 	FrameBufferObject FBOBlurPreview;
 
 	Texture FBOBlurMarkedTexture;
+	Texture FBOBlurMarkedStencileDepthTexture;
 	FrameBufferObject FBOBlurMarked;
 
 	std::array<GLenum, 1> DrawBuffer0 = { GL_COLOR_ATTACHMENT0 };
@@ -133,7 +136,7 @@ public:
 	void CheckZoomDots();
 
 	private:
-	static Texture CreateBlurTexture(){
+	static Texture CreateBlurTexture() {
 		Texture::Descriptor desc;
 		desc.Format = GL_RED_INTEGER;
 		desc.Internal_Format = GL_R32UI;
@@ -144,6 +147,16 @@ public:
 		desc.Wrap_T = Texture::Descriptor::CLAMP_TO_BORDER;
 		desc.Min_Filter = Texture::Descriptor::LINEAR;
 		desc.Mag_Filter = Texture::Descriptor::LINEAR;
+		return Texture(1, 1, nullptr, desc);
+	}
+
+	static Texture CreateBlurStencileDepthTexture() {
+		Texture::Descriptor desc;
+		desc.Format = GL_DEPTH_STENCIL;
+		desc.Internal_Format = GL_DEPTH24_STENCIL8;
+		desc.Depth_Stencil_Texture_Mode =
+			GL_STENCIL_INDEX;
+		desc.Type = GL_UNSIGNED_INT_24_8;
 		return Texture(1, 1, nullptr, desc);
 	}
 
