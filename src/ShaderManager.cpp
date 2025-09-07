@@ -87,31 +87,30 @@ ShaderManager& ShaderManager::GetInstance() {
 
 #ifdef HotShaderReload
 void ShaderManager::Work() {
-	while (Running) {
-
+    while (Running) {
 
 #define X(Vert, Frag) \
-UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".vert", std::nullopt, std::string("../resources/shaders/Source/")+STRINGIFY(Frag)+".frag");
-
-		XList_Shaders_VertFrag
-
+        { \
+            std::string vert_path = std::string("../resources/shaders/Source/") + STRINGIFY(Vert) + ".vert"; \
+            std::string frag_path = std::string("../resources/shaders/Source/") + STRINGIFY(Frag) + ".frag"; \
+            UpdateShader(Frag, vert_path, std::nullopt, frag_path); \
+        }
+        XList_Shaders_VertFrag
 #undef X
 
 #define X(Vert, Geom, Frag) \
-UpdateShader(Frag,std::string("../resources/shaders/Source/")+STRINGIFY(Vert)+".vert", std::string("../resources/shaders/Source/")+STRINGIFY(Geom)+".geom", std::string("../resources/shaders/Source/")+STRINGIFY(Frag)+".frag");
-
-		XList_Shaders_VertGeomFrag
-
+        { \
+            std::string vert_path = std::string("../resources/shaders/Source/") + STRINGIFY(Vert) + ".vert"; \
+            std::string geom_path = std::string("../resources/shaders/Source/") + STRINGIFY(Geom) + ".geom"; \
+            std::string frag_path = std::string("../resources/shaders/Source/") + STRINGIFY(Frag) + ".frag"; \
+            UpdateShader(Frag, vert_path, geom_path, frag_path); \
+        }
+        XList_Shaders_VertGeomFrag
 #undef X
 
-		std::unique_lock ulSleep(WaitCVMutex);
-		WaitCV.wait_for(ulSleep,std::chrono::milliseconds(16));
-// #ifdef _WIN32
-		// Sleep(100);
-// #else
-		// sleep(16);
-// #endif
-	}
+        std::unique_lock ulSleep(WaitCVMutex);
+        WaitCV.wait_for(ulSleep, std::chrono::milliseconds(16));
+    }
 }
 
 void ShaderManager::UpdateShader(const Shaders& shader, const std::filesystem::path& Vert, const std::optional<std::filesystem::path>& Geom, const std::filesystem::path& Frag) {
