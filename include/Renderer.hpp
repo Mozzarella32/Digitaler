@@ -148,8 +148,8 @@ public:
 		desc.Wrap_R = Texture::Descriptor::CLAMP_TO_BORDER;
 		desc.Wrap_S = Texture::Descriptor::CLAMP_TO_BORDER;
 		desc.Wrap_T = Texture::Descriptor::CLAMP_TO_BORDER;
-		desc.Min_Filter = Texture::Descriptor::LINEAR;
-		desc.Mag_Filter = Texture::Descriptor::LINEAR;
+		desc.Min_Filter = Texture::Descriptor::NEAREST;
+		desc.Mag_Filter = Texture::Descriptor::NEAREST;
 		return Texture(1, 1, nullptr, desc);
 	}
 

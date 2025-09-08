@@ -239,94 +239,71 @@ void Renderer::RenderWires() {
   Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), false);
 
   b.UpdateVectsForVAOsFloating(BoundingBox, MouseIndex);
-  if (b.HasFloating()) {
-    Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), false);
-
-    GLuint clearint = 0;
-    GLCALL(glClearTexImage(FBOBlurPreviewTexture.GetId(), 0, GL_RED_INTEGER,
-        GL_UNSIGNED_INT, &clearint));
-
-    FBOBlurPreview.bind(FrameBufferObject::BindMode::Draw);
-
-    GLCALL(glStencilMask(0xFF));
-    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-
-    GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
-    Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), true, AssetVertex::Preview);
-
-    GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-    AssetShader.apply("UHighlight", Shader::Data1ui{0});
-    FBOBlurPreview.unbind();
+  
+  if (b.HasPreview()) {
+      Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), false);
   }
 
-  if (b.HasHighlitedPath() || b.HasHighlited()) {
-      GLuint clearint = 0;
-      GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
-          GL_UNSIGNED_INT, &clearint));
+  //Preview
+  GLuint clearint = 0;
+  GLCALL(glClearTexImage(FBOBlurPreviewTexture.GetId(), 0, GL_RED_INTEGER,
+      GL_UNSIGNED_INT, &clearint));
 
-      FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
+  FBOBlurPreview.bind(FrameBufferObject::BindMode::Draw);
 
-      GLCALL(glStencilMask(0xFF));
-      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+  GLCALL(glStencilMask(0xFF));
+  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-      if (b.HasHighlited()) {
+  if (b.HasPreview()) {
+      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-          GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), true, AssetVertex::Preview);
 
-          Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
-
-          GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-      }
-
+      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
-      FBOBlurHighlight.unbind();
   }
 
+  FBOBlurPreview.unbind();
 
-  if (b.HasHighlitedPath() || b.HasHighlited()) {
-      GLuint clearint = 0;
-      GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
-          GL_UNSIGNED_INT, &clearint));
+  //Highlight
+  GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
+      GL_UNSIGNED_INT, &clearint));
 
-      FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
+  FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
-      GLCALL(glStencilMask(0xFF));
-      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+  GLCALL(glStencilMask(0xFF));
+  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-      if (b.HasHighlited()) {
+  if (b.HasHighlited()) {
 
-          GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-          Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
+      Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
 
-          GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-      }
-
+      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
-      FBOBlurHighlight.unbind();
   }
 
-  if (b.HasMarkedBlocks() || !b.GetEdgesMarked(false).empty()) {
-      GLuint clearint = 0;
-      GLCALL(glClearTexImage(FBOBlurMarkedTexture.GetId(), 0, GL_RED_INTEGER,
-          GL_UNSIGNED_INT, &clearint));
+  FBOBlurHighlight.unbind();
 
-      FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
+  //Marked
+  GLCALL(glClearTexImage(FBOBlurMarkedTexture.GetId(), 0, GL_RED_INTEGER,
+      GL_UNSIGNED_INT, &clearint));
 
-      GLCALL(glStencilMask(0xFF));
-      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+  FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
-      if (!b.GetEdgesMarked(false).empty()) {
+  GLCALL(glStencilMask(0xFF));
+  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-          GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-          Pass(GetPathVAOs(false), b.GetEdgesMarked(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Marked);
-          GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-      }
+  if (!b.GetEdgesMarked(false).empty()) {
 
+      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      Pass(GetPathVAOs(false), b.GetEdgesMarked(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Marked);
+      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
-      FBOBlurHighlight.unbind();
   }
+
+  FBOBlurHighlight.unbind();
 
   AssetShader.unbind();
 
