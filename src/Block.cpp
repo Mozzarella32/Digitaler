@@ -712,7 +712,7 @@ void VisualBlockInterior::UpdateVectsForVAOsFloating(const MyRectF& ViewRect, co
 		for (auto& p : Paths) {
 			if (p.IsFree()) continue;
 			if (!p.IsFullyMarked()) continue;
-			FloatingEdges.append(p.getEdgesMarked());
+			FloatingEdges.append(p.getEdges());
 			FloatingVerts.append(p.getVerts());
 			FloatingIntersectionPoints.append(p.getIntersectionPoints());
 		}

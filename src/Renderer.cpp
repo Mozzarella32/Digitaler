@@ -241,6 +241,9 @@ void Renderer::RenderWires() {
   b.UpdateVectsForVAOsFloating(BoundingBox, MouseIndex);
   
   if (b.HasPreview()) {
+      GLCALL(glStencilMask(0xFF));
+      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+
       Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), false);
   }
 
@@ -274,7 +277,7 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (b.HasHighlited()) {
+  if (b.HasHighlitedPath()) {
 
       GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 

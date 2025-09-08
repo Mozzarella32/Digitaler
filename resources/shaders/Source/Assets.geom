@@ -94,7 +94,7 @@ vec4 getRect(uint Index) {
         case 12://PathIntersectionPoints
         case 13://PathVertex
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
-        case 14:
+        case 14://AreaSelect
         return vec4(VSFPoint1[0], VSFPoint2[0]);
     }
     return vec4(VSIPoint1[0], VSIPoint2[0]);
@@ -174,10 +174,6 @@ void main() {
     vec2 size = vec2(rect.zw - rect.xy) / 2.0 + 0.5;
 
     FPoint = abs((rect.zw - rect.xy) / 2.0);
-
-    if(ID == 14) {//AreaSelect
-        FPoint = (VSFPoint2[0] - VSFPoint1[0]) / 2.0;
-    }
 
     vec2 base = vec2(rect.xy + rect.zw) / 2.0;
 
