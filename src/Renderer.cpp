@@ -501,6 +501,25 @@ void Renderer::Render() {
 
       FBOBlurHighlight.unbind();
 
+      if(b.GetMarkedAssetVBO().empty())
+        FBOMain.bind(FrameBufferObject::Draw);
+  }
+
+  if (!b.GetMarkedAssetVBO().empty()) {
+      FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
+
+      assetShader.apply("UHighlight", Shader::Data1ui{ AssetVertex::Flags::Marked});
+
+      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+
+      SimplePass([&b]() {return b.GetMarkedAssetVBO(); }, MarkedAssetVAO);
+
+      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+
+      assetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+
+      FBOBlurMarked.unbind();
+
       FBOMain.bind(FrameBufferObject::Draw);
   }
 
@@ -792,6 +811,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       PinVAO(CreateVAO<AssetVertex>()),
       RoundPinVAO(CreateVAO<AssetVertex>()),
       HighlightAssetVAO(CreateVAO<AssetVertex>()),
+      MarkedAssetVAO(CreateVAO<AssetVertex>()),
       AreaSelectVAO(CreateVAO<AssetFVertex>()),
 #ifdef ShowBoundingBoxes
       BBVAO(CreateVAO<AssetFVertex>()),

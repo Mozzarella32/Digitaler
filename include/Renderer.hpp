@@ -84,6 +84,7 @@ private:
 	VertexArrayObject RoundPinVAO;
 
 	VertexArrayObject HighlightAssetVAO;
+	VertexArrayObject MarkedAssetVAO;
 
 	VertexArrayObject AreaSelectVAO;
 
