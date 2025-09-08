@@ -626,8 +626,19 @@ void Renderer::Render() {
   Frame->HoleScreenVAO->bind();
 
   FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+  liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 0.0, 1.0});
   Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
   FBOBlurMarkedTexture.unbind();
+
+  FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+  liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 1.0, 0.0});
+  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+  FBOBlurHighlightTexture.unbind();
+
+  FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+  liquidGlassShader.apply("UColor", Shader::Data3f{0.0, 1.0, 0.0});
+  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+  FBOBlurPreviewTexture.unbind();
 
   Frame->HoleScreenVAO->unbind();
   liquidGlassShader.unbind();

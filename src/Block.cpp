@@ -1368,7 +1368,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			else {
 				AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.5f,0.5f,1.0f,1.0f }, id, Flags));
 				if (Flags & AssetVertex::Highlight) HighlightAssetVBO.append(AssetVBO.back());
-				if (Flags & AssetVertex::Highlight) MarkedAssetVBO.append(AssetVBO.back());
+				if (Flags & AssetVertex::Marked) MarkedAssetVBO.append(AssetVBO.back());
 				ShowBlockLabl(BlockSize, Meta, Name);
 			}
 
