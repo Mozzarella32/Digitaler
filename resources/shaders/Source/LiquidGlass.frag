@@ -14,7 +14,7 @@ uniform usampler2D UBluredBase;
 void main() {
 	uvec4 pix = texture(UBluredBase, TextureCoord);
 	if(pix.r == 0) {
-		FragColor = vec4(0.0, 1.0, 0.0, 0.5);
+		FragColor = vec4(0.0, 0.0, 0.0, 0.0);
 	}
 	else {
 		FragColor = vec4(1.0, 0.0, 0.5, 0.5);
