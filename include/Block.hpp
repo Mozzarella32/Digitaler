@@ -57,6 +57,7 @@ private:
 	bool DirtyBlocks : 1 = true;
 	bool PathNeedsMerging : 1= false;
 	bool Moving : 1 = false;//Used to know when to scann for split
+	bool hasHighlitedPath = false;
 
 	MyRectF PreviewCachedBoundingBox;
 
@@ -148,6 +149,8 @@ public:
 	void UpdateCurrentBlock();
 
 	~VisualBlockInterior() noexcept;
+
+	bool HasHighlitedPath() const;
 
 	void UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover);
 	void UpdateVectsForVAOsFloating(const MyRectF& ViewRect, const PointType& Mouse);

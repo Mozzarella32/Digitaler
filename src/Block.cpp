@@ -638,6 +638,10 @@ VisualBlockInterior::~VisualBlockInterior() noexcept {
 	Destructing = true;
 }
 
+bool VisualBlockInterior::HasHighlitedPath() const {
+	return hasHighlitedPath;
+}
+
 void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover) {
 	PROFILE_FUNKTION;
 	if (CachedBoundingBox != ViewRect) {
@@ -650,11 +654,13 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		MouseCached = Mouse;
 		Dirty = true;
 		DirtyBlocks = true;
+		hasHighlitedPath = false;
 		for (auto& p : Paths) {
 			if (p.IsFree()) continue;
 			p.SetDontShowHover(Moving || HasPreview());
 			if (AllowHover && p.Intercept(Mouse)) {
 				p.SetHover(true);
+				hasHighlitedPath = true;
 			}
 			else {
 				p.SetHover(false);

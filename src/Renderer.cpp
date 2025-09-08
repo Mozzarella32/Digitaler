@@ -260,22 +260,28 @@ void Renderer::RenderWires() {
     FBOBlurPreview.unbind();
   }
 
-  GLuint clearint = 0;
-  GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
-      GL_UNSIGNED_INT, &clearint));
-  
-  FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
-  
-  GLCALL(glStencilMask(0xFF));
-  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-  
-  GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-  
-  Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
-  
-  GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-  AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
-  FBOBlurHighlight.unbind();
+  if (b.HasHighlitedPath() || b.HasHighlited()) {
+      GLuint clearint = 0;
+      GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
+          GL_UNSIGNED_INT, &clearint));
+
+      FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
+
+      GLCALL(glStencilMask(0xFF));
+      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+
+      if (b.HasHighlited()) {
+
+          GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+
+          Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
+
+          GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      }
+
+      AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+      FBOBlurHighlight.unbind();
+  }
 
   AssetShader.unbind();
 
@@ -433,6 +439,29 @@ void Renderer::Render() {
   SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO);
 
   WirePass([&b](){return b.GetRoundPinVBO(); }, RoundPinVAO);
+
+
+  if (b.HasHighlited()) {
+      FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
+
+      assetShader.apply("UHighlight", Shader::Data1ui{ AssetVertex::Flags::Highlight });
+
+      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+
+      WirePass([&b]() {return b.GetPinVBO(); }, PinVAO);
+        
+      SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO);
+
+      WirePass([&b]() {return b.GetRoundPinVBO(); }, RoundPinVAO);
+
+      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      
+      assetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+
+      FBOBlurHighlight.unbind();
+
+      FBOMain.bind(FrameBufferObject::Draw);
+  }
 
   assetShader.unbind();
 
