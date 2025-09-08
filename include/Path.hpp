@@ -39,7 +39,7 @@ private:
 
 	MyRectI CachedBoundingBox;
 
-	std::optional<MyRectI> MarkedBoundingBox;
+	std::optional<MyRectF> MarkedBoundingBox;
 
 	std::unordered_map<LineIndex, bool> LineMarked;
 
@@ -54,7 +54,7 @@ public:
 	void SetPreview(bool Preview);
 
 	//Returns if sth has changed
-	bool SetMarkedArea(const MyRectI& MarkedBB);
+	bool SetMarkedArea(const MyRectF& MarkedBB);
 
 	//Returnes if previously marked
 	bool ClearMarkedArea();

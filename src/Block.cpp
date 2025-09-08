@@ -104,7 +104,7 @@ void VisualBlockInterior::MarkAll() {
 	bool FoundPath = false;
 	for (auto& p : Paths) {
 		if (p.IsFree()) continue;
-		FoundPath |= p.SetMarkedArea(FullRectI);
+		FoundPath |= p.SetMarkedArea(FullRectF);
 	}
 	hasMarkedPath = !Paths.empty();
 	Dirty |= HasUnmarkedBlocks | FoundPath;
@@ -364,7 +364,7 @@ void VisualBlockInterior::MarkArea(const MyRectF& Area) {
 	hasMarkedPath = false;
 	for (auto& p : Paths) {
 		if (p.IsFree())continue;
-		p.SetMarkedArea(AreaI);
+		p.SetMarkedArea(Area);
 		if (p.HasMarked()) hasMarkedPath = true;
 	}
 }
@@ -692,7 +692,6 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 	for (auto& p : Paths) {
 		if (p.IsFree()) continue;
 		p.ComputeAll(ViewRectI);
-		if (p.IsFullyMarked()) continue;
 		Edges.append(p.getEdges());
 		EdgesMarked.append(p.getEdgesMarked());
 		Verts.append(p.getVerts());

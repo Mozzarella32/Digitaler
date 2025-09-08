@@ -26,7 +26,7 @@ bool VisualPath::ToggleMarkedIfHover() {
 }
 
 void VisualPath::MarkAll() {
-	SetMarkedArea(FullRectI);
+	SetMarkedArea(FullRectF);
 }
 
 void VisualPath::SetPreview(bool newPreview) {
@@ -35,7 +35,7 @@ void VisualPath::SetPreview(bool newPreview) {
 	Dirty = true;
 }
 
-bool VisualPath::SetMarkedArea(const MyRectI& MarkedBB) {
+bool VisualPath::SetMarkedArea(const MyRectF& MarkedBB) {
 	if (MarkedBoundingBox && MarkedBoundingBox.value() == MarkedBB) return false;
 	MarkedBoundingBox = MarkedBB;
 	Dirty = true;
@@ -54,7 +54,7 @@ bool VisualPath::SetMarkedArea(const MyRectI& MarkedBB) {
 			const PointType& A = p.Pos;
 			const PointType& B = other.Pos;
 
-			const bool IsMarked = MarkedBB == FullRectI || MyRectI::FromCorners(A, B).Intersectes(MarkedBoundingBox.value());
+			const bool IsMarked = MarkedBB == FullRectF || MyRectF::FromCorners(A.cast<float>(), B.cast<float>()).Intersectes(MarkedBoundingBox.value());
 			if (IsMarked) {
 				FoundOne = true;
 			}
@@ -160,12 +160,11 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 
 	Verts.reserve(Data.Points.size());
 
-	bool vertHasMarked = false;
-
 	for (PointIndex i = 0; i < Data.Points.size(); i++) {
 		const PointNode& p = Data.Points[i];
 		if (p.IsFree())continue;
-
+		
+		bool vertHasMarked = false;
 
 		for (LineIndexInPoint j = 0; j < 4; j++) {
 			const PointIndex& OtherIndex = p.Connections[j];
