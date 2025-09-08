@@ -307,7 +307,7 @@ void Renderer::RenderWires() {
       FBOBlurHighlight.unbind();
   }
 
-  if (b.HasAnythingMarked()) {
+  if (b.HasMarkedBlocks() || !b.GetEdgesMarked(false).empty()) {
       GLuint clearint = 0;
       GLCALL(glClearTexImage(FBOBlurMarkedTexture.GetId(), 0, GL_RED_INTEGER,
           GL_UNSIGNED_INT, &clearint));
@@ -317,12 +317,10 @@ void Renderer::RenderWires() {
       GLCALL(glStencilMask(0xFF));
       GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-      if (b.HasMarkedPaths()) {
+      if (!b.GetEdgesMarked(false).empty()) {
 
           GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
           Pass(GetPathVAOs(false), b.GetEdgesMarked(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Marked);
-
           GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       }
 

@@ -361,9 +361,11 @@ void VisualBlockInterior::MarkArea(const MyRectF& Area) {
 
 	if (!hasAnyIntPoint)return;
 
+	hasMarkedPath = false;
 	for (auto& p : Paths) {
 		if (p.IsFree())continue;
 		p.SetMarkedArea(AreaI);
+		if (p.HasMarked()) hasMarkedPath = true;
 	}
 }
 
