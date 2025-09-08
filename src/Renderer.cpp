@@ -644,6 +644,17 @@ void Renderer::Render() {
           " Off: " + std::to_string(Offset.x()) + ", " +
           std::to_string(Offset.y());
 
+  auto& liquidGlassShader = ShaderManager::GetShader(ShaderManager::LiquidGlass);
+  liquidGlassShader.bind();
+  Frame->HoleScreenVAO->bind();
+
+  FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+  FBOBlurMarkedTexture.unbind();
+
+  Frame->HoleScreenVAO->unbind();
+  liquidGlassShader.unbind();
+
   if (!AreaSelectVerts.empty()) {
 
     PROFILE_SCOPE("AreaSelect");
