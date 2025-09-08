@@ -448,11 +448,7 @@ void Renderer::Render() {
 
       GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-      WirePass([&b]() {return b.GetPinVBO(); }, PinVAO);
-        
-      SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO);
-
-      WirePass([&b]() {return b.GetRoundPinVBO(); }, RoundPinVAO);
+      SimplePass([&b]() {return b.GetHighlightAssetVBO();}, HighlightAssetVAO);
 
       GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       
@@ -750,6 +746,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       AssetVAO(CreateVAO<AssetVertex>()),
       PinVAO(CreateVAO<AssetVertex>()),
       RoundPinVAO(CreateVAO<AssetVertex>()),
+      HighlightAssetVAO(CreateVAO<AssetVertex>()),
       AreaSelectVAO(CreateVAO<AssetFVertex>()),
 #ifdef ShowBoundingBoxes
       BBVAO(CreateVAO<AssetFVertex>()),

@@ -238,6 +238,8 @@ private:
 	BufferedVertexVec<AssetVertex> AssetVBO;
 	BufferedVertexVec<AssetVertex> RoundPinVBO;
 
+	BufferedVertexVec<AssetVertex> HighlightAssetVBO;
+
 #ifdef ShowBasePositionOfBlocks
 	BufferedVertexVec<AssetFVertex> BasePositionVBO;
 #endif
@@ -277,6 +279,8 @@ public:
 	BufferedVertexVec<AssetVertex>& GetRoundPinVBO();
 	BufferedVertexVec<TextVertex>& GetStaticTextVBO();
 	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
+
+	BufferedVertexVec<AssetVertex>& GetHighlightAssetVBO();
 
 #ifdef ShowBasePositionOfBlocks
 	BufferedVertexVec<AssetFVertex>& GetBasePotitionOfBlocksVBO();

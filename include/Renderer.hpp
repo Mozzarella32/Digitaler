@@ -83,6 +83,8 @@ private:
 	VertexArrayObject PinVAO;
 	VertexArrayObject RoundPinVAO;
 
+	VertexArrayObject HighlightAssetVAO;
+
 	VertexArrayObject AreaSelectVAO;
 
 #ifdef ShowBoundingBoxes
