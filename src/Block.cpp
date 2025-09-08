@@ -86,6 +86,8 @@ void VisualBlockInterior::ClearMarked() {
 		if (p.IsFree()) continue;
 		FoundPath |= p.ClearMarkedArea();
 	}
+	hasMarkedPath = false;
+	
 	if (FoundPath) {
 		MergeAfterMove();
 	}
@@ -104,33 +106,30 @@ void VisualBlockInterior::MarkAll() {
 		if (p.IsFree()) continue;
 		FoundPath |= p.SetMarkedArea(FullRectI);
 	}
+	hasMarkedPath = !Paths.empty();
 	Dirty |= HasUnmarkedBlocks | FoundPath;
 }
 
 bool VisualBlockInterior::ToggleMarkHoverPath() {
 	bool Return = false;
+	hasMarkedPath = false;
 	for (auto& p : Paths) {
 		if (p.IsFree()) continue;
 		Return |= p.ToggleMarkedIfHover();
+		if (p.HasMarked()) hasMarkedPath = true;
 	}
 	if (Return)
 		Dirty = true;
+
 	return Return;
 }
 
-//Carefull O(n) with n = Paths.size()
 bool VisualBlockInterior::HasAnythingMarked() const {
-	return HasMarkedBlocks() || HasMarkedPaths();//Short circuit simple check
+	return HasMarkedBlocks() || HasMarkedPaths();
 }
 
-//Carefull O(n) with n = Paths.size()
 bool VisualBlockInterior::HasMarkedPaths() const {
-	bool Return = false;
-	for (const auto& p : Paths) {
-		if (p.IsFree()) continue;
-		if (p.HasMarked()) Return = true;
-	}
-	return Return;
+	return hasMarkedPath;
 }
 
 bool VisualBlockInterior::HasMarkedBlocks() const {

@@ -283,6 +283,53 @@ void Renderer::RenderWires() {
       FBOBlurHighlight.unbind();
   }
 
+
+  if (b.HasHighlitedPath() || b.HasHighlited()) {
+      GLuint clearint = 0;
+      GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
+          GL_UNSIGNED_INT, &clearint));
+
+      FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
+
+      GLCALL(glStencilMask(0xFF));
+      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+
+      if (b.HasHighlited()) {
+
+          GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+
+          Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
+
+          GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      }
+
+      AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+      FBOBlurHighlight.unbind();
+  }
+
+  if (b.HasAnythingMarked()) {
+      GLuint clearint = 0;
+      GLCALL(glClearTexImage(FBOBlurMarkedTexture.GetId(), 0, GL_RED_INTEGER,
+          GL_UNSIGNED_INT, &clearint));
+
+      FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
+
+      GLCALL(glStencilMask(0xFF));
+      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+
+      if (b.HasMarkedPaths()) {
+
+          GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+
+          Pass(GetPathVAOs(false), b.GetEdgesMarked(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Marked);
+
+          GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      }
+
+      AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+      FBOBlurHighlight.unbind();
+  }
+
   AssetShader.unbind();
 
   PROFILE_SCOPE_ID_START("Copy To FBO Path", 2);

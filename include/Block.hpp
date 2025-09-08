@@ -57,7 +57,8 @@ private:
 	bool DirtyBlocks : 1 = true;
 	bool PathNeedsMerging : 1= false;
 	bool Moving : 1 = false;//Used to know when to scann for split
-	bool hasHighlitedPath = false;
+	bool hasHighlitedPath : 1 = false;
+	bool hasMarkedPath : 1 = false;
 
 	MyRectF PreviewCachedBoundingBox;
 
@@ -98,10 +99,8 @@ public:
 	void MarkAll();
 	bool ToggleMarkHoverPath();
 
-	//Carefull O(n) with n = Paths.size()
 	bool HasAnythingMarked() const;
 
-	//Carefull O(n) with n = Paths.size()
 	bool HasMarkedPaths() const;
 	bool HasMarkedBlocks() const;
 
