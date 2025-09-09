@@ -906,7 +906,7 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
 
   RenderIDMap();
 
-  FBOID.bind(FrameBufferObject::Read);
+  FBOID.bind();
 
   GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
@@ -1062,7 +1062,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   FBOID.unbind();
 
-  FBOID.bind(FrameBufferObject::Read);
+  FBOID.bind();
 
   GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
