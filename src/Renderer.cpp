@@ -148,7 +148,7 @@ void Renderer::RenderIDMap() {
 
   VisualBlockInterior &b = Frame->BlockManager->Interior;
 
-  GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
                        ShaderManager::Shaders ShaderName) {
@@ -168,7 +168,7 @@ void Renderer::RenderIDMap() {
              ShaderManager::Assets);
   SimplePass([&b]() { return b.GetRoundPinVBO(); }, RoundPinVAO, ShaderManager::Assets);
 
-  GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+  // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
   FBOID.unbind();
 }
@@ -258,11 +258,11 @@ void Renderer::RenderWires() {
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
   if (b.HasPreview()) {
-      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
       Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), true, AssetVertex::Preview);
 
-      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
   }
 
@@ -279,11 +279,11 @@ void Renderer::RenderWires() {
 
   if (b.HasHighlitedPath()) {
 
-      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
       Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
 
-      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
   }
 
@@ -300,9 +300,9 @@ void Renderer::RenderWires() {
 
   if (!b.GetEdgesMarked(false).empty()) {
 
-      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
       Pass(GetPathVAOs(false), b.GetEdgesMarked(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Marked);
-      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
   }
 
@@ -471,11 +471,11 @@ void Renderer::Render() {
 
       assetShader.apply("UHighlight", Shader::Data1ui{ AssetVertex::Flags::Highlight });
 
-      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
       SimplePass([&b]() {return b.GetHighlightAssetVBO();}, HighlightAssetVAO);
 
-      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       
       assetShader.apply("UHighlight", Shader::Data1ui{ 0 });
 
@@ -490,11 +490,11 @@ void Renderer::Render() {
 
       assetShader.apply("UHighlight", Shader::Data1ui{ AssetVertex::Flags::Marked});
 
-      GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
       SimplePass([&b]() {return b.GetMarkedAssetVBO(); }, MarkedAssetVAO);
 
-      GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
       assetShader.apply("UHighlight", Shader::Data1ui{ 0 });
 
@@ -787,13 +787,13 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       FBOID({&FBOIDTexture}, {GL_COLOR_ATTACHMENT1}),
       FBOBlurHighlightTexture(CreateBlurTexture()),
       FBOBlurHighlightStencileDepthTexture(CreateBlurStencileDepthTexture()),
-      FBOBlurHighlight({&FBOBlurHighlightTexture, &FBOBlurHighlightStencileDepthTexture }, {GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOBlurHighlight({&FBOBlurHighlightTexture, &FBOBlurHighlightStencileDepthTexture }, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
       FBOBlurPreviewTexture(CreateBlurTexture()),
       FBOBlurPreviewStencileDepthTexture(CreateBlurStencileDepthTexture()),
-      FBOBlurPreview({&FBOBlurPreviewTexture, &FBOBlurPreviewStencileDepthTexture}, {GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOBlurPreview({&FBOBlurPreviewTexture, &FBOBlurPreviewStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
       FBOBlurMarkedTexture(CreateBlurTexture()),
       FBOBlurMarkedStencileDepthTexture(CreateBlurStencileDepthTexture()),
-      FBOBlurMarked({&FBOBlurMarkedTexture, &FBOBlurMarkedStencileDepthTexture}, {GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOBlurMarked({&FBOBlurMarkedTexture, &FBOBlurMarkedStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
       VAOsPath(PathVAOs{
           .EdgesVAO = CreateVAO<AssetVertex>(),
           .EdgesMarkedVAO = CreateVAO<AssetVertex>(),
@@ -908,7 +908,7 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
 
   FBOID.bind();
 
-  GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
   GLCALL(glReadBuffer(GL_COLOR_ATTACHMENT1));
 
@@ -918,7 +918,7 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
   GLCALL(glReadPixels(Mouse.x(), Size.y - Mouse.y(), 1, 1, GL_RED_INTEGER,
                       GL_UNSIGNED_INT, &i));
 
-  GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+  // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
   FBOID.unbind();
 
@@ -978,7 +978,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   GLCALL(glClearTexImage(FBOIDTexture.GetId(), 0, GL_RED_INTEGER,
                          GL_UNSIGNED_INT, &clearint));
 
-  GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
   // auto SimplePass = [](auto &MyBuffer,
   //                      VertexArrayObject &VAO,
@@ -1064,7 +1064,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   FBOID.bind();
 
-  GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
   GLCALL(glReadBuffer(GL_COLOR_ATTACHMENT1));
 
@@ -1074,7 +1074,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   GLCALL(glReadPixels(0, 0, ViewportSize.x(), ViewportSize.y(), GL_RED_INTEGER,
                       GL_UNSIGNED_INT, vec->data()));
 
-  GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
+  // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
   FBOID.unbind();
 
   MyRectF rect = MyRectF::FromCorners({0, 0}, {1, 1});
