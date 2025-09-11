@@ -633,6 +633,9 @@ void MyFrame::Loop() {
 #ifdef Testing
   renderer->Dirty = true;
 #endif
+#ifdef AlwaysDraw
+  renderer->Dirty = true;
+#endif
 #ifdef HotShaderReload
   if (!Canvas->BindContext()) {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);

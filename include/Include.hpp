@@ -3,6 +3,8 @@
 //#define Testing
 #define UseCollisionGrid
 
+#define AlwaysDraw
+
 // #define RenderCollisionGrid
 // #define ShowBasePositionOfBlocks
 // #define ShowBoundingBoxes
