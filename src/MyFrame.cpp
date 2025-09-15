@@ -14,6 +14,7 @@
 #include "DataResourceManager.hpp"
 
 #include "BlockSelector.hpp"
+#include <filesystem>
 
 // EVIL
 #ifdef APIENTRY
@@ -562,6 +563,9 @@ void MyFrame::OnGLInit() {
           SetTitle(std::string("Initilizing: ").append(InitilizeDescriptor));
 
           ShaderManager::Initilise();*/
+  std::filesystem::remove_all("shaderBins");
+  std::filesystem::create_directories("shaderBins");
+
 
   IO = std::make_unique<IOHandler>(this);
 

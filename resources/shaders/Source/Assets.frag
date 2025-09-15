@@ -1,33 +1,33 @@
 //Assets.frag
 
-#version 420 core
+#version 430 core
 
 precision highp float;
 
-flat in uint Index;
-flat in uint ID;
-flat in uint Flags;
-flat in int  I1;
-flat in vec2 FPoint1;
-flat in vec2 FPoint2;
-flat in vec2 FPoint;
-flat in vec4 ColorA;
+layout(location = 0) flat in uint Index;
+layout(location = 1) flat in uint ID;
+layout(location = 2) flat in uint Flags;
+layout(location = 3) flat in int  I1;
+layout(location = 4) flat in vec2 FPoint1;
+layout(location = 5) flat in vec2 FPoint2;
+layout(location = 6) flat in vec2 FPoint;
+layout(location = 7) flat in vec4 ColorA;
 
-in vec2 Pos;
-in vec2 TextureCoord;
+layout(location = 8) in vec2 Pos;
+layout(location = 9) in vec2 TextureCoord;
 
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out uint Id;
 
 //Uniform
-uniform float UZoomFactor;
+layout(location = 0) uniform float UZoomFactor;
 
-uniform sampler2D UBackground;
-uniform sampler2D UPath;
+layout(location = 1)uniform sampler2D UBackground;
+layout(location = 2)uniform sampler2D UPath;
 
-uniform bool UWirePass;
-uniform bool UIDRun;
-uniform uint UHighlight;
+layout(location = 3) uniform bool UWirePass;
+layout(location = 4) uniform bool UIDRun;
+layout(location = 5) uniform uint UHighlight;
 
 float dot2(vec2 v) {
     return dot(v, v);

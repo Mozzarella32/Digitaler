@@ -35,7 +35,7 @@ ShaderManager::ShaderManager()
         return Shader(ErrorHandler, { \
             Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
             Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{frag_src}} \
-        }); \
+        }, std::filesystem::path("shaderBins") / #Frag); \
     })(),
 
 XList_Shaders_VertFrag
@@ -57,7 +57,7 @@ XList_Shaders_VertFrag
             Shader::ShaderInfo{Shader::ShaderType::Vertex, Shader::ShaderSource{vert_src}}, \
             Shader::ShaderInfo{Shader::ShaderType::Geometry, Shader::ShaderSource{geom_src}}, \
             Shader::ShaderInfo{Shader::ShaderType::Fragment, Shader::ShaderSource{frag_src}} \
-        }); \
+        }, std::filesystem::path("shaderBins") / #Frag); \
     })(),
 
 XList_Shaders_VertGeomFrag
@@ -184,7 +184,8 @@ Shader& ShaderManager::GetShader(const Shaders& shader) {
 		if(Geom){
 			shaders.emplace_back(Shader::ShaderType::Geometry, Geom.value());
 		}
-		This.shaders[currShader] = Shader(ErrorHandler, shaders);
+
+		This.shaders[currShader] = Shader(ErrorHandler, shaders, std::filesystem::path("shaderBins")  / Frag.stem());
 		This.Queue.pop_back();
 	}
 	This.IsDirty = true;
