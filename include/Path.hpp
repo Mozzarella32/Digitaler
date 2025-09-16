@@ -17,7 +17,6 @@ public:
 	static constexpr const PathIndex FreeListEnd = PathIndex(-1);
 
 private:
-	bool Marked : 1 = false;
 	bool Hover : 1 = false;
 	bool Preview : 1 = false;
 	bool Dirty : 1 = true;
