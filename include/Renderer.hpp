@@ -60,8 +60,8 @@ private:
 	Texture FBOBlurMarkedStencileDepthTexture;
 	FrameBufferObject FBOBlurMarked;
 
-	std::array<GLenum, 2> DrawBuffer0 = { GL_COLOR_ATTACHMENT0, GL_NONE };
-	std::array<GLenum, 2> DrawBuffer1 = { GL_NONE, GL_COLOR_ATTACHMENT1 };
+	//std::array<GLenum, 2> DrawBuffer0 = { GL_COLOR_ATTACHMENT0, GL_NONE };
+	//std::array<GLenum, 2> DrawBuffer1 = { GL_NONE, GL_COLOR_ATTACHMENT1 };
 
 	struct PathVAOs {
 		VertexArrayObject EdgesVAO;
