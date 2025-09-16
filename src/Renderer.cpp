@@ -103,10 +103,6 @@ Eigen::Vector2i Renderer::CoordToNearestPoint(Eigen::Vector2f Pos) {
                          static_cast<int>(std::round(Pos.y())));
 }
 
-Renderer::PathVAOs &Renderer::GetPathVAOs(bool Preview) {
-  return Preview ? VAOsPathPreview : VAOsPath;
-}
-
 template <typename VertexType> VertexArrayObject Renderer::CreateVAOInstancing4() {
   VertexArrayObject VAO = {std::vector<VertexBufferObjectDescriptor>{
       {GL_STATIC_DRAW, IndexVertex{}}, {GL_DYNAMIC_DRAW, VertexType{}, 1}}};
@@ -137,10 +133,7 @@ void Renderer::RenderIDMap() {
 
   FBOID.bind(FrameBufferObject::Draw);
 
-  if (!UIDRun) {
-    UIDRun = true;
-    ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
-  }
+  ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
 
   GLuint clearint = 0;
   GLCALL(glClearTexImage(FBOIDTexture.GetId(), 0, GL_RED_INTEGER,
@@ -163,10 +156,10 @@ void Renderer::RenderIDMap() {
     }
   };
 
-  SimplePass([&b]() { return b.GetPinVBO(); }, PinVAO, ShaderManager::Assets);
-  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO,
+  SimplePass([&b]() { return b.PinVBO; }, PinVAO, ShaderManager::Assets);
+  SimplePass([&b]() { return b.AssetVBO; }, AssetVAO,
              ShaderManager::Assets);
-  SimplePass([&b]() { return b.GetRoundPinVBO(); }, RoundPinVAO, ShaderManager::Assets);
+  SimplePass([&b]() { return b.RoundPinVBO; }, RoundPinVAO, ShaderManager::Assets);
 
   // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
@@ -181,32 +174,31 @@ void Renderer::RenderWires() {
   FBOMain.bind(FrameBufferObject::Draw);
 
   Shader& AssetShader = ShaderManager::GetShader(ShaderManager::Assets);
-  AssetShader.bind();
 
   const auto Pass = [&AssetShader, this](
      PathVAOs& VAOs,
+     VertexArrayObject& EdgesVAO,
      BufferedVertexVec<AssetVertex>& edges,
      BufferedVertexVec<AssetVertex>& verts,
      BufferedVertexVec<AssetVertex>& intersectionPoints,
-     bool BlurRun,
-     AssetVertex::Flags flag = AssetVertex::None){
+     bool BlurRun) {
     if(edges.empty()) return;
     GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
     GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
     GLCALL(glStencilMask(0xFF));
     
-    VAOs.EdgesVAO.bind();
-    edges.replaceBuffer(VAOs.EdgesVAO, 0);
-    VAOs.EdgesVAO.DrawAs(GL_POINTS);
+    EdgesVAO.bind();
+    edges.replaceBuffer(EdgesVAO, 0);
+    EdgesVAO.DrawAs(GL_POINTS);
     if (!BlurRun) {
         VAOs.EdgesVAO.unbind();
     }
     else {
-        AssetShader.apply("UHighlight", Shader::Data1ui{ flag });
+        ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
         GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
         GLCALL(glStencilMask(0x00));
-        VAOs.EdgesVAO.DrawAs(GL_POINTS);
-        VAOs.EdgesVAO.unbind();
+        EdgesVAO.DrawAs(GL_POINTS);
+        EdgesVAO.unbind();
     }
 
     GLCALL(glStencilMask(0x00));
@@ -228,24 +220,29 @@ void Renderer::RenderWires() {
     VAOs.IntersectionPointsVAO.unbind();
 
     if (BlurRun) {
-        AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+        ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
     }
 
     if (!BlurRun)
         FBOBackgroundTexture.unbind();
   };
 
-  b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
-  Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), false);
+  AssetShader.bind();
 
-  b.UpdateVectsForVAOsFloating(BoundingBox, MouseIndex);
+  b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
+  Pass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts, b.normal.IntersectionPoints, false);
+
+  b.UpdateVectsForVAOsPreview(BoundingBox, MouseIndex);
   
   if (b.HasPreview()) {
-      GLCALL(glStencilMask(0xFF));
-      GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+    GLCALL(glStencilMask(0xFF));
+    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-      Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), false);
+    Pass(VAOsPathPreview, VAOsPathPreview.EdgesVAO, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, false);
   }
+
+  AssetShader.unbind();
+  AssetShader.bind();
 
   //Preview
   GLuint clearint = 0;
@@ -257,13 +254,8 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (b.HasPreview()) {
-      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
-      Pass(GetPathVAOs(true), b.GetEdges(true), b.GetVerts(true), b.GetIntersectionPoints(true), true, AssetVertex::Preview);
-
-      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-      AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+  if (!b.preview.Edges.empty()) {
+    Pass(VAOsPathPreview, VAOsPathPreview.EdgesVAO, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, true);
   }
 
   FBOBlurPreview.unbind();
@@ -277,14 +269,8 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (b.HasHighlitedPath()) {
-
-      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
-      Pass(GetPathVAOs(false), b.GetEdges(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Highlight);
-
-      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-      AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+  if (!b.highlighted.Edges.empty()) {
+    Pass(VAOsPathHighlighted, VAOsPathHighlighted.EdgesVAO, b.highlighted.Edges, b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
   }
 
   FBOBlurHighlight.unbind();
@@ -298,17 +284,11 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.GetEdgesMarked(false).empty()) {
-
-      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-      Pass(GetPathVAOs(false), b.GetEdgesMarked(false), b.GetVerts(false), b.GetIntersectionPoints(false), true, AssetVertex::Marked);
-      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-      AssetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+  if (!b.marked.Edges.empty()) {
+    Pass(VAOsPathMarked, VAOsPathMarked.EdgesVAO, b.marked.Edges, b.marked.Verts, b.marked.IntersectionPoints, true);
   }
 
   FBOBlurHighlight.unbind();
-
-  AssetShader.unbind();
 
   PROFILE_SCOPE_ID_START("Copy To FBO Path", 2);
 
@@ -335,28 +315,28 @@ void Renderer::RenderWires() {
   FBOMain.bind(FrameBufferObject::Draw);
 
   // Recreate Stencli Buffer
-  Shader& AssetsShader = ShaderManager::GetShader(ShaderManager::Assets);
-  AssetsShader.bind();
-  for (bool Floating : {false, true}) {
-
-    if (b.GetEdges(Floating).empty())
-      continue;
-
-    auto &EdgesVAO = GetPathVAOs(Floating).EdgesVAO;
+  auto StencilRecreationPass = [](PathVAOs& VAOs,
+     VertexArrayObject& EdgesVAO,
+     BufferedVertexVec<AssetVertex>& edges,
+     BufferedVertexVec<AssetVertex>& verts) {
+    if (edges.empty())
+      return;
 
     EdgesVAO.bind();
-    b.GetEdges(Floating).replaceBuffer(EdgesVAO, 0);
+    edges.replaceBuffer(EdgesVAO, 0);
     EdgesVAO.DrawAs(GL_POINTS);
     EdgesVAO.unbind();
 
-    auto& VertsVAO = GetPathVAOs(Floating).VertsVAO;
+    VAOs.VertsVAO.bind();
+    verts.replaceBuffer(VAOs.VertsVAO, 0);
+    VAOs.VertsVAO.DrawAs(GL_POINTS);
+    VAOs.VertsVAO.unbind();
+  };
 
-    VertsVAO.bind();
-    b.GetVerts(Floating).replaceBuffer(VertsVAO, 0);
-    VertsVAO.DrawAs(GL_POINTS);
-    VertsVAO.unbind();
-  }
-  AssetsShader.unbind();
+  StencilRecreationPass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts);
+  StencilRecreationPass(VAOsPathPreview, VAOPathAllEdges, b.allEdges, b.preview.Verts);
+
+  AssetShader.unbind();
 
   PROFILE_SCOPE_ID_END(3);
 }
@@ -393,10 +373,7 @@ void Renderer::Render() {
 
   FBOMain.bind(FrameBufferObject::Draw);
 
-  if (UIDRun) {
-    UIDRun = false;
-    ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
-  }
+  ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
 
   GLCALL(glStencilMask(0xFF));
 
@@ -459,44 +436,44 @@ void Renderer::Render() {
   };
 
 
-  WirePass([&b](){return b.GetPinVBO(); }, PinVAO);
+  WirePass([&b](){return b.PinVBO; }, PinVAO);
 
-  SimplePass([&b]() { return b.GetAssetVBO(); }, AssetVAO);
+  SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
 
-  WirePass([&b](){return b.GetRoundPinVBO(); }, RoundPinVAO);
+  WirePass([&b](){return b.RoundPinVBO; }, RoundPinVAO);
 
 
   if (b.HasHighlited()) {
       FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
-      assetShader.apply("UHighlight", Shader::Data1ui{ AssetVertex::Flags::Highlight });
+      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
 
       // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-      SimplePass([&b]() {return b.GetHighlightAssetVBO();}, HighlightAssetVAO);
+      SimplePass([&b]() {return b.HighlightAssetVBO;}, HighlightAssetVAO);
 
       // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       
-      assetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
 
       FBOBlurHighlight.unbind();
 
-      if(b.GetMarkedAssetVBO().empty())
+      if(b.MarkedAssetVBO.empty())
         FBOMain.bind(FrameBufferObject::Draw);
   }
 
-  if (!b.GetMarkedAssetVBO().empty()) {
+  if (!b.MarkedAssetVBO.empty()) {
       FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
-      assetShader.apply("UHighlight", Shader::Data1ui{ AssetVertex::Flags::Marked});
+      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
 
       // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-      SimplePass([&b]() {return b.GetMarkedAssetVBO(); }, MarkedAssetVAO);
+      SimplePass([&b]() {return b.MarkedAssetVBO; }, MarkedAssetVAO);
 
       // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
-      assetShader.apply("UHighlight", Shader::Data1ui{ 0 });
+      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
 
       FBOBlurMarked.unbind();
 
@@ -565,7 +542,7 @@ void Renderer::Render() {
   SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO);
 #endif
 
-  if (!b.GetStaticTextVBO().empty() || !b.GetDynamicTextVBO().empty() ||
+  if (!b.StaticTextVBO.empty() || !b.DynamicTextVBO.empty() ||
       (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty())) {
 
     PROFILE_SCOPE("Text");
@@ -576,16 +553,16 @@ void Renderer::Render() {
 
     TextAtlas.bind(TextShader, "UTexture", "", 0);
 
-    if (!b.GetStaticTextVBO().empty()) {
+    if (!b.StaticTextVBO.empty()) {
       StaticTextVAO.bind();
-      b.GetStaticTextVBO().replaceBuffer(StaticTextVAO, 1);
+      b.StaticTextVBO.replaceBuffer(StaticTextVAO, 1);
       StaticTextVAO.DrawAs(GL_TRIANGLE_STRIP);
       StaticTextVAO.unbind();
     }
 
-    if (!b.GetDynamicTextVBO().empty()) {
+    if (!b.DynamicTextVBO.empty()) {
       DynamicTextVAO.bind();
-      b.GetDynamicTextVBO().replaceBuffer(DynamicTextVAO, 1, false);
+      b.DynamicTextVBO.replaceBuffer(DynamicTextVAO, 1, false);
       DynamicTextVAO.DrawAs(GL_TRIANGLE_STRIP);
       DynamicTextVAO.unbind();
     }
@@ -796,16 +773,25 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       FBOBlurMarked({&FBOBlurMarkedTexture, &FBOBlurMarkedStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
       VAOsPath(PathVAOs{
           .EdgesVAO = CreateVAO<AssetVertex>(),
-          .EdgesMarkedVAO = CreateVAO<AssetVertex>(),
-          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
           .VertsVAO = CreateVAO<AssetVertex>(),
+          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
       }),
       VAOsPathPreview(PathVAOs{
           .EdgesVAO = CreateVAO<AssetVertex>(),
-          .EdgesMarkedVAO = CreateVAO<AssetVertex>(),
-          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
           .VertsVAO = CreateVAO<AssetVertex>(),
+          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
       }),
+      VAOsPathHighlighted(PathVAOs{
+          .EdgesVAO = CreateVAO<AssetVertex>(),
+          .VertsVAO = CreateVAO<AssetVertex>(),
+          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
+      }),
+      VAOsPathMarked(PathVAOs{
+          .EdgesVAO = CreateVAO<AssetVertex>(),
+          .VertsVAO = CreateVAO<AssetVertex>(),
+          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
+      }),
+      VAOPathAllEdges(CreateVAO<AssetVertex>()),
 #ifdef RenderCollisionGrid
       CollisionGridVAO(CreateVAO<AssetVertex>()),
 #endif
@@ -956,10 +942,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
                            Eigen::Vector2f{BlockSize.x(), -BlockSize.y()} +
                                Eigen::Vector2f{1.5, -1.5});
 
-  if (!UIDRun) {
-    UIDRun = true;
-    ShaderManager::applyGlobal("UIDRun", Shader::Data1i{UIDRun});
-  }
+  ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
 
   PointType ViewportSize = {int(rectVertical.Size.x()) * 1.0 / Zoom,
                     int(rectVertical.Size.y()) * 1.0 / Zoom};
@@ -1009,45 +992,45 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   BufferedVertexVec<AssetVertex> VBO;
 
   if (cbdi == SB.And || cbdi == SB.Or || cbdi == SB.Xor) {
-    if (cbdi == SB.And) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1, 0));
-    else if (cbdi == SB.Or) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1, 0));
-    else if (cbdi == SB.Xor) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1, 0));
+    if (cbdi == SB.And) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1));
+    else if (cbdi == SB.Or) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1));
+    else if (cbdi == SB.Xor) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1));
 
     for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
         BlockMetadata PinMeta;
         PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-        VBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1, 0));
+        VBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
     }
     for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
         BlockMetadata PinMeta;
         PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-        VBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1, 0));
+        VBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
     }
   } else if (cbdi == SB.Mux) {
-      VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1, 0));
+      VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1));
 
       for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
+          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
       }
       for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
+          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
       }
   } 
   else {
-      VBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, NoColor, 1, 0));
+      VBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, NoColor, 1));
       for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
+          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
       }
       for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
           BlockMetadata PinMeta;
           PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1, 0));
+          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
       }
   }
 

@@ -20,6 +20,7 @@ private:
 	static ShaderManager& GetInstance();
 
 	static auto inline ErrorHandler = [](std::string Error, std::string Msg) {
+		std::cout << Error << "\n" << Msg << "\n";
 		wxMessageBox(Msg, Error, wxOK);
 		};
 

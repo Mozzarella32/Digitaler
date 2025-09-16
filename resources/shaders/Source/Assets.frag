@@ -4,30 +4,25 @@
 
 precision highp float;
 
-layout(location = 0) flat in uint Index;
-layout(location = 1) flat in uint ID;
-layout(location = 2) flat in uint Flags;
-layout(location = 3) flat in int  I1;
-layout(location = 4) flat in vec2 FPoint1;
-layout(location = 5) flat in vec2 FPoint2;
-layout(location = 6) flat in vec2 FPoint;
-layout(location = 7) flat in vec4 ColorA;
+flat in uint Index;
+flat in uint ID;
+flat in int  I1;
+flat in vec2 FPoint1;
+flat in vec2 FPoint2;
+flat in vec2 FPoint;
+flat in vec4 ColorA;
+in vec2  Pos;
+in vec2  TextureCoord;
 
-layout(location = 8) in vec2 Pos;
-layout(location = 9) in vec2 TextureCoord;
-
-layout(location = 0) out vec4 FragColor;
-layout(location = 1) out uint Id;
+out vec4 FragColor;
+out uint Id;
 
 //Uniform
-layout(location = 0) uniform float UZoomFactor;
-
-layout(location = 1)uniform sampler2D UBackground;
-layout(location = 2)uniform sampler2D UPath;
-
-layout(location = 3) uniform bool UWirePass;
-layout(location = 4) uniform bool UIDRun;
-layout(location = 5) uniform uint UHighlight;
+uniform float     UZoomFactor;
+uniform sampler2D UBackground;
+uniform sampler2D UPath;
+uniform bool      UWirePass;
+uniform bool      UIDRun;
 
 float dot2(vec2 v) {
     return dot(v, v);
@@ -495,7 +490,7 @@ vec4 get() {
         case 11://PathEdge
         return sdPathEdge(Pos);
         case 12://PathIntersectionPoints
-        if(UHighlight != 0) {
+        if(UIDRun) {
             return vec4(0.0, 0.0, 0.0, sdPathIntersectionPointsTrue(Pos));
         }
         else {
@@ -516,15 +511,16 @@ void main () {
     // }
     vec4 col = get();
 
-    if(UHighlight != 0) {
-        if ((UHighlight & Flags) != 0) {
-            if (1.0 - 10.0 * col.a > 0) {
-                Id = 255;
-                return;
-            }
-        }
-        discard;
-    }
+    // if(UHighlight != 0) {
+    //     if (1.0 - 10.0 * col.a > 0) {
+    //     // if ((UHighlight & Flags) != 0 && 1.0 - 10.0 * col.a > 0) {
+    //         Id = 255;
+    //         return;
+    //     }
+    //     else {
+    //         discard;
+    //     }
+    // }
 
     if(UIDRun) {
         if(1.0 - 10.0 * col.a > 0) {

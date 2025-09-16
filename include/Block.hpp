@@ -8,10 +8,6 @@
 
 #include "OpenGlDefines.hpp"
 
-#include <type_traits>
-
-#include <stdbool.h>
-
 class Renderer;
 struct PointNode;
 class DataResourceManager;
@@ -25,28 +21,49 @@ private:
 	DataResourceManager* ResourceManager;
 	Renderer* renderer;
 
-	BufferedVertexVec<AssetVertex> Edges;
-	BufferedVertexVec<AssetVertex> EdgesMarked;
-	BufferedVertexVec<AssetVertex> IntersectionPoints;
-	BufferedVertexVec<AssetVertex> Verts;
+public:
 
-	BufferedVertexVec<AssetVertex> FloatingEdges;
-	BufferedVertexVec<AssetVertex> FloatingIntersectionPoints;
-	BufferedVertexVec<AssetVertex> FloatingVerts;
+	BufferedVertexVec<AssetVertex> allEdges;
+
+	struct PathDrawData {
+		BufferedVertexVec<AssetVertex> Edges;
+		BufferedVertexVec<AssetVertex> Verts;
+		BufferedVertexVec<AssetVertex> IntersectionPoints;
+
+		void clear() {
+			Edges.clear();
+			Verts.clear();
+			IntersectionPoints.clear();
+		}
+
+		void append(const VisualPath::DrawData& data) {
+			Edges.append(data.Edges);
+			Verts.append(data.Verts);
+			IntersectionPoints.append(data.IntersectionPoints);
+		}
+	};
+
+	PathDrawData normal;
+	PathDrawData marked;
+	PathDrawData preview;
+	PathDrawData highlighted;
+
+	// BufferedVertexVec<AssetVertex> IntersectionPoints;
+
+	// BufferedVertexVec<AssetVertex> EdgesMarked;
+	// BufferedVertexVec<AssetVertex> IntersectionPoints;
+	// BufferedVertexVec<AssetVertex> Verts;
+
+	// BufferedVertexVec<AssetVertex> PreviewEdges;
+	// BufferedVertexVec<AssetVertex> PreviewIntersectionPoints;
+	// BufferedVertexVec<AssetVertex> PreviewVerts;
+
+
 
 	BufferedVertexVec<TextVertex> StaticTextVBO;
 	BufferedVertexVec<TextVertex> DynamicTextVBO;
 
 	std::vector<PointType> PreviewData;//Data of the Point
-
-public:
-	BufferedVertexVec<AssetVertex>& GetEdges(bool Floating);
-
-	BufferedVertexVec<AssetVertex>& GetEdgesMarked(bool Floating);
-
-	BufferedVertexVec<AssetVertex>& GetIntersectionPoints(bool Floating);
-
-	BufferedVertexVec<AssetVertex>& GetVerts(bool Floating);
 
 private:
 	std::optional<VisualPath> PreviewCached;
@@ -152,7 +169,7 @@ public:
 	bool HasHighlitedPath() const;
 
 	void UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover);
-	void UpdateVectsForVAOsFloating(const MyRectF& ViewRect, const PointType& Mouse);
+	void UpdateVectsForVAOsPreview(const MyRectF& ViewRect, const PointType& Mouse);
 
 private:
 
@@ -227,16 +244,16 @@ public:
 	void CancleDrag();
 
 	bool HasPreview() const;
-
-	bool HasFloating() const;
 private:
 
 	std::unordered_map<CompressedBlockDataIndex, std::vector<BlockMetadata>> Blocks;
 
+public:
 	BufferedVertexVec<AssetVertex> PinVBO;
 	BufferedVertexVec<AssetVertex> AssetVBO;
 	BufferedVertexVec<AssetVertex> RoundPinVBO;
 
+	// BufferedVertexVec<AssetVertex> AssetPreviewVBO;
 	BufferedVertexVec<AssetVertex> HighlightAssetVBO;
 	BufferedVertexVec<AssetVertex> MarkedAssetVBO;
 
@@ -272,22 +289,22 @@ private:
 
 private:
 	void UpdateBlocks(const float& Zoom);
-public:
+// public:
 
-	BufferedVertexVec<AssetVertex>& GetPinVBO();
-	BufferedVertexVec<AssetVertex>& GetAssetVBO();
-	BufferedVertexVec<AssetVertex>& GetRoundPinVBO();
-	BufferedVertexVec<TextVertex>& GetStaticTextVBO();
-	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
+// 	BufferedVertexVec<AssetVertex>& GetPinVBO();
+// 	BufferedVertexVec<AssetVertex>& GetAssetVBO();
+// 	BufferedVertexVec<AssetVertex>& GetRoundPinVBO();
+// 	BufferedVertexVec<TextVertex>& GetStaticTextVBO();
+// 	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
 
-	BufferedVertexVec<AssetVertex>& GetHighlightAssetVBO();
-	BufferedVertexVec<AssetVertex>& GetMarkedAssetVBO();
+// 	BufferedVertexVec<AssetVertex>& GetHighlightAssetVBO();
+// 	BufferedVertexVec<AssetVertex>& GetMarkedAssetVBO();
 
-#ifdef ShowBasePositionOfBlocks
-	BufferedVertexVec<AssetFVertex>& GetBasePotitionOfBlocksVBO();
-#endif
+// #ifdef ShowBasePositionOfBlocks
+// 	BufferedVertexVec<AssetFVertex>& GetBasePotitionOfBlocksVBO();
+// #endif
 
-#ifdef ShowBoundingBoxes
-	BufferedVertexVec<AssetFVertex>& GetBBVBO();
-#endif
+// #ifdef ShowBoundingBoxes
+// 	BufferedVertexVec<AssetFVertex>& GetBBVBO();
+// #endif
 };

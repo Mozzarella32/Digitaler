@@ -10,7 +10,6 @@ uniform vec2 UZoom;
 
 in uint  VSIndex[1];
 in uint  VSID[1];
-in uint  VSFlags[1];
 in uint  VSTransform[1];
 in ivec2 VSIPoint1[1];
 in ivec2 VSIPoint2[1];
@@ -18,17 +17,15 @@ in vec4  VSColorA[1];
 in vec2  VSFPoint1[1];
 in vec2  VSFPoint2[1];
 
-layout(location = 0) flat out uint Index;
-layout(location = 1) flat out uint ID;
-layout(location = 2) flat out uint Flags;
-layout(location = 3) flat out int  I1;
-layout(location = 4) flat out vec2 FPoint1;
-layout(location = 5) flat out vec2 FPoint2;
-layout(location = 6) flat out vec2 FPoint;
-layout(location = 7) flat out vec4 ColorA;
-
-layout(location = 8) out vec2 Pos;
-layout(location = 9) out vec2 TextureCoord;
+flat out uint Index;
+flat out uint ID;
+flat out int  I1;
+flat out vec2 FPoint1;
+flat out vec2 FPoint2;
+flat out vec2 FPoint;
+flat out vec4 ColorA;
+out vec2 Pos;
+out vec2 TextureCoord;
 
 vec2 signes[4] = vec2[4](
     vec2(1, 1),
@@ -148,7 +145,6 @@ ivec2 lookup[4] = ivec2[4](
 void main() {
     ID =      VSID[0];
     Index =   VSIndex[0];
-    Flags =   VSFlags[0];
     ColorA =  VSColorA[0];
     I1 =      VSIPoint2[0].x;
 

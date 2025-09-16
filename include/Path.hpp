@@ -17,7 +17,7 @@ public:
 	static constexpr const PathIndex FreeListEnd = PathIndex(-1);
 
 private:
-	//bool Marked : 1 = false;
+	bool Marked : 1 = false;
 	bool Hover : 1 = false;
 	bool Preview : 1 = false;
 	bool Dirty : 1 = true;
@@ -27,16 +27,27 @@ private:
 	bool DontShowHover : 1 = false;
 public:
 	VisualPathData Data;
+public:
+
+	struct DrawData {
+		std::vector<AssetVertex> Edges;
+		std::vector<AssetVertex> Verts;
+		//If a vert is touched by at leas two lines
+		std::vector<AssetVertex> IntersectionPoints;
+
+		void clear() {
+			Edges.clear();
+			Verts.clear();
+			IntersectionPoints.clear();
+		}
+	};
+
+	std::vector<AssetVertex> allEdges;
+
+	DrawData normal;
+	DrawData marked;
+
 private:
-
-	//Importent for order
-	std::vector<AssetVertex> Edges;
-	std::vector<AssetVertex> EdgesMarked;
-
-	//If a vert is touched by at leas two lines
-	std::vector<AssetVertex> IntersectionPoints;
-	std::vector<AssetVertex> Verts;
-
 	MyRectI CachedBoundingBox;
 
 	std::optional<MyRectF> MarkedBoundingBox;
@@ -47,11 +58,17 @@ public:
 	VisualPath(VisualPathData&& Data);
 
 	void SetHover(bool Hover);
+	bool GetHover() const {
+		return Hover;
+	}
 
 	bool ToggleMarkedIfHover();
 	void MarkAll();
 
 	void SetPreview(bool Preview);
+	bool GetPreview() const {
+		return Preview;
+	}
 
 	//Returns if sth has changed
 	bool SetMarkedArea(const MyRectF& MarkedBB);
@@ -72,11 +89,6 @@ public:
 
 	//Cached therfore not const
 	void ComputeAll(const MyRectI& BB);
-
-	const std::vector<AssetVertex>& getEdges() const;
-	const std::vector<AssetVertex>& getEdgesMarked() const;
-	const std::vector<AssetVertex>& getIntersectionPoints() const;
-	const std::vector<AssetVertex>& getVerts() const;
 
 	bool Intercept(const PointType& Pos) const;
 

@@ -30,7 +30,6 @@ public:
 
 	bool Dirty = true;
 	bool IdMapDirty = true;
-	bool UIDRun = true;
 private:
 
 	//Order is important
@@ -66,15 +65,16 @@ private:
 
 	struct PathVAOs {
 		VertexArrayObject EdgesVAO;
-		VertexArrayObject EdgesMarkedVAO;
-		VertexArrayObject IntersectionPointsVAO;
 		VertexArrayObject VertsVAO;
+		VertexArrayObject IntersectionPointsVAO;
 	};
 
 	PathVAOs VAOsPath;
 	PathVAOs VAOsPathPreview;
+	PathVAOs VAOsPathHighlighted;
+	PathVAOs VAOsPathMarked;
 
-	PathVAOs& GetPathVAOs(bool Preview);
+	VertexArrayObject VAOPathAllEdges;
 
 #ifdef RenderCollisionGrid
 	VertexArrayObject CollisionGridVAO;
