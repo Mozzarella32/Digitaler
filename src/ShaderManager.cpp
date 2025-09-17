@@ -211,20 +211,21 @@ void ShaderManager::applyGlobal(const std::string& uniform, const Shader::Unifor
 		it = This.shadersWithUniform.find(uniform);
 	}
 
-	
 	GLint prevProgram = 0;
-  GLCALL(glGetIntegerv(GL_CURRENT_PROGRAM, &prevProgram));
+    GLCALL(glGetIntegerv(GL_CURRENT_PROGRAM, &prevProgram));
+   
+    assert(!it->second.empty() && "Trying to set a uniform that is not used by a shader");
 
-  GLCALL(glUseProgram(0));
+    for (const auto &rShader : it->second) {
+    	auto& shader = rShader.get();
+        shader.bind();
+        shader.apply(uniform, data);
+        shader.unbind();
+    }
     
-  for (const auto &rShader : it->second) {
-  	auto& shader = rShader.get();
-    shader.bind();
-    shader.apply(uniform, data);
-    shader.unbind();
-  }
-
-  GLCALL(glUseProgram(prevProgram));
+    if (prevProgram != 0) {
+        GLCALL(glUseProgram(prevProgram));
+    }
 }
 
 void ShaderManager::Initilise() {
