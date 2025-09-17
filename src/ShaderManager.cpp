@@ -211,12 +211,20 @@ void ShaderManager::applyGlobal(const std::string& uniform, const Shader::Unifor
 		it = This.shadersWithUniform.find(uniform);
 	}
 
+	
+	GLint prevProgram = 0;
+  GLCALL(glGetIntegerv(GL_CURRENT_PROGRAM, &prevProgram));
+
+  GLCALL(glUseProgram(0));
+    
   for (const auto &rShader : it->second) {
   	auto& shader = rShader.get();
     shader.bind();
     shader.apply(uniform, data);
     shader.unbind();
   }
+
+  GLCALL(glUseProgram(prevProgram));
 }
 
 void ShaderManager::Initilise() {

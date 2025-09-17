@@ -227,8 +227,6 @@ void Renderer::RenderWires() {
         FBOBackgroundTexture.unbind();
   };
 
-  AssetShader.bind();
-
   b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
   Pass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts, b.normal.IntersectionPoints, false);
 
@@ -240,9 +238,6 @@ void Renderer::RenderWires() {
 
     Pass(VAOsPathPreview, VAOsPathPreview.EdgesVAO, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, false);
   }
-
-  AssetShader.unbind();
-  AssetShader.bind();
 
   //Preview
   GLuint clearint = 0;
@@ -336,8 +331,6 @@ void Renderer::RenderWires() {
   StencilRecreationPass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts);
   StencilRecreationPass(VAOsPathPreview, VAOPathAllEdges, b.allEdges, b.preview.Verts);
 
-  AssetShader.unbind();
-
   PROFILE_SCOPE_ID_END(3);
 }
 
@@ -391,6 +384,10 @@ void Renderer::Render() {
 
   PROFILE_SCOPE_ID_END(0);
 
+  auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
+
+  assetShader.bind();
+
   RenderWires();
 
   PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
@@ -398,10 +395,6 @@ void Renderer::Render() {
   GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   GLCALL(glStencilMask(0x00));
-
-  auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
-
-  assetShader.bind();
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {
