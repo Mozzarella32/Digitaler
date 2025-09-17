@@ -133,7 +133,11 @@ void Renderer::RenderIDMap() {
 
   FBOID.bind(FrameBufferObject::Draw);
 
-  ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
+  Shader& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
+
+  assetShader.bind();
+
+  assetShader.apply("UIDRun", Shader::Data1i{true});
 
   GLuint clearint = 0;
   GLCALL(glClearTexImage(FBOIDTexture.GetId(), 0, GL_RED_INTEGER,
@@ -143,23 +147,20 @@ void Renderer::RenderIDMap() {
 
   // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
-  auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO,
-                       ShaderManager::Shaders ShaderName) {
+  auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {
-      Shader &shader = ShaderManager::GetShader(ShaderName);
 
-      shader.bind();
       VAO.bind();
       VAO.DrawAs(GL_POINTS);
       VAO.unbind();
-      shader.unbind();
     }
   };
 
-  SimplePass([&b]() { return b.PinVBO; }, PinVAO, ShaderManager::Assets);
-  SimplePass([&b]() { return b.AssetVBO; }, AssetVAO,
-             ShaderManager::Assets);
-  SimplePass([&b]() { return b.RoundPinVBO; }, RoundPinVAO, ShaderManager::Assets);
+  SimplePass([&b]() { return b.PinVBO; }, PinVAO);
+  SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
+  SimplePass([&b]() { return b.RoundPinVBO; }, RoundPinVAO);
+
+  assetShader.unbind();
 
   // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
@@ -199,7 +200,7 @@ void Renderer::RenderWires() {
         VAOs.EdgesVAO.unbind();
     }
     else {
-        ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
+        assetShader.apply("UIDRun", Shader::Data1i{true});
         GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
         GLCALL(glStencilMask(0x00));
         EdgesVAO.DrawAs(GL_POINTS);
@@ -225,7 +226,7 @@ void Renderer::RenderWires() {
     VAOs.IntersectionPointsVAO.unbind();
 
     if (BlurRun) {
-        ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
+        assetShader.apply("UIDRun", Shader::Data1i{false});
     }
 
     if (!BlurRun)
@@ -370,8 +371,6 @@ void Renderer::Render() {
 
   FBOMain.bind(FrameBufferObject::Draw);
 
-  ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
-
   GLCALL(glStencilMask(0xFF));
 
   GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
@@ -393,6 +392,8 @@ void Renderer::Render() {
   auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
 
   assetShader.bind();
+
+  assetShader.apply("UIDRun", Shader::Data1i{ false });
 
   PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
 
@@ -443,7 +444,7 @@ void Renderer::Render() {
   if (b.HasHighlited()) {
       FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
-      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
+      assetShader.apply("UIDRun", Shader::Data1i{true});
 
       // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
@@ -451,7 +452,7 @@ void Renderer::Render() {
 
       // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
       
-      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
+      assetShader.apply("UIDRun", Shader::Data1i{false});
 
       FBOBlurHighlight.unbind();
 
@@ -462,7 +463,7 @@ void Renderer::Render() {
   if (!b.MarkedAssetVBO.empty()) {
       FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
-      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
+      assetShader.apply("UIDRun", Shader::Data1i{true});
 
       // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
 
@@ -470,7 +471,7 @@ void Renderer::Render() {
 
       // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
-      ShaderManager::applyGlobal("UIDRun", Shader::Data1i{false});
+      assetShader.apply("UIDRun", Shader::Data1i{false});
 
       FBOBlurMarked.unbind();
 
@@ -939,8 +940,6 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
                            Eigen::Vector2f{BlockSize.x(), -BlockSize.y()} +
                                Eigen::Vector2f{1.5, -1.5});
 
-  ShaderManager::applyGlobal("UIDRun", Shader::Data1i{true});
-
   PointType ViewportSize = {int(rectVertical.Size.x()) * 1.0 / Zoom,
                     int(rectVertical.Size.y()) * 1.0 / Zoom};
 
@@ -1031,9 +1030,10 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
       }
   }
 
-  Shader &assetShader = ShaderManager::GetShader(ShaderManager::Assets);
+  auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
 
   assetShader.bind();
+  assetShader.apply("UIDRun", Shader::Data1i{ true });
   AssetVAO.bind();
   VBO.replaceBuffer(AssetVAO, 0);
   AssetVAO.DrawAs(GL_POINTS);
