@@ -22,10 +22,10 @@ void Renderer::RenderBackground() {
 
   FBOBackground.bind(FrameBufferObject::Draw);
 
-  glClear(GL_COLOR_BUFFER_BIT);
-  glViewport(0, 0, CanvasSize.x(), CanvasSize.y());
+  GLCALL(glClear(GL_COLOR_BUFFER_BIT));
+  GLCALL(glViewport(0, 0, CanvasSize.x(), CanvasSize.y()));
 
-  GLCALL(glDisable(GL_DEPTH_TEST));
+  //GLCALL(glDisable(GL_DEPTH_TEST));
   Shader& BackgroundShader =
       ShaderManager::GetShader(ShaderManager::Background);
 
@@ -170,12 +170,17 @@ void Renderer::RenderWires() {
   PROFILE_FUNKTION;
 
   VisualBlockInterior &b = Frame->BlockManager->Interior;
-   
+  
+  b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
+  b.UpdateVectsForVAOsPreview(BoundingBox, MouseIndex);
+
   FBOMain.bind(FrameBufferObject::Draw);
 
-  Shader& AssetShader = ShaderManager::GetShader(ShaderManager::Assets);
+  Shader& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
 
-  const auto Pass = [&AssetShader, this](
+  assetShader.bind();
+
+  const auto Pass = [&assetShader, this](
      PathVAOs& VAOs,
      VertexArrayObject& EdgesVAO,
      BufferedVertexVec<AssetVertex>& edges,
@@ -212,7 +217,7 @@ void Renderer::RenderWires() {
     GLCALL(glStencilFunc(GL_EQUAL, 2, 0xFF));
 
     if (!BlurRun)
-        FBOBackgroundTexture.bind(AssetShader,"UBackground","", 0);
+        FBOBackgroundTexture.bind(assetShader,"UBackground","", 0);
 
     VAOs.IntersectionPointsVAO.bind();
     intersectionPoints.replaceBuffer(VAOs.IntersectionPointsVAO, 0);
@@ -227,10 +232,7 @@ void Renderer::RenderWires() {
         FBOBackgroundTexture.unbind();
   };
 
-  b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
   Pass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts, b.normal.IntersectionPoints, false);
-
-  b.UpdateVectsForVAOsPreview(BoundingBox, MouseIndex);
   
   if (b.HasPreview()) {
     GLCALL(glStencilMask(0xFF));
@@ -331,6 +333,8 @@ void Renderer::RenderWires() {
   StencilRecreationPass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts);
   StencilRecreationPass(VAOsPathPreview, VAOPathAllEdges, b.allEdges, b.preview.Verts);
 
+  assetShader.unbind();
+
   PROFILE_SCOPE_ID_END(3);
 }
 
@@ -383,12 +387,12 @@ void Renderer::Render() {
   FBOBackground.unbind();
 
   PROFILE_SCOPE_ID_END(0);
+ 
+  RenderWires();
 
   auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
 
   assetShader.bind();
-
-  RenderWires();
 
   PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
 

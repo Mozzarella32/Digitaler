@@ -168,7 +168,10 @@ public:
 
 	bool HasHighlitedPath() const;
 
+	//Carefull BB calculation messes with opengl
 	void UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover);
+	
+	//Carefull BB calculation messes with opengl
 	void UpdateVectsForVAOsPreview(const MyRectF& ViewRect, const PointType& Mouse);
 
 private:
