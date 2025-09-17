@@ -23,7 +23,7 @@ public:
 public:
 	double Zoom = 0.01;
 	Eigen::Vector2f Offset = { 0,0 };
-	Eigen::Vector2f CanvasSize;
+	Eigen::Vector2f CanvasSize = { 1, 1 };
 	Eigen::Matrix3f ViewProjectionMatrix;
 
 	MyRectF BoundingBox;
