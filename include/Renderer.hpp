@@ -74,8 +74,6 @@ private:
 	PathVAOs VAOsPathHighlighted;
 	PathVAOs VAOsPathMarked;
 
-	VertexArrayObject VAOPathAllEdges;
-
 #ifdef RenderCollisionGrid
 	VertexArrayObject CollisionGridVAO;
 #endif

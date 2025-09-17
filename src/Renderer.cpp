@@ -181,9 +181,10 @@ void Renderer::RenderWires() {
 
   assetShader.bind();
 
+  assetShader.apply("UIDRun", Shader::Data1i{false});
+
   const auto Pass = [&assetShader, this](
      PathVAOs& VAOs,
-     VertexArrayObject& EdgesVAO,
      BufferedVertexVec<AssetVertex>& edges,
      BufferedVertexVec<AssetVertex>& verts,
      BufferedVertexVec<AssetVertex>& intersectionPoints,
@@ -193,9 +194,9 @@ void Renderer::RenderWires() {
     GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
     GLCALL(glStencilMask(0xFF));
     
-    EdgesVAO.bind();
-    edges.replaceBuffer(EdgesVAO, 0);
-    EdgesVAO.DrawAs(GL_POINTS);
+    VAOs.EdgesVAO.bind();
+    edges.replaceBuffer(VAOs.EdgesVAO, 0);
+    VAOs.EdgesVAO.DrawAs(GL_POINTS);
     if (!BlurRun) {
         VAOs.EdgesVAO.unbind();
     }
@@ -203,8 +204,8 @@ void Renderer::RenderWires() {
         assetShader.apply("UIDRun", Shader::Data1i{true});
         GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
         GLCALL(glStencilMask(0x00));
-        EdgesVAO.DrawAs(GL_POINTS);
-        EdgesVAO.unbind();
+        VAOs.EdgesVAO.DrawAs(GL_POINTS);
+        VAOs.EdgesVAO.unbind();
     }
 
     GLCALL(glStencilMask(0x00));
@@ -233,13 +234,16 @@ void Renderer::RenderWires() {
         FBOBackgroundTexture.unbind();
   };
 
-  Pass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts, b.normal.IntersectionPoints, false);
+  GLCALL(glStencilMask(0xFF));
+  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+
+  Pass(VAOsPath, b.normal.Edges, b.normal.Verts, b.normal.IntersectionPoints, false);
   
   if (b.HasPreview()) {
     GLCALL(glStencilMask(0xFF));
     GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-    Pass(VAOsPathPreview, VAOsPathPreview.EdgesVAO, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, false);
+    Pass(VAOsPathPreview, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, false);
   }
 
   //Preview
@@ -253,7 +257,7 @@ void Renderer::RenderWires() {
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
   if (!b.preview.Edges.empty()) {
-    Pass(VAOsPathPreview, VAOsPathPreview.EdgesVAO, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, true);
+    Pass(VAOsPathPreview, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, true);
   }
 
   FBOBlurPreview.unbind();
@@ -268,7 +272,7 @@ void Renderer::RenderWires() {
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
   if (!b.highlighted.Edges.empty()) {
-    Pass(VAOsPathHighlighted, VAOsPathHighlighted.EdgesVAO, b.highlighted.Edges, b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
+    Pass(VAOsPathHighlighted, b.highlighted.Edges, b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
   }
 
   FBOBlurHighlight.unbind();
@@ -283,7 +287,7 @@ void Renderer::RenderWires() {
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
   if (!b.marked.Edges.empty()) {
-    Pass(VAOsPathMarked, VAOsPathMarked.EdgesVAO, b.marked.Edges, b.marked.Verts, b.marked.IntersectionPoints, true);
+    Pass(VAOsPathMarked, b.marked.Edges, b.marked.Verts, b.marked.IntersectionPoints, true);
   }
 
   FBOBlurHighlight.unbind();
@@ -314,16 +318,15 @@ void Renderer::RenderWires() {
 
   // Recreate Stencli Buffer
   auto StencilRecreationPass = [](PathVAOs& VAOs,
-     VertexArrayObject& EdgesVAO,
      BufferedVertexVec<AssetVertex>& edges,
      BufferedVertexVec<AssetVertex>& verts) {
     if (edges.empty())
       return;
 
-    EdgesVAO.bind();
-    edges.replaceBuffer(EdgesVAO, 0);
-    EdgesVAO.DrawAs(GL_POINTS);
-    EdgesVAO.unbind();
+    VAOs.EdgesVAO.bind();
+    edges.replaceBuffer(VAOs.EdgesVAO, 0);
+    VAOs.EdgesVAO.DrawAs(GL_POINTS);
+    VAOs.EdgesVAO.unbind();
 
     VAOs.VertsVAO.bind();
     verts.replaceBuffer(VAOs.VertsVAO, 0);
@@ -331,8 +334,7 @@ void Renderer::RenderWires() {
     VAOs.VertsVAO.unbind();
   };
 
-  StencilRecreationPass(VAOsPath, VAOPathAllEdges, b.allEdges, b.normal.Verts);
-  StencilRecreationPass(VAOsPathPreview, VAOPathAllEdges, b.allEdges, b.preview.Verts);
+  StencilRecreationPass(VAOsPath, b.normal.Edges, b.normal.Verts);
 
   assetShader.unbind();
 
@@ -789,7 +791,6 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
           .VertsVAO = CreateVAO<AssetVertex>(),
           .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
       }),
-      VAOPathAllEdges(CreateVAO<AssetVertex>()),
 #ifdef RenderCollisionGrid
       CollisionGridVAO(CreateVAO<AssetVertex>()),
 #endif

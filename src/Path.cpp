@@ -129,7 +129,6 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 		// Verts.clear();
 		normal.clear();
 		marked.clear();
-		allEdges.clear();
 		return;
 	}
 
@@ -143,7 +142,6 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 	Dirty = false;
 	normal.clear();
 	marked.clear();
-	allEdges.clear();
 
 	//intersectionPoints and if they are marked
 	std::unordered_map<PointType, bool> intersectionPoints;
@@ -188,10 +186,7 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 			  marked.Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
 				vertHasMarked = true;
 			}
-			else {
-				normal.Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
-			}
-			allEdges.push_back(AssetVertex::PathEdge(A, B, MyColor));
+			normal.Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
 			// if (hover) {
 			// 	// flags |= AssetVertex::Highlight;
 			// }
@@ -248,18 +243,14 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 		if(vertHasMarked) {
 			marked.Verts.push_back(AssetVertex::PathVertex(p.Pos, MyColor));
 		}
-		else {
-			normal.Verts.push_back(AssetVertex::PathVertex(p.Pos, MyColor));
-		}
+		normal.Verts.push_back(AssetVertex::PathVertex(p.Pos, MyColor));
 	}
 
 	normal.IntersectionPoints.reserve(intersectionPoints.size());
 	for(const auto& p : intersectionPoints) {
-		if(!IsFullyMarked())
-			normal.IntersectionPoints.push_back(AssetVertex::PathIntersection(p.first, MyColor));
-		if(p.second) {
+		normal.IntersectionPoints.push_back(AssetVertex::PathIntersection(p.first, MyColor));
+		if(p.second)
 			marked.IntersectionPoints.push_back(AssetVertex::PathIntersection(p.first, MyColor));
-		}
 	}
 }
 
@@ -295,7 +286,6 @@ void VisualPath::Free(const PathIndex& head) {
 	CachedBoundingBox = {};
 	normal.clear();
 	marked.clear();
-	allEdges.clear();
 	ClearMarkedArea();
 	Dirty = true;
 	FullyMarked = false;

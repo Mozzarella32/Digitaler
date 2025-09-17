@@ -41,8 +41,6 @@ public:
 		}
 	};
 
-	std::vector<AssetVertex> allEdges;
-
 	DrawData normal;
 	DrawData marked;
 

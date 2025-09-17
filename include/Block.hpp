@@ -23,8 +23,6 @@ private:
 
 public:
 
-	BufferedVertexVec<AssetVertex> allEdges;
-
 	struct PathDrawData {
 		BufferedVertexVec<AssetVertex> Edges;
 		BufferedVertexVec<AssetVertex> Verts;
@@ -47,18 +45,6 @@ public:
 	PathDrawData marked;
 	PathDrawData preview;
 	PathDrawData highlighted;
-
-	// BufferedVertexVec<AssetVertex> IntersectionPoints;
-
-	// BufferedVertexVec<AssetVertex> EdgesMarked;
-	// BufferedVertexVec<AssetVertex> IntersectionPoints;
-	// BufferedVertexVec<AssetVertex> Verts;
-
-	// BufferedVertexVec<AssetVertex> PreviewEdges;
-	// BufferedVertexVec<AssetVertex> PreviewIntersectionPoints;
-	// BufferedVertexVec<AssetVertex> PreviewVerts;
-
-
 
 	BufferedVertexVec<TextVertex> StaticTextVBO;
 	BufferedVertexVec<TextVertex> DynamicTextVBO;

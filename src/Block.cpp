@@ -541,7 +541,6 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 	Blocks.clear();
 	Destructing = false;
 
-	allEdges.clear();
 	normal.clear();
 	marked.clear();
 	preview.clear();
@@ -652,7 +651,6 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 	normal.clear();
 	marked.clear();
 	highlighted.clear();
-	allEdges.clear();
 
 	MyRectI ViewRectI = MyRectI::FromCorners(
 		ViewRect.Position.cast<int>() - PointType(1, 1),
@@ -668,10 +666,7 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 		else if (p.GetHover()) {
 			highlighted.append(p.normal);
 		}
-		else {
-			normal.append(p.normal);
-		}
-		allEdges.append(p.allEdges);
+		normal.append(p.normal);
 	}
 }
 
