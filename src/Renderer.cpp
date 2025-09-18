@@ -261,6 +261,7 @@ void Renderer::RenderWires() {
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
   if (!b.preview.Edges.empty()) {
+    blurPreviewDirty = true;
     Pass(VAOsPathPreview, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, true);
   }
 
@@ -276,6 +277,7 @@ void Renderer::RenderWires() {
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
   if (!b.highlighted.Edges.empty()) {
+    blurHighlightedDirty = true;
     Pass(VAOsPathHighlighted, b.highlighted.Edges, b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
   }
 
@@ -291,6 +293,7 @@ void Renderer::RenderWires() {
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
   if (!b.marked.Edges.empty()) {
+    blurMarkedDirty = true;
     Pass(VAOsPathMarked, b.marked.Edges, b.marked.Verts, b.marked.IntersectionPoints, true);
   }
 
@@ -345,6 +348,32 @@ void Renderer::RenderWires() {
   PROFILE_SCOPE_ID_END(3);
 }
 
+void Renderer::BlurI(FrameBufferObject& FBO, const Texture& iTexture, const int iterations) {
+  auto& gaussianShader = ShaderManager::GetShader(ShaderManager::Gaussian);
+
+  gaussianShader.bind();
+  Frame->HoleScreenVAO->bind();
+
+  for(int i = 0; i < iterations; i++) {
+    FBOBlurSwap.bind();
+    iTexture.bind(gaussianShader, "UImage", "", 0);
+    gaussianShader.apply("horizontal", Shader::Data1i{true});
+    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+    iTexture.unbind();
+    FBOBlurSwap.unbind();
+
+    FBO.bind();
+    FBOBlurSwapTexture.bind(gaussianShader, "UImage", "", 0);
+    gaussianShader.apply("horizontal", Shader::Data1i{false});
+    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+    FBOBlurSwapTexture.unbind();
+    FBO.unbind();
+  }
+
+  Frame->HoleScreenVAO->unbind();
+  gaussianShader.unbind(); 
+}
+
 void Renderer::Render() {
   PROFILE_FUNKTION;
 #ifdef HotShaderReload
@@ -355,9 +384,11 @@ void Renderer::Render() {
     return;
 #endif
 
-
   Dirty = false;
   IdMapDirty = true;
+  blurPreviewDirty = false;
+  blurHighlightedDirty = false;
+  blurMarkedDirty = false;
 
 #ifdef HotShaderReload
   if (ShaderManager::IsDirty) {
@@ -448,6 +479,7 @@ void Renderer::Render() {
 
 
   if (b.HasHighlited()) {
+      blurHighlightedDirty = true;
       FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
       assetShader.apply("UIDRun", Shader::Data1i{true});
@@ -467,6 +499,7 @@ void Renderer::Render() {
   }
 
   if (!b.MarkedAssetVBO.empty()) {
+      blurMarkedDirty = true;
       FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
       assetShader.apply("UIDRun", Shader::Data1i{true});
@@ -487,6 +520,19 @@ void Renderer::Render() {
   assetShader.unbind();
 
   PROFILE_SCOPE_ID_END(4);
+
+  PROFILE_SCOPE_ID_START("Blur", 10);
+
+  if (blurPreviewDirty)
+    BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 2);
+  if (blurHighlightedDirty)
+    BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 2);
+  if (blurMarkedDirty)
+    BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 2);
+
+  FBOMain.bind(FrameBufferObject::Draw);
+
+  PROFILE_SCOPE_ID_END(10);
 
   PROFILE_SCOPE_ID_START("Pins", 5);
 
@@ -606,26 +652,36 @@ void Renderer::Render() {
           std::to_string(Offset.y());
 
   auto& liquidGlassShader = ShaderManager::GetShader(ShaderManager::LiquidGlass);
-  liquidGlassShader.bind();
-  Frame->HoleScreenVAO->bind();
+  if(blurPreviewDirty || blurHighlightedDirty || blurMarkedDirty) {
+    liquidGlassShader.bind();
+    Frame->HoleScreenVAO->bind();
+  }
 
-  FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
-  liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 0.0, 1.0});
-  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-  FBOBlurMarkedTexture.unbind();
+  if(blurMarkedDirty) {
+    FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+    liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 0.0, 1.0});
+    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+    FBOBlurMarkedTexture.unbind();
+  }
 
-  FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
-  liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 1.0, 0.0});
-  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-  FBOBlurHighlightTexture.unbind();
+  if(blurHighlightedDirty) {
+    FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+    liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 1.0, 0.0});
+    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+    FBOBlurHighlightTexture.unbind();
+  }
 
-  FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
-  liquidGlassShader.apply("UColor", Shader::Data3f{0.0, 1.0, 0.0});
-  Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-  FBOBlurPreviewTexture.unbind();
+  if(blurPreviewDirty) {
+    FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+    liquidGlassShader.apply("UColor", Shader::Data3f{0.0, 1.0, 0.0});
+    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+    FBOBlurPreviewTexture.unbind();
+  }
 
-  Frame->HoleScreenVAO->unbind();
-  liquidGlassShader.unbind();
+  if(blurPreviewDirty || blurHighlightedDirty || blurMarkedDirty) {
+    Frame->HoleScreenVAO->unbind();
+    liquidGlassShader.unbind();
+  }
 
   if (!AreaSelectVerts.empty()) {
 
@@ -775,6 +831,8 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       FBOBlurMarkedTexture(CreateBlurTexture()),
       FBOBlurMarkedStencileDepthTexture(CreateBlurStencileDepthTexture()),
       FBOBlurMarked({&FBOBlurMarkedTexture, &FBOBlurMarkedStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOBlurSwapTexture(CreateBlurTexture()),
+      FBOBlurSwap({&FBOBlurSwapTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       VAOsPath(PathVAOs{
           .EdgesVAO = CreateVAO<AssetVertex>(),
           .VertsVAO = CreateVAO<AssetVertex>(),
@@ -856,6 +914,7 @@ void Renderer::UpdateSize() {
   FBOBlurPreviewStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOBlurMarkedTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOBlurMarkedStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
+  FBOBlurSwapTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   UpdateViewProjectionMatrix();
   Dirty = true;

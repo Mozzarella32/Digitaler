@@ -28,8 +28,12 @@ public:
 
 	MyRectF BoundingBox;
 
-	bool Dirty = true;
-	bool IdMapDirty = true;
+	bool Dirty : 1 = true;
+	bool IdMapDirty : 1 = true;
+private:
+	bool blurPreviewDirty : 1 = true;
+	bool blurHighlightedDirty : 1 = true;
+	bool blurMarkedDirty : 1 = true;
 private:
 
 	//Order is important
@@ -59,6 +63,9 @@ private:
 	Texture FBOBlurMarkedTexture;
 	Texture FBOBlurMarkedStencileDepthTexture;
 	FrameBufferObject FBOBlurMarked;
+
+	Texture FBOBlurSwapTexture;
+	FrameBufferObject FBOBlurSwap;
 
 	//std::array<GLenum, 2> DrawBuffer0 = { GL_COLOR_ATTACHMENT0, GL_NONE };
 	//std::array<GLenum, 2> DrawBuffer1 = { GL_NONE, GL_COLOR_ATTACHMENT1 };
@@ -127,6 +134,8 @@ public:
 private:
 	void RenderIDMap();
 
+	void BlurI(FrameBufferObject& FBO, const Texture& iTexture, const int iterations);
+
 public:
 	void UpdateViewProjectionMatrix(bool OnlyForUniforms = false);
 
@@ -143,9 +152,9 @@ public:
 		desc.Internal_Format = GL_R32UI;
 		desc.Depth_Stencil_Texture_Mode = GL_STENCIL_INDEX;
 		desc.Type = GL_UNSIGNED_INT;
-		desc.Wrap_R = Texture::Descriptor::CLAMP_TO_BORDER;
-		desc.Wrap_S = Texture::Descriptor::CLAMP_TO_BORDER;
-		desc.Wrap_T = Texture::Descriptor::CLAMP_TO_BORDER;
+		desc.Wrap_R = Texture::Descriptor::CLAMP_TO_EDGE;
+		desc.Wrap_R = Texture::Descriptor::CLAMP_TO_EDGE;
+		desc.Wrap_R = Texture::Descriptor::CLAMP_TO_EDGE;
 		desc.Min_Filter = Texture::Descriptor::NEAREST;
 		desc.Mag_Filter = Texture::Descriptor::NEAREST;
 		return Texture(1, 1, nullptr, desc);

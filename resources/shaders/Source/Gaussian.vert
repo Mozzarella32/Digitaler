@@ -1,11 +1,10 @@
-//LiquidGlass.vert
+//Gaussian.vert
 
 #version 420 core
 
 //In
 layout(location = 0) in vec2 InPosition;
 
-//Out
 out vec2 TextureCoord;
 
 void main() {
