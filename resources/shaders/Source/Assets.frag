@@ -14,8 +14,8 @@ flat in vec4 ColorA;
 in vec2  Pos;
 in vec2  TextureCoord;
 
-out vec4 FragColor;
-out uint Id;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out uint Id;
 
 //Uniform
 uniform float     UZoomFactor;

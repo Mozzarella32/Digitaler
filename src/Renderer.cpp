@@ -761,7 +761,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                      desc.Type = GL_UNSIGNED_INT;
                      return desc;
                    }()),
-      FBOID({&FBOIDTexture}, {GL_COLOR_ATTACHMENT1}),
+      FBOID({&FBOIDTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurHighlightTexture(CreateBlurTexture()),
       FBOBlurHighlightStencileDepthTexture(CreateBlurStencileDepthTexture()),
       FBOBlurHighlight({&FBOBlurHighlightTexture, &FBOBlurHighlightStencileDepthTexture }, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
