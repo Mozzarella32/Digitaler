@@ -145,6 +145,8 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 
 	//intersectionPoints and if they are marked
 	std::unordered_map<PointType, bool> intersectionPoints;
+	//verts and if they are marked
+	std::unordered_map<PointType, bool> verts;
 
 	static std::unordered_map<int, ColourType> ColourMap;
 	auto GetColour = [&](const int& i) {
@@ -165,8 +167,6 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 		const PointNode& p = Data.Points[i];
 		if (p.IsFree())continue;
 		
-		bool vertHasMarked = false;
-
 		for (LineIndexInPoint j = 0; j < 4; j++) {
 			const PointIndex& OtherIndex = p.Connections[j];
 			if (OtherIndex < i)continue;
@@ -184,7 +184,6 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 
 			if (isMarked) {
 			  marked.Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
-				vertHasMarked = true;
 			}
 			normal.Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
 			// if (hover) {
@@ -200,6 +199,17 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 				auto it = intersectionPoints.find(B);
 				if(it == intersectionPoints.end() || !it->second)
 					intersectionPoints[B] = isMarked;
+			}
+
+			if (BB.Contains(A)) {
+				auto it = verts.find(A);
+				if(it == verts.end() || !it->second)
+					verts[A] = isMarked;
+			}
+			if (BB.Contains(B)) {
+				auto it = verts.find(B);
+				if(it == verts.end() || !it->second)
+					verts[B] = isMarked;
 			}
 
 			/*if (Marked) {
@@ -240,17 +250,20 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 		// if (Hover && !HasMarked() && !DontShowHover) {
 		// 	flags |= AssetVertex::Highlight;
 		// }
-		if(vertHasMarked) {
-			marked.Verts.push_back(AssetVertex::PathVertex(p.Pos, MyColor));
-		}
-		normal.Verts.push_back(AssetVertex::PathVertex(p.Pos, MyColor));
 	}
 
 	normal.IntersectionPoints.reserve(intersectionPoints.size());
-	for(const auto& p : intersectionPoints) {
+	for (const auto& p : intersectionPoints) {
 		normal.IntersectionPoints.push_back(AssetVertex::PathIntersection(p.first, MyColor));
 		if(p.second)
 			marked.IntersectionPoints.push_back(AssetVertex::PathIntersection(p.first, MyColor));
+	}
+
+	normal.Verts.reserve(verts.size());
+	for (const auto& p : verts) {
+		normal.Verts.push_back(AssetVertex::PathVertex(p.first, MyColor));
+		if (p.second)
+			marked.Verts.push_back(AssetVertex::PathVertex(p.first, MyColor));
 	}
 }
 
