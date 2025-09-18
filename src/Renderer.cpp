@@ -196,11 +196,15 @@ void Renderer::RenderWires() {
     
     VAOs.EdgesVAO.bind();
     edges.replaceBuffer(VAOs.EdgesVAO, 0);
+    if(BlurRun) {
+      GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
+    }
     VAOs.EdgesVAO.DrawAs(GL_POINTS);
     if (!BlurRun) {
         VAOs.EdgesVAO.unbind();
     }
     else {
+        GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
         assetShader.apply("UIDRun", Shader::Data1i{true});
         GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
         GLCALL(glStencilMask(0x00));
