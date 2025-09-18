@@ -524,11 +524,11 @@ void Renderer::Render() {
   PROFILE_SCOPE_ID_START("Blur", 10);
 
   if (blurPreviewDirty)
-    BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 2);
+    BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 3);
   if (blurHighlightedDirty)
-    BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 2);
+    BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 3);
   if (blurMarkedDirty)
-    BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 2);
+    BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 3);
 
   FBOMain.bind(FrameBufferObject::Draw);
 

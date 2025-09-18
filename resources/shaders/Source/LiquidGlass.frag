@@ -54,7 +54,7 @@ void main() {
 
 	h *= h;
 	h *= h;
-	h *= 2.0;
+	h *= 4.0;
 	// h = sin(h * 3.1415);
 
 	// FragColor = vec4(1.0,1.0,1.0,h);
