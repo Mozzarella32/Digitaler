@@ -35,7 +35,7 @@ void main() {
 
 	if(read == 0) {
 		vec4 Color = texture(UTex, TextureCoord);
-		FragColor = Color;
+		FragColor = vec4(Color.rgb, 1.0);
 		return;
 	}
 

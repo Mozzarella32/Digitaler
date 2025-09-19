@@ -105,17 +105,17 @@ float[4] getMargins(uint Index) {
         return float[4](0.0, 0.0, 0.0, 0.0);
         case 1://And
         case 2://Or
-        return float[4](1.0, 0.0, 1.0, 0.0);
+        return float[4](0.9, 0.2, 0.9, 0.2);
         case 3://Xor
-        return float[4](1.0, 0.0, 1.5, 0.0);
+        return float[4](0.9, 0.2, 1.5, 0.2);
         case 6://Mux
-        return float[4](0.0, 0.5, 0.0, 0.5);
+        return float[4](0.2, 0.7, 0.2, 0.7);
         case 7://InputPin
         case 8://OutputPin
-        return float[4](-0.125, -0.125, 0.2, -0.125);
+        return float[4](-0.1, -0.1, 0.2, -0.1);
         case 9://InputRoundPin
         case 10://OutputRoundPin
-        return float[4](-0.125, -0.125, -0.125, -0.125);
+        return float[4](-0.1, -0.1, -0.1, -0.1);
         case 11://PathEdge
         {
             float v = float(VSIPoint1[0].x == VSIPoint2[0].x);

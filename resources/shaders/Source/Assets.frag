@@ -162,6 +162,14 @@ float sdUnion(float sd1, float sd2) {
     return min(sd1, sd2);
 }
 
+float ApplyScaling(float sdf) {
+    return 1.0 - 0.15 / min(UZoomFactor, 0.05) * sdf;
+}
+
+vec4 MixInInner(vec4 Outer, vec4 Inner) {
+    return vec4(mix(Outer.rgb, Inner.rgb,  max(0, ApplyScaling(Inner.a))), Outer.a);
+}
+
 float sdOr(vec2 Pos) {
     Pos.x = abs(Pos.x);
     return
@@ -250,7 +258,7 @@ vec4 sdSevenSeg(vec2 Pos) {
 
     vec4 box = vec4(0.1, 0.1, 0.1 , sdBox(PosUnshifted, FPoint + 0.3));
 
-    return vec4(mix(box.rgb, SegColor.rgb,  max(0, 1.0 - 10.0 * SegColor.a)), box.a);
+    return MixInInner(box, SegColor);
  }
 
 
@@ -362,7 +370,7 @@ vec4 sdSixteenSeg(vec2 Pos) {
 
     vec4 box = vec4(0.1, 0.1, 0.1 , sdBox(PosUnshifted, FPoint + 0.3));
 
-    return vec4(mix(box.rgb, SegColor.rgb,  max(0, 1.0 - 10.0 * SegColor.a)), box.a);
+    return MixInInner(box, SegColor);
  }
 
 vec4 sdMux(vec2 Pos) {
@@ -370,7 +378,7 @@ vec4 sdMux(vec2 Pos) {
     vec2 A = vec2(0.0, -1.0);
     vec2 B = vec2(0.0, 1.0);
     float sd = sdTrapezoid(Pos, A, B, 1.5, 1.0) - 0.3;
-    float sdinner = 2.0 * sd + 0.4;
+    // float sdinner = 2.0 * sd + 0.4;
 
     vec2 selA = vec2(0.0, 1.2);
     vec2 sel1 = vec2(-1.0, -1.2);
@@ -378,88 +386,104 @@ vec4 sdMux(vec2 Pos) {
 
     vec2 selB = sel1 * I1 + sel2 * (1 - I1);
 
-    vec4 sel = vec4(ColorA.rgb, max(2.0 * sdSegment(Pos, selA, selB) - 0.2, 0.0));
+    vec4 sel = vec4(ColorA.rgb, max(sdSegment(Pos, selA, selB) - 0.075, 0.0));
 
-    vec4 inner = vec4(0.1, 0.1, 0.1, sdinner);
+    vec4 inner = vec4(0.0, 0.0, 0.0, sd + 0.20);
 
-    inner = vec4(mix(inner.rgb, sel.rgb,  max(0, 1.0 - 10.0 * sel.a)), inner.a);
+    inner = MixInInner(inner, sel);
 
     vec4 outer = vec4(0.8, 0.8, 0.15, sd);
 
-    return vec4(mix(outer.rgb, inner.rgb,  max(0, 1.0 - 10.0 * inner.a)), outer.a);
+    return MixInInner(outer, inner);
 }
 
 vec3 PathCornerColor = vec3(0.3, 1.4, 0.7);
 
 vec4 holeColor() {
-    vec4 Return = vec4(vec3(0.05), max(5.0 * length(Pos) - 0.5, 0.0));
-    if(UWirePass) {
+    float thickness = 0.075;
+    if (UIDRun) {
+        thickness = 0.1;
+    }
+    
+    vec4 Return = vec4(vec3(0.05), max(length(Pos) - thickness, 0.0));
+    if (UWirePass) {
         Return.rgb = texture(UPath, TextureCoord).rgb;
-        vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
-        return vec4(mix(Return.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), Return.a);
+        vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
+        return MixInInner(Return, corner);
     }
     return Return;
 }
 
+bool ZeroID = false;
+
 vec4 sdPin(vec2 Pos) {
     vec4 hole = holeColor();
-    vec4 mark = vec4(ColorA.rgb, max(5.0 * sdSegment(Pos, vec2(0.0, 0.0), vec2(0.0, -1.0)) - 0.5, 0.0));
+    vec4 mark = vec4(ColorA.rgb, max(sdSegment(Pos, vec2(0.0, 0.0), vec2(0.0, -1.0)) - 0.075, 0.0));
     vec3 bodyColor = Index == 7 ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
     vec4 body = vec4(bodyColor, sdTunnel(Pos, vec2(0.2, 1.0)));
-    body = vec4(mix(body.rgb, mark.rgb,  max(0, 1.0 - 10.0 * mark.a)), body.a);
-    return vec4(mix(body.rgb, hole.rgb,  max(0, 1.0 - 10.0 * hole.a)), body.a);
+    body = MixInInner(body, mark);
+    if (UIDRun) {
+        if (ApplyScaling(hole.a) > 0) {
+          ZeroID = true;
+          return vec4(vec3(0.0), 1.0/0.0);
+        }
+        else{
+            return body;
+        }
+    }
+    return MixInInner(body, hole);
 }
 
 vec4 sdRoundPin(vec2 Pos) {
     vec4 hole = holeColor();
     vec3 bodyColor = Index == 9 ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
     vec4 body = vec4(bodyColor, length(Pos) - 0.2);
-    return vec4(mix(body.rgb, hole.rgb,  max(0, 1.0 - 10.0 * hole.a)), body.a);
+    if (UIDRun) {
+        if (ApplyScaling(hole.a) > 0) {
+          ZeroID = true;
+          return vec4(vec3(0.0), 1.0/0.0);
+        }
+        else{
+            return body;
+        }
+    }
+    return MixInInner(body, hole);
 }
 
 vec4 sdPathEdge(vec2 Pos) {
     vec4 corner = vec4(PathCornerColor, sdUnion(
-          5.0 * length(Pos - FPoint1) - 0.25,
-          5.0 * length(Pos - FPoint2) - 0.25  
+          length(Pos - FPoint1) - 0.03,
+          length(Pos - FPoint2) - 0.03  
         ));
-    vec4 segment = vec4(ColorA.rgb, 2.5 * sdSegment(Pos, FPoint1, FPoint2) - 0.25);
-    return vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+    vec4 segment = vec4(ColorA.rgb, sdSegment(Pos, FPoint1, FPoint2) - 0.075);
+    return MixInInner(segment, corner);
 }
 
 vec4 sdPathIntersectionPoints(vec2 Pos) {
-    vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
-    vec4 segment = vec4(ColorA.rgb, 1.0 - 2.5 * length(abs(Pos) - vec2(0.5)));
+    vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
+    vec4 segment = vec4(ColorA.rgb, 0.425 - length(abs(Pos) - vec2(0.5)));
 
-    vec4 col = vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+    vec4 col = MixInInner(segment, corner);
     vec4 pix = texture(UBackground, TextureCoord);
-    return vec4(mix(pix.rgb, col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0)), -1.0 / 0.0);
+    return vec4(mix(pix.rgb, col.rgb, clamp(ApplyScaling(col.a), 0.0, 1.0)), -1.0 / 0.0);
 }
 
 float sdPathIntersectionPointsTrue(vec2 Pos) {
-    return 1.0 - 2.5 * length(abs(Pos) - vec2(0.5));
+    return 0.425 - length(abs(Pos) - vec2(0.5));
 }
 
 vec4 sdPathVertex(vec2 Pos) {
-    vec4 corner = vec4(PathCornerColor, 5.0 * length(Pos) - 0.25);
-    vec4 segment = vec4(ColorA.rgb, 2.5 * length(Pos) - 0.25);
-    return vec4(mix(segment.rgb, corner.rgb,  max(0, 1.0 - 10.0 * corner.a)), segment.a);
+    vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
+    vec4 segment = vec4(ColorA.rgb, length(Pos) - 0.075);
+    return MixInInner(segment, corner);
 }
 
 vec4 sdAreaSelect(vec2 Pos) {
     Pos = abs(Pos);
     float sd = -max(Pos.x - FPoint.x, Pos.y - FPoint.y);
-    // return vec4(UZoomFactor * 100.0, 0.0, 0.0, -1.0/0.0);
     if(sd < UZoomFactor * 5.0) {
         return vec4(ColorA.rgb, 0.015);
-    //     // return vec4(ColorA.rgb, sd);
     }
-    // sd += 1.0;
-    // if(sd > 0.0) {
-    //     return vec4(0.0, 0.0, 0.0, 0.1);
-    // }
-    // if(sd > -100.0 * UZoomFactor) {
-    //     return vec4(ColorA.rgb, max(0.025, 20.0 * sdBox(Pos, FPoint - 0.1) - 1.95));
-    // }
     return vec4(ColorA.rgb, 0.085);
 }
 
@@ -468,7 +492,6 @@ vec4 get() {
     switch (Index) {
         case 0://Box
         return vec4(ColorA.rgb, max((-ColorA.a + 1.0) / 10.0, sdBox(Pos, FPoint + 0.3)));
-        // return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
         case 1://And
         return vec4(0.7,0.15,0.15, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
         case 2://Or
@@ -505,25 +528,14 @@ vec4 get() {
 }
 
 void main () {
-    // if(Index == 14){
-    //     FragColor = vec4(Pos,0.0,1.0);
-    //     return;
-    // }
     vec4 col = get();
 
-    // if(UHighlight != 0) {
-    //     if (1.0 - 10.0 * col.a > 0) {
-    //     // if ((UHighlight & Flags) != 0 && 1.0 - 10.0 * col.a > 0) {
-    //         Id = 255;
-    //         return;
-    //     }
-    //     else {
-    //         discard;
-    //     }
-    // }
-
     if(UIDRun) {
-        if(1.0 - 10.0 * col.a > 0) {
+        if (ZeroID) {
+            Id = 0;
+            return;
+        }
+        if (ApplyScaling(col.a) > 0) {
             Id = ID;
             return;
         }
@@ -532,13 +544,9 @@ void main () {
         }
     }
 
-    FragColor = vec4(col.rgb, clamp(1.0 - 10.0 * col.a, 0.0, 1.0));
-    // if(Index == 6) discard;
-    // FragColor = vec4(col.rgb, col.a);
-    // if(1.0 - 10.0 * col.a < 0.0){
-    //     FragColor = vec4(1.0,0.0,0.0,0.5);
+    FragColor = vec4(col.rgb, clamp(ApplyScaling(col.a), 0.0, 1.0));
+
+    // if(ApplyScaling(col.a) < 0.0){
+    //     FragColor = vec4(1.0, 1.0, 1.0,0.2);
     // }
-    // FragColor = vec4(ColorA.rgb, min(sd, ColorA.a));
-    // FragColor = vec4(Pos.xy, -Pos.x, 1.0);
-    // FragColor = ColorA;
 }

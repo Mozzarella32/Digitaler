@@ -668,6 +668,9 @@ void Renderer::Render() {
     liquidGlassShader.bind();
     Frame->HoleScreenVAO->bind();
     FBOMain.unbind();
+    FBOMainSwap.bind();
+    GLCALL(glClear(GL_COLOR_BUFFER_BIT));
+    FBOMainSwap.unbind();
   }
 
   if(blurMarkedDirty) {
