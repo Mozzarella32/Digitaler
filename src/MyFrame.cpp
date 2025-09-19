@@ -188,15 +188,15 @@ MyFrame::MyFrame(MyApp *App)
 
   MenuBar->Append(EditMenu, "&Edit");
 
-  wxMenu *SimulateMenu = new wxMenu();
-  /*ToggelSimulationMenu =*/AddMenu(SimulateMenu, Menus::ToggelSimulataion,
-                                    "&Start\tSPACE",
-                                    &MyFrame::OnStartStopButton);
-  AddMenu(SimulateMenu, Menus::SingleStep, "&Step\ts",
+  //wxMenu *SimulateMenu = new wxMenu();
+  ///*ToggelSimulationMenu =*/AddMenu(SimulateMenu, Menus::ToggelSimulataion,
+  //                                  "&Start\tSPACE",
+  //                                  &MyFrame::OnStartStopButton);
+  /*AddMenu(SimulateMenu, Menus::SingleStep, "&Step",
           &MyFrame::OnSingleStepButton,
-          PngManager::GetPng(PngManager::SingleStep).Scale(12, 12));
+          PngManager::GetPng(PngManager::SingleStep).Scale(12, 12));*/
 
-  MenuBar->Append(SimulateMenu, "&Simulate");
+  //MenuBar->Append(SimulateMenu, "&Simulate");
 
   wxMenu *HelpMenu = new wxMenu();
 
