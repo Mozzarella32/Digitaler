@@ -1284,7 +1284,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			// }
 
 			auto SetIdForBlur = [](AssetVertex vert) {
-				vert.id = (1 >> 31) - 1;
+				vert.id = 0xFFFFFFFFu;
 				return vert;
 			};
 
