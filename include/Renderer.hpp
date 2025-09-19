@@ -20,6 +20,8 @@ public:
 	MyApp* App;
 	MyFrame* Frame;
 
+	std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
 public:
 	double Zoom = 0.01;
 	Eigen::Vector2f Offset = { 0,0 };
@@ -48,6 +50,8 @@ private:
 	Texture FBOMainStencileDepthTexture;
 	Texture FBOMainColorTexture;
 	FrameBufferObject FBOMain;
+	Texture FBOMainColorSwapTexture;
+	FrameBufferObject FBOMainSwap;
 
 	Texture FBOIDTexture;
 	FrameBufferObject FBOID;

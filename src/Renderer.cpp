@@ -276,7 +276,7 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.highlighted.Edges.empty()) {
+  if (!b.highlighted.Edges.empty() && !b.HasPreview()) {
     blurHighlightedDirty = true;
     Pass(VAOsPathHighlighted, b.highlighted.Edges, b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
   }
@@ -292,7 +292,7 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.marked.Edges.empty()) {
+  if (!b.marked.Edges.empty() && !b.HasPreview()) {
     blurMarkedDirty = true;
     Pass(VAOsPathMarked, b.marked.Edges, b.marked.Verts, b.marked.IntersectionPoints, true);
   }
@@ -383,6 +383,8 @@ void Renderer::Render() {
   if (!Dirty)
     return;
 #endif
+
+  ShaderManager::applyGlobal("UTime", Shader::Data1f{std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() / 1000.0f});
 
   Dirty = false;
   IdMapDirty = true;
@@ -478,7 +480,7 @@ void Renderer::Render() {
   WirePass([&b](){return b.RoundPinVBO; }, RoundPinVAO);
 
 
-  if (b.HasHighlited()) {
+  if (b.HasHighlited() && !b.HasPreview()) {
       blurHighlightedDirty = true;
       FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
@@ -494,11 +496,11 @@ void Renderer::Render() {
 
       FBOBlurHighlight.unbind();
 
-      if(b.MarkedAssetVBO.empty())
-        FBOMain.bind(FrameBufferObject::Draw);
+      // if(b.MarkedAssetVBO.empty())
+      //   FBOMain.bind(FrameBufferObject::Draw);
   }
 
-  if (!b.MarkedAssetVBO.empty()) {
+  if (!b.MarkedAssetVBO.empty() && !b.HasPreview()) {
       blurMarkedDirty = true;
       FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
@@ -524,11 +526,11 @@ void Renderer::Render() {
   PROFILE_SCOPE_ID_START("Blur", 10);
 
   if (blurPreviewDirty)
-    BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 3);
+    BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 1);
   if (blurHighlightedDirty)
-    BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 3);
+    BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 1);
   if (blurMarkedDirty)
-    BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 3);
+    BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 1);
 
   FBOMain.bind(FrameBufferObject::Draw);
 
@@ -651,36 +653,64 @@ void Renderer::Render() {
           " Off: " + std::to_string(Offset.x()) + ", " +
           std::to_string(Offset.y());
 
+  bool mainFBOSwap = true;
+
+  auto mainFBOActive = [&mainFBOSwap, this]() -> FrameBufferObject& {
+      return (mainFBOSwap) ? FBOMainSwap : FBOMain;
+   };
+
+  auto mainFBOTexture = [&mainFBOSwap, this]() -> Texture& {
+      return (mainFBOSwap) ? FBOMainColorTexture : FBOMainColorSwapTexture;
+   };
+
   auto& liquidGlassShader = ShaderManager::GetShader(ShaderManager::LiquidGlass);
   if(blurPreviewDirty || blurHighlightedDirty || blurMarkedDirty) {
     liquidGlassShader.bind();
     Frame->HoleScreenVAO->bind();
+    FBOMain.unbind();
   }
 
   if(blurMarkedDirty) {
+    mainFBOActive().bind();
+    mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
     liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 0.0, 1.0});
     Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
     FBOBlurMarkedTexture.unbind();
+    mainFBOTexture().unbind();
+    mainFBOActive().unbind();
+    mainFBOSwap = !mainFBOSwap;
   }
 
   if(blurHighlightedDirty) {
+    mainFBOActive().bind();
+    mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
     liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 1.0, 0.0});
     Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
     FBOBlurHighlightTexture.unbind();
+    mainFBOTexture().unbind();
+    mainFBOActive().unbind();
+    mainFBOSwap = !mainFBOSwap;
   }
 
   if(blurPreviewDirty) {
+    mainFBOActive().bind();
+    mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
     liquidGlassShader.apply("UColor", Shader::Data3f{0.0, 1.0, 0.0});
     Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
     FBOBlurPreviewTexture.unbind();
+    mainFBOTexture().unbind();
+    mainFBOActive().unbind();
+    mainFBOSwap = !mainFBOSwap;
   }
 
+  mainFBOSwap = !mainFBOSwap;
   if(blurPreviewDirty || blurHighlightedDirty || blurMarkedDirty) {
     Frame->HoleScreenVAO->unbind();
     liquidGlassShader.unbind();
+    mainFBOActive().bind();
   }
 
   if (!AreaSelectVerts.empty()) {
@@ -725,20 +755,20 @@ void Renderer::Render() {
     assetShader.unbind();
   }
 #endif
-
-  FBOMain.unbind();
+  
+  mainFBOActive().unbind();
   
   if (!Frame->Canvas->BindContext()) {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
   }
 
-  FBOMain.bind(FrameBufferObject::Read);
+  mainFBOActive().bind(FrameBufferObject::Read);
 
   GLCALL(glBlitFramebuffer(0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0,
                            CanvasSize.x(), CanvasSize.y(), GL_COLOR_BUFFER_BIT,
                            GL_NEAREST));
 
-  FBOMain.unbind();
+  mainFBOActive().unbind();
 
   Frame->Canvas->SwapBuffers();
 }
@@ -812,6 +842,8 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       FBOMainColorTexture(1, 1),
       FBOMain({&FBOMainColorTexture, &FBOMainStencileDepthTexture},
               {GL_COLOR_ATTACHMENT0, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOMainColorSwapTexture(1, 1),
+      FBOMainSwap({&FBOMainColorSwapTexture}, {GL_COLOR_ATTACHMENT0}),
       FBOIDTexture(1, 1, nullptr,
                    []() {
                      Texture::Descriptor desc;
@@ -905,6 +937,7 @@ void Renderer::UpdateSize() {
 
   FBOMainStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOMainColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
+  FBOMainColorSwapTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
 

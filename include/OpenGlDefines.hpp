@@ -241,7 +241,7 @@ struct AssetVertex {
 		return AssetVertex((unsigned int)(input ? ID::InputRoundPin : ID::OutputRoundPin), id, transform, p.x(), p.y(), 0, 0, 0.0, 0.0, 0.0, 0.0);
 	}
 
-	static const constexpr int BlurId = 255;
+	static const constexpr unsigned int BlurId = (1 >> 31) - 1;
 
 	static AssetVertex PathEdge(const Eigen::Vector2i& p1, const Eigen::Vector2i& p2, const ColourType& color) {
 		return AssetVertex((unsigned int)ID::PathEdge, BlurId, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);

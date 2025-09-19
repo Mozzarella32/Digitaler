@@ -214,7 +214,7 @@ void ShaderManager::applyGlobal(const std::string& uniform, const Shader::Unifor
 	GLint prevProgram = 0;
     GLCALL(glGetIntegerv(GL_CURRENT_PROGRAM, &prevProgram));
    
-    assert(!it->second.empty() && "Trying to set a uniform that is not used by a shader");
+    assert((!it->second.empty() && "Trying to set a uniform that is not used by a shader") || uniform == "UTime");
 
     for (const auto &rShader : it->second) {
     	auto& shader = rShader.get();

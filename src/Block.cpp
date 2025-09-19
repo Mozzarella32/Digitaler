@@ -1275,7 +1275,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			assert((ssize_t)MarkedBlocks.size() > id);
 			// ColourType Color{};
 			bool isMarked = MarkedBlocks[id];
-			bool isHighlighted = (id == Highlited);
+			bool isHighlighted = (id == Highlited) && !isMarked;
 			// if (MarkedBlocks[id]) {
 			// 	Flags |= AssetVertex::Flags::Marked;
 			// }
@@ -1284,7 +1284,7 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			// }
 
 			auto SetIdForBlur = [](AssetVertex vert) {
-				vert.id = 255;
+				vert.id = (1 >> 31) - 1;
 				return vert;
 			};
 
