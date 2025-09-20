@@ -238,9 +238,9 @@ private:
 	std::unordered_map<CompressedBlockDataIndex, std::vector<BlockMetadata>> Blocks;
 
 public:
-	BufferedVertexVec<AssetVertex> PinVBO;
+	// BufferedVertexVec<AssetVertex> PinVBO;
 	BufferedVertexVec<AssetVertex> AssetVBO;
-	BufferedVertexVec<AssetVertex> RoundPinVBO;
+	// BufferedVertexVec<AssetVertex> RoundPinVBO;
 
 	// BufferedVertexVec<AssetVertex> AssetPreviewVBO;
 	BufferedVertexVec<AssetVertex> HighlightAssetVBO;

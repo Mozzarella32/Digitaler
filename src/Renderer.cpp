@@ -156,9 +156,9 @@ void Renderer::RenderIDMap() {
     }
   };
 
-  SimplePass([&b]() { return b.PinVBO; }, PinVAO);
+  // SimplePass([&b]() { return b.PinVBO; }, PinVAO);
   SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
-  SimplePass([&b]() { return b.RoundPinVBO; }, RoundPinVAO);
+  // SimplePass([&b]() { return b.RoundPinVBO; }, RoundPinVAO);
 
   assetShader.unbind();
 
@@ -306,7 +306,7 @@ void Renderer::RenderWires() {
 
   GLCALL(glBlitFramebuffer(
       0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0, CanvasSize.x(),
-      CanvasSize.y(), GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST));
+      CanvasSize.y(), GL_COLOR_BUFFER_BIT, GL_NEAREST));
 
   FBOPath.unbind();
   FBOMain.unbind();
@@ -315,18 +315,19 @@ void Renderer::RenderWires() {
 
   PROFILE_SCOPE_ID_START("Recreate Stencil from Path", 3);
 
-  GLCALL(glStencilMask(0xFF));
-  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-  GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-  GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
-  GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
+  // GLCALL(glStencilMask(0xFF));
+  // GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+  // GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
+  // GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
+  // GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
 
-  FBOMain.bind(FrameBufferObject::Draw);
+  FBOPath.bind();
 
   // Recreate Stencli Buffer
   auto StencilRecreationPass = [](PathVAOs& VAOs,
      BufferedVertexVec<AssetVertex>& edges,
-     BufferedVertexVec<AssetVertex>& verts) {
+     BufferedVertexVec<AssetVertex>& verts
+   ) {
     if (edges.empty())
       return;
 
@@ -341,9 +342,20 @@ void Renderer::RenderWires() {
     VAOs.VertsVAO.unbind();
   };
 
+  assetShader.apply("UIDRun", Shader::Data1i{true});
+  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
+  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+  GLCALL(glClear(GL_COLOR_BUFFER_BIT));
   StencilRecreationPass(VAOsPath, b.normal.Edges, b.normal.Verts);
+  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
+  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+  assetShader.apply("UIDRun", Shader::Data1i{false});
 
   assetShader.unbind();
+
+  FBOPath.unbind();
+
+  FBOMain.bind(FrameBufferObject::Draw);
 
   PROFILE_SCOPE_ID_END(3);
 }
@@ -411,7 +423,6 @@ void Renderer::Render() {
   FBOMain.bind(FrameBufferObject::Draw);
 
   GLCALL(glStencilMask(0xFF));
-
   GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
   GLCALL(glViewport(0, 0, CanvasSize.x(), CanvasSize.y()));
@@ -449,35 +460,33 @@ void Renderer::Render() {
     }
   };
 
-  auto WirePass = [this,&assetShader](auto VertsGetter, VertexArrayObject &VAO) {
-    if (!VertsGetter().empty()) {
-      VAO.bind();
-      VertsGetter().replaceBuffer(VAO, 0);  
+  // auto WirePass = [this,&assetShader](auto VertsGetter, VertexArrayObject &VAO) {
+  //   if (!VertsGetter().empty()) {
+  //     VAO.bind();
+  //     VertsGetter().replaceBuffer(VAO, 0);  
 
-      assetShader.apply("UWirePass", Shader::Data1i(false));
-      GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-      VAO.DrawAs(GL_POINTS);
+  //     FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
+  //     FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
 
-      assetShader.apply("UWirePass", Shader::Data1i(true));
-      FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
+  //     VAO.DrawAs(GL_POINTS);
 
-      GLCALL(glStencilFunc(GL_NOTEQUAL, 0, 0xFF));
-      VAO.DrawAs(GL_POINTS);
-      GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-
-      FBOPathColorTexture.bind();
-      assetShader.apply("UWirePass", Shader::Data1i(false));
+  //     FBOPathColorTexture.unbind();
+  //     FBOPathIDTexture.unbind();
   
-      VAO.unbind();
-    }
-  };
+  //     VAO.unbind();
+  //   }
+  // };
 
 
-  WirePass([&b](){return b.PinVBO; }, PinVAO);
+  // WirePass([&b](){return b.PinVBO; }, PinVAO);
 
+  FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
+  FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
   SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
+  FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
+  FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
 
-  WirePass([&b](){return b.RoundPinVBO; }, RoundPinVAO);
+  // WirePass([&b](){return b.RoundPinVBO; }, RoundPinVAO);
 
 
   if (b.HasHighlited() && !b.HasPreview()) {
@@ -830,18 +839,18 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
     : App(App), Frame(Frame), FBOBackgroundTexture(1, 1),
       FBOBackground({&FBOBackgroundTexture}),
       FBOPathColorTexture(1, 1),
-      FBOPath({&FBOPathColorTexture},
-              {GL_COLOR_ATTACHMENT0}),
-      FBOMainStencileDepthTexture(1, 1, nullptr,
-                                  []() {
-                                    Texture::Descriptor desc;
-                                    desc.Format = GL_DEPTH_STENCIL;
-                                    desc.Internal_Format = GL_DEPTH24_STENCIL8;
-                                    desc.Depth_Stencil_Texture_Mode =
-                                        GL_STENCIL_INDEX;
-                                    desc.Type = GL_UNSIGNED_INT_24_8;
-                                    return desc;
-                                  }()),
+      FBOPathIDTexture(1, 1, nullptr,
+                   []() {
+                     Texture::Descriptor desc;
+                     desc.Format = GL_RED_INTEGER;
+                     desc.Internal_Format = GL_R32UI;
+                     desc.Depth_Stencil_Texture_Mode = GL_STENCIL_INDEX;
+                     desc.Type = GL_UNSIGNED_INT;
+                     return desc;
+                   }()),
+      FBOPath({&FBOPathColorTexture, &FBOPathIDTexture},
+              {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}),
+      FBOMainStencileDepthTexture(CreateStencileDepthTexture()),
       FBOMainColorTexture(1, 1),
       FBOMain({&FBOMainColorTexture, &FBOMainStencileDepthTexture},
               {GL_COLOR_ATTACHMENT0, GL_DEPTH_STENCIL_ATTACHMENT}),
@@ -858,13 +867,13 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                    }()),
       FBOID({&FBOIDTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurHighlightTexture(CreateBlurTexture()),
-      FBOBlurHighlightStencileDepthTexture(CreateBlurStencileDepthTexture()),
+      FBOBlurHighlightStencileDepthTexture(CreateStencileDepthTexture()),
       FBOBlurHighlight({&FBOBlurHighlightTexture, &FBOBlurHighlightStencileDepthTexture }, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
       FBOBlurPreviewTexture(CreateBlurTexture()),
-      FBOBlurPreviewStencileDepthTexture(CreateBlurStencileDepthTexture()),
+      FBOBlurPreviewStencileDepthTexture(CreateStencileDepthTexture()),
       FBOBlurPreview({&FBOBlurPreviewTexture, &FBOBlurPreviewStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
       FBOBlurMarkedTexture(CreateBlurTexture()),
-      FBOBlurMarkedStencileDepthTexture(CreateBlurStencileDepthTexture()),
+      FBOBlurMarkedStencileDepthTexture(CreateStencileDepthTexture()),
       FBOBlurMarked({&FBOBlurMarkedTexture, &FBOBlurMarkedStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
       FBOBlurSwapTexture(CreateBlurTexture()),
       FBOBlurSwap({&FBOBlurSwapTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
@@ -936,6 +945,7 @@ void Renderer::UpdateSize() {
 
   FBOBackgroundTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
+  FBOPathIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOPathColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOMainStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());

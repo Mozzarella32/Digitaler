@@ -16,13 +16,14 @@ in vec2  TextureCoord;
 
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out uint Id;
+layout(location = 2) out uint PathPresent;
 
 //Uniform
-uniform float     UZoomFactor;
-uniform sampler2D UBackground;
-uniform sampler2D UPath;
-uniform bool      UWirePass;
-uniform bool      UIDRun;
+uniform float      UZoomFactor;
+uniform bool       UIDRun;
+uniform sampler2D  UBackground;
+uniform sampler2D  UPath;
+uniform isampler2D UPathPresent;
 
 float dot2(vec2 v) {
     return dot(v, v);
@@ -406,7 +407,8 @@ vec4 holeColor() {
     }
     
     vec4 Return = vec4(vec3(0.05), max(length(Pos) - thickness, 0.0));
-    if (UWirePass) {
+    int PathPresent = texture(UPathPresent, TextureCoord).r;
+    if (PathPresent != 0) {
         Return.rgb = texture(UPath, TextureCoord).rgb;
         vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
         return MixInInner(Return, corner);
@@ -482,9 +484,9 @@ vec4 sdAreaSelect(vec2 Pos) {
     Pos = abs(Pos);
     float sd = -max(Pos.x - FPoint.x, Pos.y - FPoint.y);
     if(sd < UZoomFactor * 5.0) {
-        return vec4(ColorA.rgb, 0.015);
+        return vec4(ColorA.rgb, 0.4);
     }
-    return vec4(ColorA.rgb, 0.085);
+    return vec4(ColorA.rgb, 0.05);
 }
 
 // r g b sdf
@@ -530,7 +532,7 @@ vec4 get() {
 void main () {
     vec4 col = get();
 
-    if(UIDRun) {
+    if (UIDRun) {
         if (ZeroID) {
             Id = 0;
             return;
@@ -542,6 +544,11 @@ void main () {
         else{
             discard;
         }
+    }
+
+    if (Index == 14) {//AreaSelect
+        FragColor = vec4(col.rgb, clamp(col.a, 0.0, 1.0));
+        return;
     }
 
     FragColor = vec4(col.rgb, clamp(ApplyScaling(col.a), 0.0, 1.0));

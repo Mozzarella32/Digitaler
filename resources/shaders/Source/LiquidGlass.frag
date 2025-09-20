@@ -21,16 +21,64 @@ void main() {
 	float read = pix.r / 4294967295.0;
 
 	float val = 1.0 - read;
+	val *= val;
+	val *= val;
+	val *= val;
 
-	float valgrad = val;
-	val *= val;
-	val *= val;
-	val *= val;
+	float valgrad = 1.0 - read;
+	valgrad *= valgrad;
+	valgrad *= valgrad;
+	valgrad *= valgrad;
+	valgrad *= valgrad;
+	valgrad *= valgrad;
+	valgrad *= valgrad;
+	valgrad = log(valgrad + 1.0);
+	valgrad = log(valgrad + 1.0);
+	valgrad = log(valgrad + 1.0);
+	valgrad = log(valgrad + 1.0);
+	// valgrad = log(valgrad + 2.0);
+	// valgrad = log(valgrad + 2.0);
+	// valgrad = log(valgrad + 2.0);
+	// valgrad = log(valgrad + 2.0);
+	// valgrad -= 0.25;
+	// valgrad = max(0.0, valgrad);
+	// valgrad *= read;
+	// valgrad = abs(valgrad);
+	// float d = read;
+	// d *= d;
+	// d *= d;
+	// d *= d;
+	// d += 0.1;
+	// d = 1.0 - d;
+	// valgrad *= d;
+	// d = exp(d);
+	// d = exp(d);
+	// d = exp(d);
+	// d = exp(d);
+	// valgrad = exp(-(4.0 * valgrad - 2.0) * (4.0 * valgrad - 2.0));
+	// valgrad = 1.0 - valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad = 1.0 - valgrad;
+
+	// if(valgrad)
 
 	vec2 gradient = vec2(dFdx(valgrad), dFdy(valgrad));
-	// vec2 gradient = vec2(dFdx(read), dFdy(read));
+	// gradient = vec2(dFdx(gradient.y), dFdy(gradient.x));
 
-	// FragColor = vec4(gradient * 100.0, 0.0, 1.0);
+	// gradient *= valgrad;
+
+	// gradient = normalize(gradient) * length(gradient);
+	// gradient *= exp(-(4.0 * length(10.0 * gradient) - 2.0) * (10.0 * length(gradient) - 2.0));
+
+	// FragColor = vec4(normalize(gradient) * (1.0 - read) * 1.0, 0.0, 1.0);
+	FragColor = vec4(abs(gradient) * 1.0, 0.0, 1.0);
+
+	// FragColor = vec4(vec3(1.0 - read), 1.0);
+	// FragColor = vec4(vec3(valgrad), 1.0);
 	// return;
 
 	if(read == 0) {
@@ -64,14 +112,28 @@ void main() {
 	vec4 Highlight = vec4(vec3(3.0) * val, 1.0);
 
 	float a = 2.3;
+	// float a = UTime;
 
-	float h = dot(gradient, vec2(cos(a), sin(a))) * 10.0;
+	float h = dot(gradient, vec2(cos(a), sin(a)));
 
-	h *= 0.15 + sign(h) * 1.0 / (1.0 + 0.15);
 
-	h -= 0.25;
+	// return;
 
-	h = max(h, 0);
+	// h *= h;
+
+	// h *= 1.0;
+
+	h *= 0.1 + sign(h) * 1.0 / (1.0 + 0.1);
+
+	h *= 2.0;
+	h = exp(h * h) - 1.0;
+	h *= 15.0;
+	// h = exp(h) - 1.0;
+
+	// h -= 0.35;
+
+	// h = max(h, 0);
+	// h *= 2.0;
 
 	// h *= h;
 	// h *= h;

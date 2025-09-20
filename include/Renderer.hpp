@@ -45,6 +45,7 @@ private:
 	void RenderBackground();
 
 	Texture FBOPathColorTexture;
+	Texture FBOPathIDTexture;
 	FrameBufferObject FBOPath;
 
 	Texture FBOMainStencileDepthTexture;
@@ -164,7 +165,7 @@ public:
 		return Texture(1, 1, nullptr, desc);
 	}
 
-	static Texture CreateBlurStencileDepthTexture() {
+	static Texture CreateStencileDepthTexture() {
 		Texture::Descriptor desc;
 		desc.Format = GL_DEPTH_STENCIL;
 		desc.Internal_Format = GL_DEPTH24_STENCIL8;

@@ -549,9 +549,7 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 	StaticTextVBO.clear();
 	DynamicTextVBO.clear();
 
-	PinVBO.clear();
 	AssetVBO.clear();
-	RoundPinVBO.clear();
 
 	HighlightAssetVBO.clear();
 	MarkedAssetVBO.clear();
@@ -1211,9 +1209,7 @@ void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockM
 void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 	if (!DirtyBlocks)return;
 	DirtyBlocks = false;
-	PinVBO.clear();
 	AssetVBO.clear();
-	RoundPinVBO.clear();
 	StaticTextVBO.clear();
 	HighlightAssetVBO.clear();
 	MarkedAssetVBO.clear();
@@ -1288,6 +1284,29 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				return vert;
 			};
 
+			if (IndexContained != SB.And && IndexContained != SB.Or && IndexContained != SB.Xor) {
+
+				//Normal pins are under the shapes and round pins are over it
+				for (const auto& Pin : InputPins) {
+					BlockMetadata PinMeta;
+					PinMeta.Rotation = GetPinRotation(Meta, Pin);
+					AssetVBO.emplace(AssetVertex::Pin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+					ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
+					ShowLable(Zoom, BlockSize, Meta, Pin);
+				}
+				for (const auto& Pin : OutputPins) {
+					BlockMetadata PinMeta;
+					PinMeta.Rotation = GetPinRotation(Meta, Pin);
+					AssetVBO.emplace(AssetVertex::Pin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+					ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
+					ShowLable(Zoom, BlockSize, Meta, Pin);
+				}
+			}
+
 			if (IndexContained == SB.SevengSeg) {
 				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SevenSeg, Meta.Transform(), AssetVertex::NumberTo7Flags[time(0) % 0x10], Base, ColourType{ 0.78f,0.992f,0.0f,1.0f }, id));
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
@@ -1309,16 +1328,16 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				for (const auto& Pin : InputPins) {
 					BlockMetadata PinMeta;
 					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					RoundPinVBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
-					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(RoundPinVBO.back()));
-					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(RoundPinVBO.back()));
+					AssetVBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
+					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				}
 				for (const auto& Pin : OutputPins) {
 					BlockMetadata PinMeta;
 					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					RoundPinVBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
-					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(RoundPinVBO.back()));
-					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(RoundPinVBO.back()));
+					AssetVBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
+					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				}
 				ShowBlockLabl(BlockSize, Meta, Name);
 				continue;
@@ -1333,25 +1352,6 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				ShowBlockLabl(BlockSize, Meta, Name);
-			}
-
-			for (const auto& Pin : InputPins) {
-				BlockMetadata PinMeta;
-				PinMeta.Rotation = GetPinRotation(Meta, Pin);
-				PinVBO.emplace(AssetVertex::Pin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
-				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(PinVBO.back()));
-				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(PinVBO.back()));
-				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
-				ShowLable(Zoom, BlockSize, Meta, Pin);
-			}
-			for (const auto& Pin : OutputPins) {
-				BlockMetadata PinMeta;
-				PinMeta.Rotation = GetPinRotation(Meta, Pin);
-				PinVBO.emplace(AssetVertex::Pin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
-				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(PinVBO.back()));
-				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(PinVBO.back()));
-				ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
-				ShowLable(Zoom, BlockSize, Meta, Pin);
 			}
 		}
 	}

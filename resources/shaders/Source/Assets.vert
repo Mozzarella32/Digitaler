@@ -2,9 +2,9 @@
 
 #version 420 core
 
-layout(location = 0) in uint   InIndex;
-layout(location = 1) in uint   InID;
-layout(location = 2) in uint   InTransform;
+layout(location = 0) in uint  InIndex;
+layout(location = 1) in uint  InID;
+layout(location = 2) in uint  InTransform;
 layout(location = 3) in ivec2 InIPoint1;
 layout(location = 4) in ivec2 InIPoint2;
 layout(location = 5) in vec4  InColorA;
