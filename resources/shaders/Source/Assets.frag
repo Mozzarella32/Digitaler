@@ -21,6 +21,7 @@ layout(location = 2) out uint PathPresent;
 //Uniform
 uniform float      UZoomFactor;
 uniform bool       UIDRun;
+uniform bool       UIndexRun;
 uniform sampler2D  UBackground;
 uniform sampler2D  UPath;
 uniform isampler2D UPathPresent;
@@ -530,6 +531,12 @@ vec4 get() {
 }
 
 void main () {
+
+    if (UIndexRun) {
+        Id = Index;
+        return;
+    }
+
     vec4 col = get();
 
     if (UIDRun) {

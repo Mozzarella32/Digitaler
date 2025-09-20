@@ -304,6 +304,8 @@ void Renderer::RenderWires() {
   FBOMain.bind(FrameBufferObject::Read);
   FBOPath.bind(FrameBufferObject::Draw);
 
+  // GLCALL(glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+
   GLCALL(glBlitFramebuffer(
       0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0, CanvasSize.x(),
       CanvasSize.y(), GL_COLOR_BUFFER_BIT, GL_NEAREST));
@@ -342,14 +344,16 @@ void Renderer::RenderWires() {
     VAOs.VertsVAO.unbind();
   };
 
-  assetShader.apply("UIDRun", Shader::Data1i{true});
-  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-  GLCALL(glClear(GL_COLOR_BUFFER_BIT));
+  // assetShader.apply("UIDRun", Shader::Data1i{true});
+  assetShader.apply("UIndexRun", Shader::Data1i{true});
+  GLCALL(glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
+  // GLCALL(glColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+  // GLCALL(glClear(GL_COLOR_BUFFER_BIT));
   StencilRecreationPass(VAOsPath, b.normal.Edges, b.normal.Verts);
-  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-  GLCALL(glColorMaski(GL_COLOR_ATTACHMENT0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-  assetShader.apply("UIDRun", Shader::Data1i{false});
+  // GLCALL(glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
+  GLCALL(glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+  assetShader.apply("UIndexRun", Shader::Data1i{false});
+  // assetShader.apply("UIDRun", Shader::Data1i{false});
 
   assetShader.unbind();
 
