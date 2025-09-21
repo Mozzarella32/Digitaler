@@ -39,8 +39,8 @@ public:
 		}
 
 		void append(const VisualPath::DrawData& data) {
-			EdgesV.clear();
-			EdgesH.clear();
+			EdgesV.insert(std::end(EdgesV), std::begin(data.EdgesV), std::end(data.EdgesV));
+			EdgesH.insert(std::end(EdgesH), std::begin(data.EdgesH), std::end(data.EdgesH));
 			Verts.append(data.Verts);
 			IntersectionPoints.append(data.IntersectionPoints);
 		}
