@@ -29,13 +29,15 @@ public:
 public:
 
 	struct DrawData {
-		std::vector<AssetVertex> Edges;
+		std::vector<AssetVertex> EdgesV;
+		std::vector<AssetVertex> EdgesH;
 		std::vector<AssetVertex> Verts;
 		//If a vert is touched by at leas two lines
 		std::vector<AssetVertex> IntersectionPoints;
 
 		void clear() {
-			Edges.clear();
+			EdgesV.clear();
+			EdgesH.clear();
 			Verts.clear();
 			IntersectionPoints.clear();
 		}

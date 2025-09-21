@@ -24,20 +24,37 @@ private:
 public:
 
 	struct PathDrawData {
-		BufferedVertexVec<AssetVertex> Edges;
-		BufferedVertexVec<AssetVertex> Verts;
-		BufferedVertexVec<AssetVertex> IntersectionPoints;
+		std::vector<AssetVertex>                      EdgesV;
+		std::vector<AssetVertex>                      EdgesH;
+		std::optional<BufferedVertexVec<AssetVertex>> Edges;
+		BufferedVertexVec<AssetVertex>                Verts;
+		BufferedVertexVec<AssetVertex>                IntersectionPoints;
 
 		void clear() {
-			Edges.clear();
+			Edges.reset();
+			EdgesV.clear();
+			EdgesH.clear();
 			Verts.clear();
 			IntersectionPoints.clear();
 		}
 
 		void append(const VisualPath::DrawData& data) {
-			Edges.append(data.Edges);
+			EdgesV.clear();
+			EdgesH.clear();
 			Verts.append(data.Verts);
 			IntersectionPoints.append(data.IntersectionPoints);
+		}
+
+		BufferedVertexVec<AssetVertex>& GetEdges() {
+			if(Edges.has_value()){
+				return Edges.value();
+			}
+			Edges = BufferedVertexVec<AssetVertex>{};
+			Edges.value().append(EdgesV);
+			Edges.value().append(EdgesH);
+			EdgesV.clear();
+			EdgesH.clear();
+			return Edges.value();
 		}
 	};
 

@@ -241,13 +241,13 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  Pass(VAOsPath, b.normal.Edges, b.normal.Verts, b.normal.IntersectionPoints, false);
+  Pass(VAOsPath, b.normal.GetEdges(), b.normal.Verts, b.normal.IntersectionPoints, false);
   
   if (b.HasPreview()) {
     GLCALL(glStencilMask(0xFF));
     GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-    Pass(VAOsPathPreview, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, false);
+    Pass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts, b.preview.IntersectionPoints, false);
   }
 
   //Preview
@@ -260,9 +260,9 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.preview.Edges.empty()) {
+  if (!b.preview.GetEdges().empty()) {
     blurPreviewDirty = true;
-    Pass(VAOsPathPreview, b.preview.Edges, b.preview.Verts, b.preview.IntersectionPoints, true);
+    Pass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts, b.preview.IntersectionPoints, true);
   }
 
   FBOBlurPreview.unbind();
@@ -276,9 +276,9 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.highlighted.Edges.empty() && !b.HasPreview()) {
+  if (!b.highlighted.GetEdges().empty() && !b.HasPreview()) {
     blurHighlightedDirty = true;
-    Pass(VAOsPathHighlighted, b.highlighted.Edges, b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
+    Pass(VAOsPathHighlighted, b.highlighted.GetEdges(), b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
   }
 
   FBOBlurHighlight.unbind();
@@ -292,9 +292,9 @@ void Renderer::RenderWires() {
   GLCALL(glStencilMask(0xFF));
   GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.marked.Edges.empty() && !b.HasPreview()) {
+  if (!b.marked.GetEdges().empty() && !b.HasPreview()) {
     blurMarkedDirty = true;
-    Pass(VAOsPathMarked, b.marked.Edges, b.marked.Verts, b.marked.IntersectionPoints, true);
+    Pass(VAOsPathMarked, b.marked.GetEdges(), b.marked.Verts, b.marked.IntersectionPoints, true);
   }
 
   FBOBlurHighlight.unbind();
@@ -349,7 +349,7 @@ void Renderer::RenderWires() {
   GLCALL(glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
   // GLCALL(glColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
   // GLCALL(glClear(GL_COLOR_BUFFER_BIT));
-  StencilRecreationPass(VAOsPath, b.normal.Edges, b.normal.Verts);
+  StencilRecreationPass(VAOsPath, b.normal.GetEdges(), b.normal.Verts);
   // GLCALL(glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
   GLCALL(glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
   assetShader.apply("UIndexRun", Shader::Data1i{false});

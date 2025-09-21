@@ -183,9 +183,19 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 			bool isMarked = MarkedBoundingBox && LineMarked.at({ i,OtherIndex });
 
 			if (isMarked) {
-			  marked.Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				if (VisualPathData::LineIsHorizontal(A,B)) {
+				  marked.EdgesH.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				}
+				else {
+				  marked.EdgesV.push_back(AssetVertex::PathEdge(A, B, MyColor));
+				}
 			}
-			normal.Edges.push_back(AssetVertex::PathEdge(A, B, MyColor));
+			if (VisualPathData::LineIsHorizontal(A,B)) {
+				normal.EdgesH.push_back(AssetVertex::PathEdge(A, B, MyColor));
+			}
+			else {
+				normal.EdgesV.push_back(AssetVertex::PathEdge(A, B, MyColor));
+			}
 			// if (hover) {
 			// 	// flags |= AssetVertex::Highlight;
 			// }
