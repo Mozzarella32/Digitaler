@@ -24,8 +24,8 @@ const MyRectF FullRectF({ -2,-2 }, { 0,0 });
 
 const LineIndex InvalidLineIndex = LineIndex{ InvalidPointIndex,InvalidPointIndex };
 
-int BlockMetadata::Transform() const {
-	int Transform = 0;
+unsigned int BlockMetadata::Transform() const {
+	unsigned int Transform = 0;
 	switch (Rotation) {
 	case MyDirection::Up: Transform = 0; break;
 	case MyDirection::Right: Transform = 1; break;

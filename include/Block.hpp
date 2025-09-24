@@ -63,8 +63,8 @@ public:
 	PathDrawData preview;
 	PathDrawData highlighted;
 
-	BufferedVertexVec<TextVertex> StaticTextVBO;
-	BufferedVertexVec<TextVertex> DynamicTextVBO;
+	// BufferedVertexVec<TextVertex> StaticTextVBO;
+	// BufferedVertexVec<TextVertex> DynamicTextVBO;
 
 	std::vector<PointType> PreviewData;//Data of the Point
 
@@ -172,7 +172,7 @@ public:
 	bool HasHighlitedPath() const;
 
 	//Carefull BB calculation messes with opengl
-	void UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover);
+	void UpdateVectsForVAOs(const MyRectF& ViewRect, const PointType& Mouse, bool AllowHover);
 	
 	//Carefull BB calculation messes with opengl
 	void UpdateVectsForVAOsPreview(const MyRectF& ViewRect, const PointType& Mouse);
@@ -255,11 +255,8 @@ private:
 	std::unordered_map<CompressedBlockDataIndex, std::vector<BlockMetadata>> Blocks;
 
 public:
-	// BufferedVertexVec<AssetVertex> PinVBO;
 	BufferedVertexVec<AssetVertex> AssetVBO;
-	// BufferedVertexVec<AssetVertex> RoundPinVBO;
 
-	// BufferedVertexVec<AssetVertex> AssetPreviewVBO;
 	BufferedVertexVec<AssetVertex> HighlightAssetVBO;
 	BufferedVertexVec<AssetVertex> MarkedAssetVBO;
 
@@ -287,30 +284,12 @@ public:
 	static PointType GetPinPosition(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin, const int& Expoltion);
 	static MyDirection::Direction GetPinRotation(const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
 private:
-	void ShowMultiplicity(const float& Zoom, const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
+	void ShowMultiplicity(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
 
-	void ShowLable(const float& Zoom, const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
+	void ShowLable(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
 
 	void ShowBlockLabl(const PointType& BlockSize, const BlockMetadata& Meta, const std::string& Name);
 
 private:
-	void UpdateBlocks(const float& Zoom);
-// public:
-
-// 	BufferedVertexVec<AssetVertex>& GetPinVBO();
-// 	BufferedVertexVec<AssetVertex>& GetAssetVBO();
-// 	BufferedVertexVec<AssetVertex>& GetRoundPinVBO();
-// 	BufferedVertexVec<TextVertex>& GetStaticTextVBO();
-// 	BufferedVertexVec<TextVertex>& GetDynamicTextVBO();
-
-// 	BufferedVertexVec<AssetVertex>& GetHighlightAssetVBO();
-// 	BufferedVertexVec<AssetVertex>& GetMarkedAssetVBO();
-
-// #ifdef ShowBasePositionOfBlocks
-// 	BufferedVertexVec<AssetFVertex>& GetBasePotitionOfBlocksVBO();
-// #endif
-
-// #ifdef ShowBoundingBoxes
-// 	BufferedVertexVec<AssetFVertex>& GetBBVBO();
-// #endif
+	void UpdateBlocks();
 };

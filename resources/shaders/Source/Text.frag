@@ -30,7 +30,6 @@ float median(float a, float b, float c){
 void main(){
 	vec4 mtsdf = texture(UTexture, TextureCoord);
 
-
 	float alpha = median(mtsdf.r, mtsdf.g, mtsdf.b);
 
 	float screenPxDistance = max(FontScale * 1.0/UZoomFactor*0.001,1)*(alpha - 0.5);

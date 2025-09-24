@@ -7,7 +7,6 @@
 #include "Renderer.hpp"
 
 #include "RenderTextUtility.hpp"
-#include <utility>
 
 #ifdef UseCollisionGrid
 int VisualBlockInterior::BoxSize = 5;
@@ -546,9 +545,6 @@ void VisualBlockInterior::UpdateCurrentBlock() {
 	preview.clear();
 	highlighted.clear();
 
-	StaticTextVBO.clear();
-	DynamicTextVBO.clear();
-
 	AssetVBO.clear();
 
 	HighlightAssetVBO.clear();
@@ -612,7 +608,7 @@ bool VisualBlockInterior::HasHighlitedPath() const {
 	return hasHighlitedPath;
 }
 
-void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const float& Zoom, const PointType& Mouse, bool AllowHover) {
+void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const PointType& Mouse, bool AllowHover) {
 	PROFILE_FUNKTION;
 	if (CachedBoundingBox != ViewRect) {
 		CachedBoundingBox = ViewRect;
@@ -639,7 +635,7 @@ void VisualBlockInterior::UpdateVectsForVAOs(const MyRectF& ViewRect, const floa
 	}
 
 	if (DirtyBlocks) {
-		UpdateBlocks(Zoom);
+		UpdateBlocks();
 	}
 
 	if (!Dirty) return;
@@ -1099,11 +1095,8 @@ MyDirection::Direction VisualBlockInterior::GetPinRotation(const BlockMetadata& 
 	return d;
 }
 
-void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
+void VisualBlockInterior::ShowMultiplicity(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
 	using namespace MyDirection;
-
-	if (Zoom >= 0.01f) return;
-
 	if (Pin.Multiplicity == 1) {
 		return;
 	}
@@ -1136,7 +1129,7 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 	const auto Pos = GetPinPosition(BlockSize, Meta, Pin, 1);
 	RenderTextUtility::AddText(Text,
 		Point<float>{(float)Pos.x() + Offset.x, (float)Pos.y() + Offset.y},
-		StaticTextVBO,
+		AssetVBO,
 		RenderTextUtility::TextPlacmentFlags::x_Center | RenderTextUtility::TextPlacmentFlags::y_Center,
 		true, false, Scale,
 		MyDirection::ToReadable(GetPinRotation(Meta, Pin)),
@@ -1144,11 +1137,8 @@ void VisualBlockInterior::ShowMultiplicity(const float& Zoom, const PointType& B
 	//Do final stuff
 }
 
-void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
+void VisualBlockInterior::ShowLable(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
 	using namespace MyDirection;
-
-	if (Zoom >= 0.015f) return;
-
 	Point<float> Offset;
 
 	float Scale = 0.4f;
@@ -1176,7 +1166,7 @@ void VisualBlockInterior::ShowLable(const float& Zoom, const PointType& BlockSiz
 	const auto Pos = GetPinPosition(BlockSize, Meta, Pin, 1);
 	RenderTextUtility::AddText(Pin.Name,
 		Point<float>{(float)Pos.x() + Offset.x, (float)Pos.y() + Offset.y},
-		StaticTextVBO,
+		AssetVBO,
 		RenderTextUtility::TextPlacmentFlags::x_Right | RenderTextUtility::TextPlacmentFlags::y_Center,
 		false, false, Scale,
 		MyDirection::ToReadable(MyDirection::RotateCCW(GetPinRotation(Meta, Pin))),
@@ -1200,17 +1190,16 @@ void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockM
 
 	RenderTextUtility::AddText(Name,
 		Point<float>{(float)TopLeft.x(), (float)TopLeft.y()} + Off,
-		StaticTextVBO,
+		AssetVBO,
 		RenderTextUtility::TextPlacmentFlags::x_Center | RenderTextUtility::TextPlacmentFlags::y_Center,
 		true, false, 0.5,
 		MyDirection::ToReadable(Meta.Rotation));
 };
 
-void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
+void VisualBlockInterior::UpdateBlocks() {
 	if (!DirtyBlocks)return;
 	DirtyBlocks = false;
 	AssetVBO.clear();
-	StaticTextVBO.clear();
 	HighlightAssetVBO.clear();
 	MarkedAssetVBO.clear();
 #ifdef ShowBoundingBoxes
@@ -1269,15 +1258,8 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 			const auto& SB = ResourceManager->GetSpecialBlockIndex();
 
 			assert((ssize_t)MarkedBlocks.size() > id);
-			// ColourType Color{};
 			bool isMarked = MarkedBlocks[id];
 			bool isHighlighted = (id == Highlited) && !isMarked;
-			// if (MarkedBlocks[id]) {
-			// 	Flags |= AssetVertex::Flags::Marked;
-			// }
-			// else if (id == Highlited) {
-			// 	Flags |= AssetVertex::Flags::Highlight;
-			// }
 
 			auto SetIdForBlur = [](AssetVertex vert) {
 				vert.id = 0xFFFFFFFFu;
@@ -1293,8 +1275,8 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 					AssetVBO.emplace(AssetVertex::Pin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
 					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
-					ShowLable(Zoom, BlockSize, Meta, Pin);
+					ShowMultiplicity(BlockSize, Meta, Pin);
+					ShowLable(BlockSize, Meta, Pin);
 				}
 				for (const auto& Pin : OutputPins) {
 					BlockMetadata PinMeta;
@@ -1302,8 +1284,8 @@ void VisualBlockInterior::UpdateBlocks(const float& Zoom) {
 					AssetVBO.emplace(AssetVertex::Pin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
 					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					ShowMultiplicity(Zoom, BlockSize, Meta, Pin);
-					ShowLable(Zoom, BlockSize, Meta, Pin);
+					ShowMultiplicity(BlockSize, Meta, Pin);
+					ShowLable(BlockSize, Meta, Pin);
 				}
 			}
 

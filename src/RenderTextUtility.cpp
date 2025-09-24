@@ -1,3 +1,4 @@
+#include "OpenGlDefines.hpp"
 #include "pch.hpp"
 #include "RenderTextUtility.hpp"
 
@@ -71,7 +72,7 @@ RenderTextUtility::TextInfo RenderTextUtility::GetTextExtend(const std::string& 
 	return i;
 }
 
-void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, BufferedVertexVec<TextVertex>& Buff, int TextPlacmentFlag, const bool& Bold, const bool& Italic, const float& Scale, MyDirection::Direction d, const ColourType& ForgroundColor, const ColourType& BackgroundColor) {
+void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, BufferedVertexVec<AssetVertex>& Buff, int TextPlacmentFlag, const bool& Bold, const bool& Italic, const float& Scale, MyDirection::Direction d, const ColourType& ForgroundColor, const ColourType& BackgroundColor) {
 	using enum TextPlacmentFlags;
 
 	RenderTextUtility& This = GetInstance();
@@ -138,7 +139,7 @@ void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, Buf
 
 		//Buff.Dirty = true;
 		Buff.emplace(
-			Cursor.Pos + Cursor.Offset + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor
+			AssetVertex::Text(Cursor.Pos + Cursor.Offset + OFF, ci.CursorOffsets.data(), ci.Clip.data(), Scale, d, ForgroundColor, BackgroundColor)
 		);
 
 		OFF += ci.Advance * Right * Scale;
@@ -149,18 +150,7 @@ void RenderTextUtility::AddText(const std::string& Text, CursorData& Cursor, Buf
 	Cursor.Offset -= OFFAlignment;
 }
 
-void RenderTextUtility::AddText(const std::string& Text, const Point<float>& Pos, BufferedVertexVec<TextVertex>& Buff, int TextPlacmentFlag, const bool& Bold, const bool& Italic, const float& Scale, MyDirection::Direction d, const ColourType& ForgroundColor, const ColourType& BackgroundColor) {
+void RenderTextUtility::AddText(const std::string& Text, const Point<float>& Pos, BufferedVertexVec<AssetVertex>& Buff, int TextPlacmentFlag, const bool& Bold, const bool& Italic, const float& Scale, MyDirection::Direction d, const ColourType& ForgroundColor, const ColourType& BackgroundColor) {
 	CursorData Cursor{ .Offset = {0,0}, .Pos = Pos};
 	AddText(Text, Cursor, Buff, TextPlacmentFlag, Bold, Italic, Scale, d, ForgroundColor, BackgroundColor);
 }
-
-//
-//BufferedVertexVec<TextVertex>& RenderTextUtility::GetStaticTextVerts() {
-//	RenderTextUtility& This = GetInstance();
-//	return This.StaticTextVerts;
-//}
-//
-//BufferedVertexVec<TextVertex>& RenderTextUtility::GetDynamicTextVerts() {
-//	RenderTextUtility& This = GetInstance();
-//	return This.DynamicTextVerts;
-//}

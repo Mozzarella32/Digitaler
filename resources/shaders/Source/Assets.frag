@@ -10,13 +10,13 @@ flat in int  I1;
 flat in vec2 FPoint1;
 flat in vec2 FPoint2;
 flat in vec2 FPoint;
-flat in vec4 ColorA;
-in vec2  Pos;
-in vec2  TextureCoord;
+flat in vec4 ColorA1;
+flat in vec4 ColorA2;
+in vec2      Pos;
+in vec2      TextureCoord;
 
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out uint Id;
-layout(location = 2) out uint PathPresent;
 
 //Uniform
 uniform float      UZoomFactor;
@@ -25,6 +25,8 @@ uniform bool       UIndexRun;
 uniform sampler2D  UBackground;
 uniform sampler2D  UPath;
 uniform isampler2D UPathPresent;
+uniform sampler2D  UText;
+uniform float      UTime;
 
 float dot2(vec2 v) {
     return dot(v, v);
@@ -252,7 +254,7 @@ vec4 sdSevenSeg(vec2 Pos) {
     vec4 SegColor;
 
     if(On < Off) {
-		SegColor = vec4(ColorA.rgb, max(2.0 * On, 0.0));
+		SegColor = vec4(ColorA1.rgb, max(2.0 * On, 0.0));
 	}
 	else{
 	    SegColor = vec4(0.2, 0.2, 0.2, max(2.0 * Off, 0.0));
@@ -364,7 +366,7 @@ vec4 sdSixteenSeg(vec2 Pos) {
     vec4 SegColor;
 
     if(On < Off) {
-		SegColor = vec4(ColorA.rgb, max(2.0 * On, 0.0));
+		SegColor = vec4(ColorA1.rgb, max(2.0 * On, 0.0));
 	}
 	else{
 	    SegColor = vec4(0.2, 0.2, 0.2, max(2.0 * Off, 0.0));
@@ -388,7 +390,7 @@ vec4 sdMux(vec2 Pos) {
 
     vec2 selB = sel1 * I1 + sel2 * (1 - I1);
 
-    vec4 sel = vec4(ColorA.rgb, max(sdSegment(Pos, selA, selB) - 0.075, 0.0));
+    vec4 sel = vec4(ColorA1.rgb, max(sdSegment(Pos, selA, selB) - 0.075, 0.0));
 
     vec4 inner = vec4(0.0, 0.0, 0.0, sd + 0.20);
 
@@ -411,6 +413,9 @@ vec4 holeColor() {
     int PathPresent = texture(UPathPresent, TextureCoord).r;
     if (PathPresent != 0) {
         Return.rgb = texture(UPath, TextureCoord).rgb;
+        if (PathPresent == 13) {//PathVertex
+            return Return;
+        }
         vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
         return MixInInner(Return, corner);
     }
@@ -421,7 +426,7 @@ bool ZeroID = false;
 
 vec4 sdPin(vec2 Pos) {
     vec4 hole = holeColor();
-    vec4 mark = vec4(ColorA.rgb, max(sdSegment(Pos, vec2(0.0, 0.0), vec2(0.0, -1.0)) - 0.075, 0.0));
+    vec4 mark = vec4(ColorA1.rgb, max(sdSegment(Pos, vec2(0.0, 0.0), vec2(0.0, -1.0)) - 0.075, 0.0));
     vec3 bodyColor = Index == 7 ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
     vec4 body = vec4(bodyColor, sdTunnel(Pos, vec2(0.2, 1.0)));
     body = MixInInner(body, mark);
@@ -458,13 +463,13 @@ vec4 sdPathEdge(vec2 Pos) {
           length(Pos - FPoint1) - 0.03,
           length(Pos - FPoint2) - 0.03  
         ));
-    vec4 segment = vec4(ColorA.rgb, sdSegment(Pos, FPoint1, FPoint2) - 0.075);
+    vec4 segment = vec4(ColorA1.rgb, sdSegment(Pos, FPoint1, FPoint2) - 0.075);
     return MixInInner(segment, corner);
 }
 
 vec4 sdPathIntersectionPoints(vec2 Pos) {
     vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
-    vec4 segment = vec4(ColorA.rgb, 0.425 - length(abs(Pos) - vec2(0.5)));
+    vec4 segment = vec4(ColorA1.rgb, 0.425 - length(abs(Pos) - vec2(0.5)));
 
     vec4 col = MixInInner(segment, corner);
     vec4 pix = texture(UBackground, TextureCoord);
@@ -477,7 +482,7 @@ float sdPathIntersectionPointsTrue(vec2 Pos) {
 
 vec4 sdPathVertex(vec2 Pos) {
     vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
-    vec4 segment = vec4(ColorA.rgb, length(Pos) - 0.075);
+    vec4 segment = vec4(ColorA1.rgb, length(Pos) - 0.075);
     return MixInInner(segment, corner);
 }
 
@@ -485,16 +490,16 @@ vec4 sdAreaSelect(vec2 Pos) {
     Pos = abs(Pos);
     float sd = -max(Pos.x - FPoint.x, Pos.y - FPoint.y);
     if(sd < UZoomFactor * 5.0) {
-        return vec4(ColorA.rgb, 0.4);
+        return vec4(ColorA1.rgb, 0.4);
     }
-    return vec4(ColorA.rgb, 0.05);
+    return vec4(ColorA1.rgb, 0.05);
 }
 
 // r g b sdf
 vec4 get() {
     switch (Index) {
         case 0://Box
-        return vec4(ColorA.rgb, max((-ColorA.a + 1.0) / 10.0, sdBox(Pos, FPoint + 0.3)));
+        return vec4(ColorA1.rgb, max((-ColorA1.a + 1.0) / 10.0, sdBox(Pos, FPoint + 0.3)));
         case 1://And
         return vec4(0.7,0.15,0.15, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
         case 2://Or
@@ -524,13 +529,30 @@ vec4 get() {
         }
         case 13://PathVertex
         return sdPathVertex(Pos);
-        case 14://AreaSelct
+        case 15://AreaSelct
         return sdAreaSelect(Pos);
     }
-    return vec4(ColorA.rgb, sdBox(Pos, FPoint + 0.3));
+    return vec4(ColorA1.rgb, sdBox(Pos, FPoint + 0.3));
+}
+
+float median(float a, float b, float c){
+	return max(min(a,b),min(c,max(a,b)));
+}
+
+float screenPxRange() {
+    return max(0.001 / UZoomFactor, 1.0);
 }
 
 void main () {
+
+    if (Index == 14) {//Text
+        vec3 msd = texture(UText, TextureCoord).rgb;
+        float sd = median(msd.r, msd.g, msd.b);
+        float screenPxDistance = screenPxRange()*(sd - 0.5);
+        float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+        FragColor = mix(ColorA2, ColorA1, opacity);
+        return;
+    }
 
     if (UIndexRun) {
         Id = Index;
@@ -558,7 +580,12 @@ void main () {
         return;
     }
 
-    FragColor = vec4(col.rgb, clamp(ApplyScaling(col.a), 0.0, 1.0));
+    float sdf = ApplyScaling(col.a);
+
+    // vec3 withOutline =  mix(vec3(1.0), col.rgb, clamp(sdf, 0.0, 1.0));
+
+    // FragColor = vec4(withOutline, clamp(sdf, 0.0, 1.0));
+    FragColor = vec4(col.rgb, clamp(sdf, 0.0, 1.0));
 
     // if(ApplyScaling(col.a) < 0.0){
     //     FragColor = vec4(1.0, 1.0, 1.0,0.2);

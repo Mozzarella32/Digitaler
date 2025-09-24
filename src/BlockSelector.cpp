@@ -167,6 +167,6 @@ void BlockSelector::Update() {
 
 }
 
-BufferedVertexVec<TextVertex>& BlockSelector::GetTextVBO() {
+BufferedVertexVec<AssetVertex>& BlockSelector::GetTextVBO() {
 	return TextVBO;
 }

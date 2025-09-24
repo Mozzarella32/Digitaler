@@ -25,18 +25,13 @@ void Renderer::RenderBackground() {
   GLCALL(glClear(GL_COLOR_BUFFER_BIT));
   GLCALL(glViewport(0, 0, CanvasSize.x(), CanvasSize.y()));
 
-  //GLCALL(glDisable(GL_DEPTH_TEST));
   Shader& BackgroundShader =
       ShaderManager::GetShader(ShaderManager::Background);
 
   BackgroundShader.bind();
-
   Frame->HoleScreenVAO->bind();
-
   Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-
   Frame->HoleScreenVAO->unbind();
-
   BackgroundShader.unbind();
 
   FBOBackground.unbind();
@@ -103,16 +98,6 @@ Eigen::Vector2i Renderer::CoordToNearestPoint(Eigen::Vector2f Pos) {
                          static_cast<int>(std::round(Pos.y())));
 }
 
-template <typename VertexType> VertexArrayObject Renderer::CreateVAOInstancing4() {
-  VertexArrayObject VAO = {std::vector<VertexBufferObjectDescriptor>{
-      {GL_STATIC_DRAW, IndexVertex{}}, {GL_DYNAMIC_DRAW, VertexType{}, 1}}};
-
-  VAO.bind();
-  VAO.ReplaceVertexBuffer(std::vector<IndexVertex>{{0}, {1}, {2}, {3}}, 0);
-  VAO.unbind();
-  return VAO;
-}
-
 template <typename VertexType> VertexArrayObject Renderer::CreateVAO() {
   return VertexArrayObject{std::vector<VertexBufferObjectDescriptor>{
       {GL_DYNAMIC_DRAW, VertexType{}}}};
@@ -172,7 +157,7 @@ void Renderer::RenderWires() {
 
   VisualBlockInterior &b = Frame->BlockManager->Interior;
   
-  b.UpdateVectsForVAOs(BoundingBox, Zoom, MouseIndex, AllowHover);
+  b.UpdateVectsForVAOs(BoundingBox, MouseIndex, AllowHover);
   b.UpdateVectsForVAOsPreview(BoundingBox, MouseIndex);
 
   FBOMain.bind(FrameBufferObject::Draw);
@@ -299,12 +284,13 @@ void Renderer::RenderWires() {
 
   FBOBlurHighlight.unbind();
 
+
   PROFILE_SCOPE_ID_START("Copy To FBO Path", 2);
 
   FBOMain.bind(FrameBufferObject::Read);
   FBOPath.bind(FrameBufferObject::Draw);
 
-  // GLCALL(glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+  GLCALL(glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
   GLCALL(glBlitFramebuffer(
       0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0, CanvasSize.x(),
@@ -323,10 +309,10 @@ void Renderer::RenderWires() {
   // GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
   // GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
 
-  FBOPath.bind();
+  FBOPathID.bind();
 
   // Recreate Stencli Buffer
-  auto StencilRecreationPass = [](PathVAOs& VAOs,
+  [[maybe_unused]]auto StencilRecreationPass = [](PathVAOs& VAOs,
      BufferedVertexVec<AssetVertex>& edges,
      BufferedVertexVec<AssetVertex>& verts
    ) {
@@ -344,24 +330,19 @@ void Renderer::RenderWires() {
     VAOs.VertsVAO.unbind();
   };
 
-  // assetShader.apply("UIDRun", Shader::Data1i{true});
   assetShader.apply("UIndexRun", Shader::Data1i{true});
-  GLCALL(glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-  // GLCALL(glColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-  // GLCALL(glClear(GL_COLOR_BUFFER_BIT));
+  GLCALL(glClear(GL_COLOR_BUFFER_BIT));
   StencilRecreationPass(VAOsPath, b.normal.GetEdges(), b.normal.Verts);
-  // GLCALL(glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-  GLCALL(glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+  StencilRecreationPass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts);
   assetShader.apply("UIndexRun", Shader::Data1i{false});
-  // assetShader.apply("UIDRun", Shader::Data1i{false});
+
+  FBOPathID.unbind();
 
   assetShader.unbind();
 
-  FBOPath.unbind();
+  PROFILE_SCOPE_ID_END(3);
 
   FBOMain.bind(FrameBufferObject::Draw);
-
-  PROFILE_SCOPE_ID_END(3);
 }
 
 void Renderer::BlurI(FrameBufferObject& FBO, const Texture& iTexture, const int iterations) {
@@ -484,33 +465,37 @@ void Renderer::Render() {
 
   // WirePass([&b](){return b.PinVBO; }, PinVAO);
 
+  // static VertexArrayObject TextVAO = CreateVAO<AssetVertex>();
+  // BufferedVertexVec<AssetVertex> TextVBO;
+
+  // RenderTextUtility::AddText("Adder", {0,0}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Up);
+  // RenderTextUtility::AddText("Adder", {5,0}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Right);
+  // RenderTextUtility::AddText("Adder", {5,-5}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Down);
+  // RenderTextUtility::AddText("Adder", {0,-5}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Left);
+
+  // RenderTextUtility::CursorData cursor;
+
+
+  // for(int i = 0; i < 20; i++) {
+  // RenderTextUtility::AddText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n", cursor, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1 + 0.1 * i, MyDirection::Up);
+  // }
+  TextAtlas.bind(assetShader, "UText", "", 2);
   FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
   FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
   SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
   FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
   FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
-
-  // WirePass([&b](){return b.RoundPinVBO; }, RoundPinVAO);
-
+  TextAtlas.unbind();
 
   if (b.HasHighlited() && !b.HasPreview()) {
       blurHighlightedDirty = true;
       FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
       assetShader.apply("UIDRun", Shader::Data1i{true});
-
-      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
       SimplePass([&b]() {return b.HighlightAssetVBO;}, HighlightAssetVAO);
-
-      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-      
       assetShader.apply("UIDRun", Shader::Data1i{false});
 
       FBOBlurHighlight.unbind();
-
-      // if(b.MarkedAssetVBO.empty())
-      //   FBOMain.bind(FrameBufferObject::Draw);
   }
 
   if (!b.MarkedAssetVBO.empty() && !b.HasPreview()) {
@@ -518,13 +503,7 @@ void Renderer::Render() {
       FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
       assetShader.apply("UIDRun", Shader::Data1i{true});
-
-      // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
       SimplePass([&b]() {return b.MarkedAssetVBO; }, MarkedAssetVAO);
-
-      // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-
       assetShader.apply("UIDRun", Shader::Data1i{false});
 
       FBOBlurMarked.unbind();
@@ -553,8 +532,6 @@ void Renderer::Render() {
 
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   GLCALL(glStencilMask(0x00));
-  // GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-  // GLCALL(glStencilMask(0x00));
 
   PROFILE_SCOPE_ID_END(5);
 
@@ -582,10 +559,6 @@ void Renderer::Render() {
     if (BoundingBox.Intersectes(
             MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
       const auto &size = pair.second.size();
-
-      //const auto& Pos1 = Eigen::Vector2i{std::max(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::max(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
-      //const auto& Pos2 = Eigen::Vector2i{std::min(BB.Position.x(),BB.Position.x() + BB.Size.x() - 1), std::min(BB.Position.y(), BB.Position.y() + BB.Size.y() - 1)};
-      
       BB.Position.y() += BB.Size.y() - 1;
 
       PointType Pos1 = BB.Position;
@@ -607,57 +580,40 @@ void Renderer::Render() {
   SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO);
 #endif
 
-  if (!b.StaticTextVBO.empty() || !b.DynamicTextVBO.empty() ||
-      (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty())) {
+  if (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty()) {
 
     PROFILE_SCOPE("Text");
 
-    Shader &TextShader = ShaderManager::GetShader(ShaderManager::Text);
+    assetShader.bind();
 
-    TextShader.bind();
-
-    TextAtlas.bind(TextShader, "UTexture", "", 0);
-
-    if (!b.StaticTextVBO.empty()) {
-      StaticTextVAO.bind();
-      b.StaticTextVBO.replaceBuffer(StaticTextVAO, 1);
-      StaticTextVAO.DrawAs(GL_TRIANGLE_STRIP);
-      StaticTextVAO.unbind();
-    }
-
-    if (!b.DynamicTextVBO.empty()) {
-      DynamicTextVAO.bind();
-      b.DynamicTextVBO.replaceBuffer(DynamicTextVAO, 1, false);
-      DynamicTextVAO.DrawAs(GL_TRIANGLE_STRIP);
-      DynamicTextVAO.unbind();
-    }
+    TextAtlas.bind(assetShader, "UTexture", "", 0);
 
     // Overlay Text
-    TextShader.apply("UZoom", Shader::Data2f{
+    assetShader.apply("UZoom", Shader::Data2f{
                        0.01f * CanvasSize.x() / 2.0f,
                        0.01f * CanvasSize.y() / 2.0f});
-    TextShader.apply("UOffset", Shader::Data2f{0.0,0.0});
-    TextShader.apply("UZoomFactor", Shader::Data1f{0.01f});
+    assetShader.apply("UOffset", Shader::Data2f{0.0,0.0});
+    assetShader.apply("UZoomFactor", Shader::Data1f{0.01f});
 
     if (Frame->Blockselector) {
       Frame->Blockselector->Update();
       auto &Blockselector = *Frame->Blockselector;
       if (!Blockselector.GetTextVBO().empty()) {
-        DynamicTextVAO.bind();
-        Blockselector.GetTextVBO().replaceBuffer(DynamicTextVAO, 1, false);
-        DynamicTextVAO.DrawAs(GL_TRIANGLE_STRIP);
-        DynamicTextVAO.unbind();
+        StaticTextVAO.bind();
+        Blockselector.GetTextVBO().replaceBuffer(StaticTextVAO, 0);
+        StaticTextVAO.DrawAs(GL_POINTS);
+        StaticTextVAO.unbind();
       }
     }
 
-    TextShader.apply("UZoom", Shader::Data2f{
+    assetShader.apply("UZoom", Shader::Data2f{
                             CanvasSize.x() * float(Zoom),
                             CanvasSize.y() * float(Zoom)});
-    TextShader.apply("UOffset", Shader::Data2f{Offset.x(),
+    assetShader.apply("UOffset", Shader::Data2f{Offset.x(),
                        Offset.y()});
-    TextShader.apply("UZoomFactor", Shader::Data1f{float(Zoom)});
+    assetShader.apply("UZoomFactor", Shader::Data1f{float(Zoom)});
 
-    TextShader.unbind();
+    assetShader.unbind();
   }
 
   PROFILE_SCOPE("Swap Buffers");
@@ -842,7 +798,6 @@ void Renderer::RenderPlacholder(MyFrame& frame, Eigen::Vector2f CanvasSize) {
 Renderer::Renderer(MyApp *App, MyFrame *Frame)
     : App(App), Frame(Frame), FBOBackgroundTexture(1, 1),
       FBOBackground({&FBOBackgroundTexture}),
-      FBOPathColorTexture(1, 1),
       FBOPathIDTexture(1, 1, nullptr,
                    []() {
                      Texture::Descriptor desc;
@@ -852,8 +807,10 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                      desc.Type = GL_UNSIGNED_INT;
                      return desc;
                    }()),
-      FBOPath({&FBOPathColorTexture, &FBOPathIDTexture},
-              {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1}),
+      FBOPathID({&FBOPathIDTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
+      FBOPathColorTexture(1, 1),
+      FBOPath({&FBOPathColorTexture},
+              {GL_COLOR_ATTACHMENT0}),
       FBOMainStencileDepthTexture(CreateStencileDepthTexture()),
       FBOMainColorTexture(1, 1),
       FBOMain({&FBOMainColorTexture, &FBOMainStencileDepthTexture},
@@ -916,8 +873,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
 #ifdef ShowBasePositionOfBlocks
       BlockBasePositionVAO(CreateVAO<AssetFVertex>()),
 #endif
-      StaticTextVAO(CreateVAOInstancing4<TextVertex>()),
-      DynamicTextVAO(CreateVAOInstancing4<TextVertex>()),
+      StaticTextVAO(CreateVAO<AssetVertex>()),
       TextAtlas(textureFromWxImage(PngManager::GetPng(PngManager::atlas), []() {
         Texture::Descriptor desc;
         desc.Min_Filter = Texture::Descriptor::Filter_Type::LINEAR;

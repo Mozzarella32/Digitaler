@@ -26,16 +26,16 @@ void main() {
 	val *= val;
 
 	float valgrad = 1.0 - read;
-	valgrad *= valgrad;
-	valgrad *= valgrad;
-	valgrad *= valgrad;
-	valgrad *= valgrad;
-	valgrad *= valgrad;
-	valgrad *= valgrad;
-	valgrad = log(valgrad + 1.0);
-	valgrad = log(valgrad + 1.0);
-	valgrad = log(valgrad + 1.0);
-	valgrad = log(valgrad + 1.0);
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad *= valgrad;
+	// valgrad = log(valgrad + 1.0);
+	// valgrad = log(valgrad + 1.0);
+	// valgrad = log(valgrad + 1.0);
+	// valgrad = log(valgrad + 1.0);
 	// valgrad = log(valgrad + 2.0);
 	// valgrad = log(valgrad + 2.0);
 	// valgrad = log(valgrad + 2.0);
@@ -114,20 +114,22 @@ void main() {
 	float a = 2.3;
 	// float a = UTime;
 
-	float h = dot(gradient, vec2(cos(a), sin(a)));
-
+	float h = dot(normalize(gradient), vec2(cos(a), sin(a)));
 
 	// return;
 
 	// h *= h;
 
-	// h *= 1.0;
+	// h -= 100.0;
 
 	h *= 0.1 + sign(h) * 1.0 / (1.0 + 0.1);
 
-	h *= 2.0;
-	h = exp(h * h) - 1.0;
-	h *= 15.0;
+	h *= h;
+	h *= h;
+
+	// h *= 2.0;
+	// h = exp(h * h) - 1.0;
+	// h *= 15.0;
 	// h = exp(h) - 1.0;
 
 	// h -= 0.35;
@@ -147,7 +149,7 @@ void main() {
 	// h -= 1;
 	// h = exp(h);
 	// h -= 1;
-	h *= 3.0;
+	// h *= 3.0;
 
 	// h = sqrt(h);
 	// h *= 20.0;
@@ -161,12 +163,19 @@ void main() {
 	// FragColor = vec4(vec3(h), 1.0);
 	// return;
 
+	// h = 1000.0 * val * val * val * val *h;
+
+	// FragColor = vec4(vec3(10.0 * (val * val - 0.05)), 1.0);
+	// FragColor = vec4(vec3(h), 1.0);
+	// FragColor = vec4(vec3((val - 0.2) * h), 1.0);
+	// return;
+	h *= max(30.0 * (val * val - 0.05), 0.0);
+
 	vec3 mixed = mix(Color.rgb, UColor, val);
 
 	mixed = mix(mixed, vec3(1.0), clamp(h, 0.0, 1.0));
 
 	FragColor = vec4(mixed, 1.0);
-
 	// vec4 col = mix(vec4(UColor, val), Highlight, clamp(h, 0.0, 1.0));
 
 	// FragColor = vec4(mix(mix(Color, vec4(UColor, val)).rgb, 1.0), Highlight, ;

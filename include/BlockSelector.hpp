@@ -32,7 +32,7 @@ public:
 
 	Eigen::Vector2f BufferedCanvasSize;
 
-	BufferedVertexVec<TextVertex> TextVBO;
+	BufferedVertexVec<AssetVertex> TextVBO;
 
 	constexpr static const float FontSize = 0.35f;
 public:
@@ -61,7 +61,7 @@ public:
 
 	void Update();
 
-	BufferedVertexVec<TextVertex>& GetTextVBO();
+	BufferedVertexVec<AssetVertex>& GetTextVBO();
 
 	//BufferedVertexVec<PointFRGBVertex> Blocks;
 };

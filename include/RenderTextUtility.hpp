@@ -35,10 +35,6 @@ public:
 
 private:
 
-
-	//BufferedVertexVec<TextVertex> StaticTextVerts;
-	//BufferedVertexVec<TextVertex> DynamicTextVerts;
-
 	 static int GetCharMapIndex(const char& c, const bool& bold, const bool& italic);
 
 	 RenderTextUtility();
@@ -63,9 +59,6 @@ public:
 	};
 
 	//Pos acts as a cursor
-	static void AddText(const std::string& Text, CursorData& Cursor , BufferedVertexVec<TextVertex>& Buff, int TextPlacmentFlag = x_Right | y_Top, const bool& Bold = false, const bool& Italic = false, const float& Scale = 1, MyDirection::Direction d = MyDirection::Up, const ColourType& ForgroundColor = { 1.0,1.0,1.0,1.0 }, const ColourType& BackgroundColor = { 0.0,0.0,0.0,0.0 });
-	static void AddText(const std::string& Text, const Point<float>& Pos, BufferedVertexVec<TextVertex>& Buff, int TextPlacmentFlag = x_Right | y_Top, const bool& Bold = false, const bool& Italic = false, const float& Scale = 1, MyDirection::Direction d = MyDirection::Up, const ColourType& ForgroundColor = { 1.0,1.0,1.0,1.0 }, const ColourType& BackgroundColor = { 0.0,0.0,0.0,0.0 });
-
-	/*static BufferedVertexVec<TextVertex>& GetStaticTextVerts();
-	static BufferedVertexVec<TextVertex>& GetDynamicTextVerts();*/
+	static void AddText(const std::string& Text, CursorData& Cursor , BufferedVertexVec<AssetVertex>& Buff, int TextPlacmentFlag = x_Right | y_Top, const bool& Bold = false, const bool& Italic = false, const float& Scale = 1, MyDirection::Direction d = MyDirection::Up, const ColourType& ForgroundColor = { 1.0,1.0,1.0,1.0 }, const ColourType& BackgroundColor = { 0.0,0.0,0.0,0.0 });
+	static void AddText(const std::string& Text, const Point<float>& Pos, BufferedVertexVec<AssetVertex>& Buff, int TextPlacmentFlag = x_Right | y_Top, const bool& Bold = false, const bool& Italic = false, const float& Scale = 1, MyDirection::Direction d = MyDirection::Up, const ColourType& ForgroundColor = { 1.0,1.0,1.0,1.0 }, const ColourType& BackgroundColor = { 0.0,0.0,0.0,0.0 });
 };

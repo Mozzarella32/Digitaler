@@ -45,7 +45,7 @@ struct BlockMetadata {
 	MyDirection::Direction Rotation;
 	bool xflip : 1 = 0;
 	bool yflip : 1 = 0;
-	int Transform() const;
+	unsigned int Transform() const;
 };
 
 using CompressedBlockDataIndex = ssize_t;

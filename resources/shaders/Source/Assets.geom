@@ -5,17 +5,21 @@
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform vec2 UOffset;
-uniform vec2 UZoom;
+uniform vec2  UOffset;
+uniform vec2  UZoom;
+uniform float UZoomFactor;
 
 in uint  VSIndex[1];
 in uint  VSID[1];
 in uint  VSTransform[1];
 in ivec2 VSIPoint1[1];
 in ivec2 VSIPoint2[1];
-in vec4  VSColorA[1];
+in vec4  VSColorA1[1];
 in vec2  VSFPoint1[1];
 in vec2  VSFPoint2[1];
+in vec4  VSColorA2[1];
+in vec4  VSOffsets[1];
+in vec4  VSUVs[1];
 
 flat out uint Index;
 flat out uint ID;
@@ -23,7 +27,8 @@ flat out int  I1;
 flat out vec2 FPoint1;
 flat out vec2 FPoint2;
 flat out vec2 FPoint;
-flat out vec4 ColorA;
+flat out vec4 ColorA1;
+flat out vec4 ColorA2;
 out vec2 Pos;
 out vec2 TextureCoord;
 
@@ -91,7 +96,10 @@ vec4 getRect(uint Index) {
         case 12://PathIntersectionPoints
         case 13://PathVertex
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
-        case 14://AreaSelect
+        case 14://Text
+        // return vec4(0.0, 0.0, 1.0, 1.0);
+        return VSOffsets[0];
+        case 15://AreaSelect
         return vec4(VSFPoint1[0], VSFPoint2[0]);
     }
     return vec4(VSIPoint1[0], VSIPoint2[0]);
@@ -127,7 +135,9 @@ float[4] getMargins(uint Index) {
         return float[4](0.0, 0.0, 0.0, 0.0);
         case 13://PathVertex
         return float[4](-0.35, -0.35, -0.35, -0.35);
-        case 14://AreaSelect
+        case 14://Text
+        return float[4](-0.5, -0.5, -0.5, -0.5);
+        case 15://AreaSelect
         return float[4](-0.5, -0.5, -0.5, -0.5);
     }
     return float[4](0.0, 0.0, 0.0, 0.0);
@@ -141,11 +151,11 @@ ivec2 lookup[4] = ivec2[4](
     ivec2(3,2)        
 );
 
-
 void main() {
     ID =      VSID[0];
     Index =   VSIndex[0];
-    ColorA =  VSColorA[0];
+    ColorA1 = VSColorA1[0];
+    ColorA2 = VSColorA2[0];
     I1 =      VSIPoint2[0].x;
 
     VSIPoint1[0].x == VSIPoint2[0].x;
@@ -162,7 +172,7 @@ void main() {
         float(VSIPoint1[0].y == VSIPoint2[0].y);
 
     uint Transform = VSTransform[0];
-    uint Rot = Transform & 0x3;
+    uint Rot = Transform & uint(0x3);
     uint Flip = Transform >> 2;
 
     vec4 rect = getRect(Index);
@@ -174,6 +184,14 @@ void main() {
     vec2 base = vec2(rect.xy + rect.zw) / 2.0;
 
     float diff[4] = getMargins(Index);
+
+    vec2 Up = vec2(0.0, 1.0) * rot(Rot);
+    vec2 Right = vec2(1.0, 0.0) * rot(Rot);
+    float UVs[4] = float[4](VSUVs[0].x, VSUVs[0].y, VSUVs[0].z, VSUVs[0].w);
+
+    if(Index == 14 &&  UZoomFactor / VSFPoint2[0].x > 0.05) {//Text
+        return;
+    }
     
     for (int i = 0; i < 4; ++i) {
         Pos = (size + vec2(diff[lookup[i].x],diff[lookup[i].y])) * signes[i];
@@ -182,7 +200,14 @@ void main() {
         Off *= rot(Rot);
         Off *= flip(Flip);
         Off += vec2(-size.x, size.y) + vec2(1, -1) / 2.0;
-        TextureCoord = ((base + Off + UOffset)/UZoom + 1.0) / 2.0;
+        if (Index == 14) {//Text
+            TextureCoord = vec2(UVs[lookup[i].x], UVs[lookup[i].y]);        
+            Off = VSFPoint1[0] + rect[lookup[i].x] * Right + rect[lookup[i].y] * Up;
+            base = vec2(0);
+        }
+        else {
+            TextureCoord = ((base + Off + UOffset)/UZoom + 1.0) / 2.0;
+        }
         gl_Position = vec4((base + Off + UOffset)/UZoom, 0.0, 1.0);
         EmitVertex();
     }

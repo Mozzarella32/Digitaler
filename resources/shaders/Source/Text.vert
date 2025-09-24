@@ -50,7 +50,7 @@ void main() {
 
     vec2 Pos = InstanceInPos + OffPos[Index.x] * Right + OffPos[Index.y] * Up;
 
-	Pos += Up*0.0;
+	Pos += Up*1.0;
 
     float OffUV[4] = {InstanceInUVOff.x,InstanceInUVOff.y,InstanceInUVOff.z,InstanceInUVOff.w};
 

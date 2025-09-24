@@ -44,8 +44,9 @@ private:
 
 	void RenderBackground();
 
-	Texture FBOPathColorTexture;
 	Texture FBOPathIDTexture;
+	FrameBufferObject FBOPathID;
+	Texture FBOPathColorTexture;
 	FrameBufferObject FBOPath;
 
 	Texture FBOMainStencileDepthTexture;
@@ -111,13 +112,9 @@ private:
 	PointType MouseIndex;
 
 	template<typename VertexType>
-	static VertexArrayObject CreateVAOInstancing4();
-
-	template<typename VertexType>
 	static VertexArrayObject CreateVAO();
 
 	VertexArrayObject StaticTextVAO;
-	VertexArrayObject DynamicTextVAO;
 	//Must be befor CharMap
 	Texture TextAtlas;
 
