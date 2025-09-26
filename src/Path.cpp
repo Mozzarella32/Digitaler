@@ -121,12 +121,8 @@ void VisualPath::ClearNeedsMerging() {
 	NeedsMergingAfterMove = false;
 }
 
-void VisualPath::ComputeAll(const MyRectI& BB, bool allowSelf) {
+void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) {
 	if (!Data.BoundingBox.Intersectes(BB)) {
-		// Edges.clear();
-		// EdgesMarked.clear();
-		// IntersectionPoints.clear();
-		// Verts.clear();
 		normal.clear();
 		marked.clear();
 		return;
@@ -161,8 +157,6 @@ void VisualPath::ComputeAll(const MyRectI& BB, bool allowSelf) {
 
 	ColourType MyColor = GetColour(Data.GetId());
 
-	// Verts.reserve(Data.Points.size());
-
 	for (PointIndex i = 0; i < Data.Points.size(); i++) {
 		const PointNode& p = Data.Points[i];
 		if (p.IsFree())continue;
@@ -196,9 +190,6 @@ void VisualPath::ComputeAll(const MyRectI& BB, bool allowSelf) {
 			else {
 				normal.EdgesV.push_back(AssetVertex::PathEdge(A, B, MyColor));
 			}
-			// if (hover) {
-			// 	// flags |= AssetVertex::Highlight;
-			// }
 
 			if (BB.Contains(A) && p.ConnectionCount() >= 2) {
 				auto it = intersectionPoints.find(A);
@@ -221,45 +212,7 @@ void VisualPath::ComputeAll(const MyRectI& BB, bool allowSelf) {
 				if(it == verts.end() || !it->second)
 					verts[B] = isMarked;
 			}
-
-			/*if (Marked) {
-				EdgesMarked.emplace_back(A, B, ColourType{ 1.0f,0.0f,1.0f,1.0f });
-				continue;
-			}*/
-
-			/*unsigned int flags = 0;
-			if (Preview) {
-				flags |= AssetVertex::Preview;*/
-				// EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
-				// // EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 0.0f,1.0f,0.2f,0.0f });
-				// continue;
-			//}
-			//if (MarkedBoundingBox && LineMarked.at({ i,OtherIndex })) {
-				//flags |= AssetVertex::Marked;
-				// EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
-				// // EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f, 0.0f, 1.0f, 1.0f });
-				// continue;
-			//}
-			//if (Hover && !HasMarked() && !DontShowHover) {
-				//flags |= AssetVertex::Highlight;
-				// EdgesMarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
-				// // EdgesMarked.emplace_back(A, B, MyColor, ColourType{ 1.0f,1.0f,0.0f,0.0f });
-				// continue;
-			//}
-				// EdgesUnmarked.push_back(AssetVertex::PathEdge(A, B, MyColor));
-			// EdgesUnmarked.emplace_back(A, B, MyColor, ColourType::Zero());
 		}
-
-		// unsigned int flags = 0;
-		// if (Preview) {
-		// 	flags |= AssetVertex::Preview;
-		// }
-		// if (vertHasMarked) {
-		// 	flags |= AssetVertex::Marked;
-		// }
-		// if (Hover && !HasMarked() && !DontShowHover) {
-		// 	flags |= AssetVertex::Highlight;
-		// }
 	}
 
 	normal.IntersectionPoints.reserve(intersectionPoints.size());
