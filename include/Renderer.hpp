@@ -108,7 +108,7 @@ private:
 	VertexArrayObject BlockBasePositionVAO;
 #endif
 
-	BufferedVertexVec<AssetFVertex> AreaSelectVerts;
+	BufferedVertexVec<AssetVertex> AreaSelectVerts;
 
 	PointType MouseIndex;
 
@@ -180,7 +180,7 @@ public:
 
 	void UpdateSize();
 
-	BufferedVertexVec<AssetFVertex>& GetAreaSelectVerts();
+	BufferedVertexVec<AssetVertex>& GetAreaSelectVerts();
 
 private:
 

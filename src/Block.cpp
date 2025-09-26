@@ -1247,14 +1247,14 @@ void VisualBlockInterior::UpdateBlocks() {
 			}
 
 #ifdef ShowBoundingBoxes
-			BBVBO.append(AssetFVertex::AreaSelect(
+			BBVBO.append(AssetVertex::AreaSelect(
 				BB.Position + Eigen::Vector2f{ 0, 0 },
 				BB.Position + Eigen::Vector2f{ BB.Size.x(), BB.Size.y() },
 				ColourType{ 1.0,0.0,1.0,1.0 }));
 #endif
 
 #ifdef ShowBasePositionOfBlocks
-			BasePositionVBO.append(AssetFVertex::AreaSelect(Base.cast<float>() + Eigen::Vector2f(0.2, 0.2), Base.cast<float>() - Eigen::Vector2f(0.2, 0.2), ColourType{ 1.0f,1.0f,0.0f,1.0f }));
+			BasePositionVBO.append(AssetVertex::AreaSelect(Base.cast<float>() + Eigen::Vector2f(0.2, 0.2), Base.cast<float>() - Eigen::Vector2f(0.2, 0.2), ColourType{ 1.0f,1.0f,0.0f,1.0f }));
 #endif
 
 			assert((ssize_t)MarkedBlocks.size() > id);
@@ -1336,7 +1336,7 @@ void VisualBlockInterior::UpdateBlocks() {
 				continue;
 			}
 			else if (IndexContained == MUX) {
-				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{1.0f, 0.7f, 0.4f, 1.0f}, id));
+				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 			}

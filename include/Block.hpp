@@ -63,9 +63,6 @@ public:
 	PathDrawData preview;
 	PathDrawData highlighted;
 
-	// BufferedVertexVec<TextVertex> StaticTextVBO;
-	// BufferedVertexVec<TextVertex> DynamicTextVBO;
-
 	std::vector<PointType> PreviewData;//Data of the Point
 
 private:
@@ -130,9 +127,6 @@ public:
 	bool GetMarked(unsigned int Mark) const;
 
 	bool HasMarkedPathAt(const PointType& Mouse) const;
-
-	//using BlockBoundingBoxCallback = std::function<const std::array<MyRectF, 4>& (const CompressedBlockDataIndex&)>;
-	// const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbi);
 
 	//Bind Context befor this
 	void MarkArea(const MyRectF& Area/*, BlockBoundingBoxCallback bbbc*/);

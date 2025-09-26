@@ -14,6 +14,7 @@ flat in vec4 ColorA1;
 flat in vec4 ColorA2;
 in vec2      Pos;
 in vec2      TextureCoord;
+in vec2      ScreenPos;
 
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out uint Id;
@@ -27,6 +28,25 @@ uniform sampler2D  UPath;
 uniform isampler2D UPathPresent;
 uniform sampler2D  UText;
 uniform float      UTime;
+uniform vec2       UMousePos;
+
+#define Box                   0
+#define And                   Box                   + 1
+#define Or                    And                   + 1
+#define XOr                   Or                    + 1
+#define Seven                 XOr                   + 1
+#define Sixteen               Seven                 + 1
+#define Mux                   Sixteen               + 1
+#define Driver                Mux                   + 1
+#define InputPin              Driver                + 1
+#define OutputPin             InputPin              + 1
+#define InputRoundPin         OutputPin             + 1
+#define OutputRoundPin        InputRoundPin         + 1
+#define PathEdge              OutputRoundPin        + 1
+#define PathIntersectionPoint PathEdge              + 1
+#define PathVertex            PathIntersectionPoint + 1
+#define Text                  PathVertex            + 1
+#define AreaSelect            Text                  + 1
 
 float dot2(vec2 v) {
     return dot(v, v);
@@ -175,7 +195,7 @@ float ApplyScalingInv(float sdfScaled) {
 }
 
 vec4 MixInInner(vec4 Outer, vec4 Inner) {
-    return vec4(mix(Outer.rgb, Inner.rgb,  max(0, ApplyScaling(Inner.a))), Outer.a);
+    return vec4(mix(Outer.rgb, Inner.rgb,  clamp(ApplyScaling(Inner.a), 0.0, 1.0)), Outer.a);
 }
 
 float sdOr(vec2 Pos) {
@@ -386,17 +406,16 @@ vec4 sdMux(vec2 Pos) {
     vec2 A = vec2(0.0, -1.0);
     vec2 B = vec2(0.0, 1.0);
     float sd = sdTrapezoid(Pos, A, B, 1.5, 1.0) - 0.3;
-    // float sdinner = 2.0 * sd + 0.4;
 
-    vec2 selA = vec2(0.0, 1.2);
-    vec2 sel1 = vec2(-1.0, -1.2);
-    vec2 sel2 = vec2(1.0, -1.2);
+    vec2 selA = vec2(0.0, 1.225);
+    vec2 sel1 = vec2(-1.0, -1.225);
+    vec2 sel2 = vec2(1.0, -1.225);
 
     vec2 selB = sel1 * I1 + sel2 * (1 - I1);
 
     vec4 sel = vec4(ColorA1.rgb, max(sdSegment(Pos, selA, selB) - 0.075, 0.0));
 
-    vec4 inner = vec4(0.0, 0.0, 0.0, sd + 0.20);
+    vec4 inner = vec4(vec3(0.10), sd + 0.20);
 
     inner = MixInInner(inner, sel);
 
@@ -417,13 +436,14 @@ vec4 holeColor() {
     int PathPresent = texture(UPathPresent, TextureCoord).r;
     if (PathPresent != 0) {
         Return.rgb = texture(UPath, TextureCoord).rgb;
-        if (PathPresent == 13) {//PathVertex
+        if (PathPresent == PathVertex) {
             return Return;
         }
         vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
         return MixInInner(Return, corner);
     }
-    return Return;
+    vec4 CursorHighlight = vec4(1.0, 0.0, 0.0, sdBox(ScreenPos - UMousePos, vec2(0.05)) - 0.025);
+    return MixInInner(Return, CursorHighlight);
 }
 
 bool ZeroID = false;
@@ -431,7 +451,7 @@ bool ZeroID = false;
 vec4 sdPin(vec2 Pos) {
     vec4 hole = holeColor();
     vec4 mark = vec4(ColorA1.rgb, max(sdSegment(Pos, vec2(0.0, 0.0), vec2(0.0, -1.0)) - 0.075, 0.0));
-    vec3 bodyColor = Index == 7 ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
+    vec3 bodyColor = Index == InputPin ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
     vec4 body = vec4(bodyColor, sdTunnel(Pos, vec2(0.2, 1.0)));
     body = MixInInner(body, mark);
     if (UIDRun) {
@@ -448,7 +468,7 @@ vec4 sdPin(vec2 Pos) {
 
 vec4 sdRoundPin(vec2 Pos) {
     vec4 hole = holeColor();
-    vec3 bodyColor = Index == 9 ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
+    vec3 bodyColor = Index == OutputRoundPin ? vec3(0.9, 0.0, 0.0) : vec3(0.0, 0.9, 0.0);
     vec4 body = vec4(bodyColor, length(Pos) - 0.2);
     if (UIDRun) {
         if (ApplyScaling(hole.a) > 0) {
@@ -490,55 +510,6 @@ vec4 sdPathVertex(vec2 Pos) {
     return MixInInner(segment, corner);
 }
 
-vec4 sdAreaSelect(vec2 Pos) {
-    Pos = abs(Pos);
-    float sd = -max(Pos.x - FPoint.x, Pos.y - FPoint.y);
-    if(sd < UZoomFactor * 5.0) {
-        return vec4(ColorA1.rgb, 0.4);
-    }
-    return vec4(ColorA1.rgb, 0.05);
-}
-
-// r g b sdf
-vec4 get() {
-    switch (Index) {
-        case 0://Box
-        return vec4(ColorA1.rgb, max(ApplyScalingInv(ColorA1.a), sdBox(Pos, FPoint + 0.3) - 0.1));
-        case 1://And
-        return vec4(0.7,0.15,0.15, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
-        case 2://Or
-        return vec4(0.15,0.7,0.15, sdOr(Pos));
-        case 3://Xor
-        return vec4(0.15,0.15,0.7, sdXor(Pos));
-        case 4://Seven
-        return sdSevenSeg(Pos);
-        case 5://Sixteen
-        return sdSixteenSeg(Pos);
-        case 6://Mux
-        return sdMux(Pos);
-        case 7://InputPin
-        case 8://OutputPin
-        return sdPin(Pos);
-        case 9://InputPin
-        case 10://OutputPin
-        return sdRoundPin(Pos);
-        case 11://PathEdge
-        return sdPathEdge(Pos);
-        case 12://PathIntersectionPoints
-        if(UIDRun) {
-            return vec4(0.0, 0.0, 0.0, sdPathIntersectionPointsTrue(Pos));
-        }
-        else {
-            return sdPathIntersectionPoints(Pos);
-        }
-        case 13://PathVertex
-        return sdPathVertex(Pos);
-        case 15://AreaSelct
-        return sdAreaSelect(Pos);
-    }
-    return vec4(ColorA1.rgb, sdBox(Pos, FPoint + 0.3) - 0.1);
-}
-
 float median(float a, float b, float c){
 	return max(min(a,b),min(c,max(a,b)));
 }
@@ -555,17 +526,83 @@ float screenPxRange() {
     return max(0.5*dot(unitRange, screenTexSize), 1.0);
 }
 
-void main () {
+vec4 sdText(vec2 Pos) {
+    vec3 msd = texture(UText, TextureCoord).rgb;
+    float sd = median(msd.r, msd.g, msd.b);
+    float screenPxDistance = screenPxRange()*(sd - 0.5);
+    float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+    vec4 col = mix(ColorA2, ColorA1, opacity);
+    col.a = ApplyScalingInv(col.a);
+    return col;
+}
 
-    if (Index == 14) {//Text
-        vec3 msd = texture(UText, TextureCoord).rgb;
-        float sd = median(msd.r, msd.g, msd.b);
-        float screenPxDistance = screenPxRange()*(sd - 0.5);
-        float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
-        FragColor = mix(ColorA2, ColorA1, opacity);
-        return;
+vec4 sdAreaSelect(vec2 Pos) {
+    Pos = abs(Pos);
+    float sd = -max(Pos.x - FPoint.x, Pos.y - FPoint.y);
+    if(sd < UZoomFactor * 5.0) {
+        return vec4(ColorA1.rgb, ApplyScalingInv(0.8));
     }
+    return vec4(ColorA1.rgb, ApplyScalingInv(0.2));
+}
 
+// r g b sdf
+vec4 get() {
+    switch (Index) {
+        case Box:
+        return vec4(ColorA1.rgb, max(ApplyScalingInv(ColorA1.a), sdBox(Pos, FPoint + 0.3) - 0.1));
+        case And:
+        return vec4(0.7,0.15,0.15, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
+        case Or:
+        return vec4(0.15,0.7,0.15, sdOr(Pos));
+        case XOr:
+        return vec4(0.15,0.15,0.7, sdXor(Pos));
+        case Seven:
+        return sdSevenSeg(Pos);
+        case Sixteen:
+        return sdSixteenSeg(Pos);
+        case Mux:
+        return sdMux(Pos);
+        case InputPin:
+        case OutputPin:
+        return sdPin(Pos);
+        case InputRoundPin:
+        case OutputRoundPin:
+        return sdRoundPin(Pos);
+        case PathEdge:
+        return sdPathEdge(Pos);
+        case PathIntersectionPoint:
+        if(UIDRun) {
+            return vec4(0.0, 0.0, 0.0, sdPathIntersectionPointsTrue(Pos));
+        }
+        else {
+            return sdPathIntersectionPoints(Pos);
+        }
+        case PathVertex:
+        return sdPathVertex(Pos);
+        case Text:
+        return sdText(Pos);
+        case AreaSelect:
+        return sdAreaSelect(Pos);
+    }
+    return vec4(ColorA1.rgb, sdBox(Pos, FPoint + 0.3) - 0.1);
+}
+
+bool UsesOutline() {
+    switch (Index) {
+        case AreaSelect:
+        case Text:
+        case InputRoundPin:
+        case OutputRoundPin:
+        case PathEdge:
+        // case PathIntersectionPoint: Dont kown, dont touch!
+        case PathVertex:
+        return false;
+        default:
+        return true;
+    }
+}
+
+void main () {
     if (UIndexRun) {
         Id = Index;
         return;
@@ -587,19 +624,11 @@ void main () {
         }
     }
 
-    if (Index == 15) {//AreaSelect
-        FragColor = vec4(col.rgb, clamp(col.a, 0.0, 1.0));
-        return;
-    }
-
     float sdf = ApplyScaling(col.a);
 
-    vec3 withOutline =  mix(vec3(0.0), col.rgb, clamp(sdf, 0.0, 1.0));
+    float outline = mix(1.0, sdf, float(UsesOutline()));
 
-    FragColor = vec4(withOutline, clamp(sdf, 0.0, 1.0));
-    // FragColor = vec4(col.rgb, clamp(sdf, 0.0, 1.0));
-
-    // if(ApplyScaling(col.a) < 0.0){
-    //     FragColor = vec4(1.0, 1.0, 1.0,0.2);
-    // }
+    vec3 colWithOutline =  mix(vec3(0.0), col.rgb, clamp(outline, 0.0, 1.0));
+    FragColor = vec4(colWithOutline, clamp(sdf, 0.0, 1.0));
+    // FragColor = vec4(vec3(sdf) ,0.5);
 }

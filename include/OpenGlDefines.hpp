@@ -6,121 +6,6 @@
 
 #include "BlockAndPathData.hpp"
 
-// Text
-struct TextVertex {
-	/*float x;
-	float y;
-
-	float u;
-	float v;*/
-
-	//l t r b
-
-	float x;
-	float y;
-
-	float PosOffLeft;
-	float PosOffTop;
-	float PosOffRight;
-	float PosOffBottom;
-
-	float UVOffLeft;
-	float UVOffTop;
-	float UVOffRight;
-	float UVOffBottom;
-
-	int Orientation;
-	float FontScale;
-
-	float ColorR;
-	float ColorG;
-	float ColorB;
-	float ColorA;
-
-	float BackgroundR;
-	float BackgroundG;
-	float BackgroundB;
-	float BackgroundA;
-
-	TextVertex() {}
-
-	TextVertex(const Point<float>& Pos, const float* PosOff, const float* UVOff, const float& Scale, const MyDirection::Direction& d, const ColourType& Foregrorund, const ColourType& Background)
-		:
-		x(Pos.x),
-		y(Pos.y),
-		PosOffLeft(PosOff[0] * Scale),
-		PosOffTop(PosOff[1] * Scale),
-		PosOffRight(PosOff[2] * Scale),
-		PosOffBottom(PosOff[3] * Scale),
-		UVOffLeft(UVOff[0]),
-		UVOffTop(UVOff[1]),
-		UVOffRight(UVOff[2]),
-		UVOffBottom(UVOff[3]),
-		Orientation([d]() {
-		switch (d) {
-		case MyDirection::Up: return 0;
-		case MyDirection::Right: return 1;
-		case MyDirection::Down: return 2;
-		case MyDirection::Left: return 3;
-		case MyDirection::UpLeft:assert(false && "Invalid Direction for Pin");
-		case MyDirection::UpRight:assert(false && "Invalid Direction for Pin");
-		case MyDirection::DownLeft:assert(false && "Invalid Direction for Pin");
-		case MyDirection::DownRight:assert(false && "Invalid Direction for Pin");
-		case MyDirection::Neutral:assert(false && "Invalid Direction for Pin");
-		default: assert(false && "Invalid Direction for Pin");
-		}
-		assert(false && "Invalid Direction for Pin");
-		return 0;
-			}()),
-		FontScale(Scale),
-		ColorR(Foregrorund.x()),
-		ColorG(Foregrorund.y()),
-		ColorB(Foregrorund.z()),
-		ColorA(Foregrorund.w()),
-		BackgroundR(Background.x()),
-		BackgroundG(Background.y()),
-		BackgroundB(Background.z()),
-		BackgroundA(Background.w())
-	{
-	}
-
-	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 2, GL_INT, sizeof(TextVertex), (void*)offsetof(TextVertex, x)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, PosOffLeft)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, UVOffLeft)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(TextVertex), (void*)offsetof(TextVertex, Orientation)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 1, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, FontScale)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, ColorR)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribPointer(Position, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*)offsetof(TextVertex, BackgroundR)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-	}
-
-};
-
-struct IndexVertex {
-	int index;
-
-	static void PrepareVBO(GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(Position));
-		GLCALL(glVertexAttribIPointer(Position, 1, GL_INT, sizeof(IndexVertex), (void*)offsetof(IndexVertex, index)));
-		GLCALL(glVertexAttribDivisor(Position++, Instancingdivisor));
-	}
-};
-
-
 struct AssetVertex {
 	unsigned int index;
 	unsigned int id;
@@ -172,22 +57,22 @@ struct AssetVertex {
 	float        colorA1g,
 	float        colorA1b,
 	float        colorA1a,
-	float        colorA2r = 0,
-	float        colorA2g = 0,
-	float        colorA2b = 0,
-	float        colorA2a = 0,
-	float        xf1 = 0,
-	float        yf1 = 0,
-	float        xf2 = 0,
-	float        yf2 = 0,
-	float        offset1 = 0,
-	float        offset2 = 0,
-	float        offset3 = 0,
-	float        offset4 = 0,
-	float        uv1 = 0,
-	float        uv2 = 0,
-	float        uv3 = 0,
-	float        uv4 = 0
+	float        colorA2r = 0.0f,
+	float        colorA2g = 0.0f,
+	float        colorA2b = 0.0f,
+	float        colorA2a = 0.0f,
+	float        xf1 = 0.0f,
+	float        yf1 = 0.0f,
+	float        xf2 = 0.0f,
+	float        yf2 = 0.0f,
+	float        offset1 = 0.0f,
+	float        offset2 = 0.0f,
+	float        offset3 = 0.0f,
+	float        offset4 = 0.0f,
+	float        uv1 = 0.0f,
+	float        uv2 = 0.0f,
+	float        uv3 = 0.0f,
+	float        uv4 = 0.0f
 	) :
 	index(index),
 	id(id),
@@ -266,6 +151,7 @@ struct AssetVertex {
 		SevenSeg,
 		SixteenSeg,
 		Mux,
+		Driver,
 		InputPin,
 		OutputPin,
 		InputRoundPin,
@@ -273,7 +159,8 @@ struct AssetVertex {
 		PathEdge,
 		PathIntersection,
 		PathVertex,
-		Text, 
+		Text,
+		AreaSelect,
 		IDSize
 	};
 
@@ -324,10 +211,15 @@ struct AssetVertex {
 		return AssetVertex((unsigned int)ID::PathVertex, BlurId, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
 	}
 
-		static AssetVertex Text(const Point<float>& Pos, const float* PosOff, const float* UVOff, const float& Scale, const MyDirection::Direction& d, const ColourType& Foregrorund, const ColourType& Background) {
+	static AssetVertex Text(const Point<float>& Pos, const float* PosOff, const float* UVOff, const float& Scale, const MyDirection::Direction& d, const ColourType& Foregrorund, const ColourType& Background) {
 			BlockMetadata meta;
 			meta.Rotation = d;
 			return AssetVertex((unsigned int)ID::Text, 0, meta.Transform(), 0, 0, 0, 0, Foregrorund.x(), Foregrorund.y(), Foregrorund.z(), Foregrorund.w(), Background.x(), Background.y(), Background.z(), Background.w(), Pos.x, Pos.y, Scale, 0, PosOff[3] * Scale, PosOff[2] * Scale, PosOff[1] * Scale, PosOff[0] * Scale, UVOff[3], UVOff[2], UVOff[1], UVOff[0]);
+	}
+
+	static AssetVertex AreaSelect(const Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& color) {
+		// return AssetVertex((int)ID::AreaSelect, 0, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
+		return AssetVertex((unsigned int)ID::AreaSelect, 0, 0, 0, 0, 0, 0, color.x(), color.y(), color.z(), color.w(), 0.0f, 0.0f, 0.0f, 0.0f, std::max(p1.x(), p2.x()), std::max(p1.y(), p2.y()), std::min(p1.x(), p2.x()), std::min(p1.y(), p2.y()));
 	}
 
 	static constexpr const std::array<int, 16> NumberTo7Flags = {
@@ -480,184 +372,3 @@ struct AssetVertex {
 		0b0,//127
 	};
 };
-
-struct AssetFVertex {
-	unsigned int index;
-	unsigned int id;
-	unsigned int transform;
-
-	float xf1;
-	float yf1;
-
-	float xf2;
-	float yf2;
-
-	float colorAr;
-	float colorAg;
-	float colorAb;
-	float colorAa;
-
-	private:
-
-	AssetFVertex(
-	unsigned int index,
-	unsigned int id,
-	unsigned int transform,
-	float xf1,
-	float yf1,
-	float xf2,
-	float yf2,
-	float colorAr,
-	float colorAg,
-	float colorAb,
-	float colorAa
-) :
-	index(index),
-	id(id),
-	transform(transform),
-	xf1(xf1),
-	yf1(yf1),
-	xf2(xf2),
-	yf2(yf2),
-	colorAr(colorAr),
-	colorAg(colorAg),
-	colorAb(colorAb),
-	colorAa(colorAa)
-	{}
-
-	public:
-
-	AssetFVertex() {}
-
-	static void PrepareVBO([[maybe_unused]]GLuint& Position, GLuint Instancingdivisor) {
-		GLCALL(glEnableVertexAttribArray(0));
-		GLCALL(glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, index)));
-		GLCALL(glVertexAttribDivisor(0, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(1));
-		GLCALL(glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, id)));
-		GLCALL(glVertexAttribDivisor(1, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(2));
-		GLCALL(glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, transform)));
-		GLCALL(glVertexAttribDivisor(2, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(5));
-		GLCALL(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, colorAr)));
-		GLCALL(glVertexAttribDivisor(5, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(6));
-		GLCALL(glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf1)));
-		GLCALL(glVertexAttribDivisor(6, Instancingdivisor));
-		GLCALL(glEnableVertexAttribArray(7));
-		GLCALL(glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(AssetFVertex), (void*)offsetof(AssetFVertex, xf2)));
-		GLCALL(glVertexAttribDivisor(7, Instancingdivisor));
-	}
-
-
-	enum class ID : unsigned int {
-		AreaSelect = (unsigned int)AssetVertex::ID::IDSize,
-		IDSize
-	};
-
-	static AssetFVertex AreaSelect(const Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& color) {
-		return AssetFVertex((int)ID::AreaSelect, 0, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
-	}
-};
-
-
-// struct AssetTextVertex {
-// 	unsigned int index;
-
-// 	float x;
-// 	float y;
-
-// 	float PosOffLeft;
-// 	float PosOffTop;
-// 	float PosOffRight;
-// 	float PosOffBottom;
-
-// 	float UVOffLeft;
-// 	float UVOffTop;
-// 	float UVOffRight;
-// 	float UVOffBottom;
-
-// 	unsigned int Transform;
-// 	float FontScale;
-
-// 	float ColorR;
-// 	float ColorG;
-// 	float ColorB;
-// 	float ColorA;
-
-// 	float BackgroundR;
-// 	float BackgroundG;
-// 	float BackgroundB;
-// 	float BackgroundA;
-
-// 	private:
-
-// 	AssetTextVertex(unsigned int index, const Point<float>& Pos, const float* PosOff, const float* UVOff, const float& Scale, const MyDirection::Direction& d, const ColourType& Foregrorund, const ColourType& Background)
-// 		:
-// 		index(index),
-// 		x(Pos.x),
-// 		y(Pos.y),
-// 		PosOffLeft(PosOff[0] * Scale),
-// 		PosOffTop(PosOff[1] * Scale),
-// 		PosOffRight(PosOff[2] * Scale),
-// 		PosOffBottom(PosOff[3] * Scale),
-// 		UVOffLeft(UVOff[0]),
-// 		UVOffTop(UVOff[1]),
-// 		UVOffRight(UVOff[2]),
-// 		UVOffBottom(UVOff[3]),
-// 		Transform([d]() {
-// 		          	BlockMetadata Meta;
-// 		          	Meta.Rotation = d;
-// 		          	return Meta.Transform();
-// 		          }()),
-// 		FontScale(Scale),
-// 		ColorR(Foregrorund.x()),
-// 		ColorG(Foregrorund.y()),
-// 		ColorB(Foregrorund.z()),
-// 		ColorA(Foregrorund.w()),
-// 		BackgroundR(Background.x()),
-// 		BackgroundG(Background.y()),
-// 		BackgroundB(Background.z()),
-// 		BackgroundA(Background.w())
-// 	{}
-
-// 	public:
-
-// 	AssetTextVertex() {}
-
-// 	static void PrepareVBO([[maybe_unused]]GLuint& Position, GLuint Instancingdivisor) {
-// 		GLCALL(glEnableVertexAttribArray(0));
-// 		GLCALL(glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, index)));
-// 		GLCALL(glVertexAttribDivisor(0, Instancingdivisor));
-// 		GLCALL(glEnableVertexAttribArray(2));
-// 		GLCALL(glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, Transform)));
-// 		GLCALL(glVertexAttribDivisor(2, Instancingdivisor));
-// 		GLCALL(glEnableVertexAttribArray(5));
-// 		GLCALL(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, ColorR)));
-// 		GLCALL(glVertexAttribDivisor(5, Instancingdivisor));
-// 		GLCALL(glEnableVertexAttribArray(6));
-// 		GLCALL(glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, x)));
-// 		GLCALL(glVertexAttribDivisor(6, Instancingdivisor));
-// 		GLCALL(glEnableVertexAttribArray(7));
-// 		GLCALL(glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, FontScale)));
-// 		GLCALL(glVertexAttribDivisor(7, Instancingdivisor));
-// 		GLCALL(glEnableVertexAttribArray(8));
-// 		GLCALL(glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, BackgroundR)));
-// 		GLCALL(glVertexAttribDivisor(8, Instancingdivisor));
-// 		GLCALL(glEnableVertexAttribArray(9));
-// 		GLCALL(glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, PosOffLeft)));
-// 		GLCALL(glVertexAttribDivisor(9, Instancingdivisor));
-// 		GLCALL(glEnableVertexAttribArray(10));
-// 		GLCALL(glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, sizeof(AssetTextVertex), (void*)offsetof(AssetTextVertex, UVOffLeft)));
-// 		GLCALL(glVertexAttribDivisor(10, Instancingdivisor));
-// 	}
-// 	enum class ID : unsigned int {
-// 		Text = (unsigned int)AssetFVertex::ID::IDSize,
-// 		IDSize
-// 	};
-
-// 	static AssetTextVertex Text(const Point<float>& Pos, const float* PosOff, const float* UVOff, const float& Scale, const MyDirection::Direction& d, const ColourType& Foregrorund, const ColourType& Background) {
-// 		return AssetTextVertex((unsigned int)ID::Text, Pos,PosOff, UVOff, Scale, d, Foregrorund, Background);
-// 	}
-// };

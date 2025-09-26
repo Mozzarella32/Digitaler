@@ -31,6 +31,7 @@ flat out vec4 ColorA1;
 flat out vec4 ColorA2;
 out vec2 Pos;
 out vec2 TextureCoord;
+out vec2 ScreenPos;
 
 vec2 signes[4] = vec2[4](
     vec2(1, 1),
@@ -73,33 +74,50 @@ vec4 rectFromPointAndSize(vec2 pos, vec2 size) {
     return vec4(pos - vec2(0, size.y), pos + vec2(size.x, 0));
 }
 
+#define Box                   0
+#define And                   Box                   + 1
+#define Or                    And                   + 1
+#define XOr                   Or                    + 1
+#define Seven                 XOr                   + 1
+#define Sixteen               Seven                 + 1
+#define Mux                   Sixteen               + 1
+#define Driver                Mux                   + 1
+#define InputPin              Driver                + 1
+#define OutputPin             InputPin              + 1
+#define InputRoundPin         OutputPin             + 1
+#define OutputRoundPin        InputRoundPin         + 1
+#define PathEdge              OutputRoundPin        + 1
+#define PathIntersectionPoint PathEdge              + 1
+#define PathVertex            PathIntersectionPoint + 1
+#define Text                  PathVertex            + 1
+#define AreaSelect            Text                  + 1
+
 vec4 getRect(uint Index) {
     switch (Index) {
-        case 0://Box
+        case Box:
         return vec4(VSIPoint1[0], VSIPoint2[0]);
-        case 1://And
-        case 2://Or
-        case 3://Xor
+        case And:
+        case Or:
+        case XOr:
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
-        case 4://Seven
-        case 5://Sixteen
+        case Seven:
+        case Sixteen:
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2, 3)));
-        case 6://Mux
+        case Mux:
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
-        case 7://InpuptPin
-        case 8://outputPin
-        case 9://InpuptRoundPin
-        case 10://outputRoundPin
+        case InputPin:
+        case OutputPin:
+        case InputRoundPin:
+        case OutputRoundPin:
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
-        case 11://PathEdge
+        case PathEdge:
         return vec4(VSIPoint2[0], VSIPoint1[0]);
-        case 12://PathIntersectionPoints
-        case 13://PathVertex
+        case PathIntersectionPoint:
+        case PathVertex:
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
-        case 14://Text
-        // return vec4(0.0, 0.0, 1.0, 1.0);
+        case Text:
         return VSOffsets[0];
-        case 15://AreaSelect
+        case AreaSelect:
         return vec4(VSFPoint1[0], VSFPoint2[0]);
     }
     return vec4(VSIPoint1[0], VSIPoint2[0]);
@@ -107,37 +125,37 @@ vec4 getRect(uint Index) {
 
 float[4] getMargins(uint Index) {
     switch (Index) {
-        case 0://Box
-        case 4://Seven
-        case 5://Sixteen
+        case Box:
+        case Seven:
+        case Sixteen:
         return float[4](0.0, 0.0, 0.0, 0.0);
-        case 1://And
-        case 2://Or
+        case And:
+        case Or:
         return float[4](0.9, 0.2, 0.9, 0.2);
-        case 3://Xor
+        case XOr:
         return float[4](0.9, 0.2, 1.5, 0.2);
-        case 6://Mux
+        case Mux:
         return float[4](0.2, 0.7, 0.2, 0.7);
-        case 7://InputPin
-        case 8://OutputPin
+        case InputPin:
+        case OutputPin:
         return float[4](-0.1, -0.1, 0.2, -0.1);
-        case 9://InputRoundPin
-        case 10://OutputRoundPin
+        case InputRoundPin:
+        case OutputRoundPin:
         return float[4](-0.1, -0.1, -0.1, -0.1);
-        case 11://PathEdge
+        case PathEdge:
         {
             float v = float(VSIPoint1[0].x == VSIPoint2[0].x);
             float v1 = mix(-0.0, -0.5, v);
             float v2 = mix(-0.5, -0.0, v);
             return float[4](v1, v2, v1, v2);
         }
-        case 12://PathIntersectionPoints
+        case PathIntersectionPoint:
         return float[4](0.0, 0.0, 0.0, 0.0);
-        case 13://PathVertex
+        case PathVertex:
         return float[4](-0.35, -0.35, -0.35, -0.35);
-        case 14://Text
+        case Text:
         return float[4](-0.5, -0.5, -0.5, -0.5);
-        case 15://AreaSelect
+        case AreaSelect:
         return float[4](-0.5, -0.5, -0.5, -0.5);
     }
     return float[4](0.0, 0.0, 0.0, 0.0);
@@ -157,8 +175,6 @@ void main() {
     ColorA1 = VSColorA1[0];
     ColorA2 = VSColorA2[0];
     I1 =      VSIPoint2[0].x;
-
-    VSIPoint1[0].x == VSIPoint2[0].x;
 
     FPoint1 =
         vec2(0, (VSIPoint1[0].y - VSIPoint2[0].y) / 2.0) *
@@ -189,7 +205,7 @@ void main() {
     vec2 Right = vec2(1.0, 0.0) * rot(Rot);
     float UVs[4] = float[4](VSUVs[0].x, VSUVs[0].y, VSUVs[0].z, VSUVs[0].w);
 
-    if(Index == 14 &&  UZoomFactor / VSFPoint2[0].x > 0.05) {//Text
+    if(Index == Text &&  UZoomFactor / VSFPoint2[0].x > 0.05) {
         return;
     }
     
@@ -200,7 +216,7 @@ void main() {
         Off *= rot(Rot);
         Off *= flip(Flip);
         Off += vec2(-size.x, size.y) + vec2(1, -1) / 2.0;
-        if (Index == 14) {//Text
+        if (Index == Text) {
             TextureCoord = vec2(UVs[lookup[i].x], UVs[lookup[i].y]);        
             Off = VSFPoint1[0] + rect[lookup[i].x] * Right + rect[lookup[i].y] * Up;
             base = vec2(0);
@@ -208,6 +224,7 @@ void main() {
         else {
             TextureCoord = ((base + Off + UOffset)/UZoom + 1.0) / 2.0;
         }
+        ScreenPos = base + Off;
         gl_Position = vec4((base + Off + UOffset)/UZoom, 0.0, 1.0);
         EmitVertex();
     }

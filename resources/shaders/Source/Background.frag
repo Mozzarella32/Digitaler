@@ -45,7 +45,7 @@ void main(){
 		return;
 	}
 
-	float box = sdBoxRounded(fract(ScreenPos+0.5)-0.5,vec2(0.05,0.05),0.025);
+	float box = sdBoxRounded(fract(ScreenPos+0.5)-0.5,vec2(0.05),0.025);
 
 	vec3 boxColor = vec3(0.3);
 

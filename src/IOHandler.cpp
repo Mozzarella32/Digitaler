@@ -274,7 +274,7 @@ void IOHandler::OnMouseMove(const Eigen::Vector2f& Pos) {
 
 		auto& buff = r.GetAreaSelectVerts();
 		buff.clear();
-		buff.append(AssetFVertex::AreaSelect(AreaFirstPoint, AreaSecondPoint, ColourType{ 1.0f,0.0f,1.0f,0.1f }));
+		buff.append(AssetVertex::AreaSelect(AreaFirstPoint, AreaSecondPoint, ColourType{ 1.0f,0.0f,1.0f,0.1f }));
 
 		r.Dirty = true;
 		r.Render();

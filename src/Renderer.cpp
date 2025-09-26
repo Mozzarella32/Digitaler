@@ -130,8 +130,6 @@ void Renderer::RenderIDMap() {
 
   VisualBlockInterior &b = Frame->BlockManager->Interior;
 
-  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {
 
@@ -141,13 +139,9 @@ void Renderer::RenderIDMap() {
     }
   };
 
-  // SimplePass([&b]() { return b.PinVBO; }, PinVAO);
   SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
-  // SimplePass([&b]() { return b.RoundPinVBO; }, RoundPinVAO);
 
   assetShader.unbind();
-
-  // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
 
   FBOID.unbind();
 }
@@ -303,16 +297,10 @@ void Renderer::RenderWires() {
 
   PROFILE_SCOPE_ID_START("Recreate Stencil from Path", 3);
 
-  // GLCALL(glStencilMask(0xFF));
-  // GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-  // GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-  // GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
-  // GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
-
   FBOPathID.bind();
 
   // Recreate Stencli Buffer
-  [[maybe_unused]]auto StencilRecreationPass = [](PathVAOs& VAOs,
+  auto StencilRecreationPass = [](PathVAOs& VAOs,
      BufferedVertexVec<AssetVertex>& edges,
      BufferedVertexVec<AssetVertex>& verts
    ) {
@@ -445,40 +433,6 @@ void Renderer::Render() {
     }
   };
 
-  // auto WirePass = [this,&assetShader](auto VertsGetter, VertexArrayObject &VAO) {
-  //   if (!VertsGetter().empty()) {
-  //     VAO.bind();
-  //     VertsGetter().replaceBuffer(VAO, 0);  
-
-  //     FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
-  //     FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
-
-  //     VAO.DrawAs(GL_POINTS);
-
-  //     FBOPathColorTexture.unbind();
-  //     FBOPathIDTexture.unbind();
-  
-  //     VAO.unbind();
-  //   }
-  // };
-
-
-  // WirePass([&b](){return b.PinVBO; }, PinVAO);
-
-  // static VertexArrayObject TextVAO = CreateVAO<AssetVertex>();
-  // BufferedVertexVec<AssetVertex> TextVBO;
-
-  // RenderTextUtility::AddText("Adder", {0,0}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Up);
-  // RenderTextUtility::AddText("Adder", {5,0}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Right);
-  // RenderTextUtility::AddText("Adder", {5,-5}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Down);
-  // RenderTextUtility::AddText("Adder", {0,-5}, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1, MyDirection::Left);
-
-  // RenderTextUtility::CursorData cursor;
-
-
-  // for(int i = 0; i < 20; i++) {
-  // RenderTextUtility::AddText("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n", cursor, TextVBO, RenderTextUtility::x_Right | RenderTextUtility::y_Top, false, false, 1 + 0.1 * i, MyDirection::Up);
-  // }
   TextAtlas.bind(assetShader, "UText", "", 2);
   FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
   FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
@@ -868,7 +822,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       RoundPinVAO(CreateVAO<AssetVertex>()),
       HighlightAssetVAO(CreateVAO<AssetVertex>()),
       MarkedAssetVAO(CreateVAO<AssetVertex>()),
-      AreaSelectVAO(CreateVAO<AssetFVertex>()),
+      AreaSelectVAO(CreateVAO<AssetVertex>()),
 #ifdef ShowBoundingBoxes
       BBVAO(CreateVAO<AssetFVertex>()),
 #endif
@@ -929,7 +883,7 @@ void Renderer::UpdateSize() {
   Render();
 }
 
-BufferedVertexVec<AssetFVertex> &Renderer::GetAreaSelectVerts() {
+BufferedVertexVec<AssetVertex> &Renderer::GetAreaSelectVerts() {
   return AreaSelectVerts;
 }
 
@@ -942,10 +896,10 @@ void Renderer::UpdateMouseIndex(const PointType &newMouseIndex) {
   Shader &BackgroundShader =
       ShaderManager::GetShader(ShaderManager::Background);
 
-  BackgroundShader.bind();
-  BackgroundShader.apply("UMousePos", Shader::Data2f{float(newMouseIndex.x()),
+  ShaderManager::applyGlobal("UMousePos", Shader::Data2f{float(newMouseIndex.x()),
     float(newMouseIndex.y())});
 
+  BackgroundShader.bind();
   RenderBackground();
 
   MouseIndex = newMouseIndex;
@@ -964,8 +918,6 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
 
   FBOID.bind();
 
-  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
   GLCALL(glReadBuffer(GL_COLOR_ATTACHMENT1));
 
   auto Size = Frame->Canvas->GetSize();
@@ -973,9 +925,6 @@ unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
   GLuint i;
   GLCALL(glReadPixels(Mouse.x(), Size.y - Mouse.y(), 1, 1, GL_RED_INTEGER,
                       GL_UNSIGNED_INT, &i));
-
-  // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-
   FBOID.unbind();
 
   return i;
