@@ -174,7 +174,7 @@ void VisualPathData::AddLine(const PointIndex& a, const PointIndex& b, bool allo
 	assert(!Points[b].IsFree());
 	assert(Block != nullptr);
 	Points[a].AddConnection(b, allowSame);
-	Points[b].AddConnection(a, allowSame);
+	if(a != b || !allowSame) Points[b].AddConnection(a, allowSame);
 	LineCount++;
 #ifdef UseCollisionGrid
 	Block->RegisterLine(LineIndex{ a,b }, Points, Id);
@@ -1159,7 +1159,7 @@ void VisualPathData::Clear() noexcept {
 		for (LineIndexInPoint lIndex = 0; lIndex < 4; lIndex++) {
 			if (Points[pIndex].IsFree())continue;
 			const PointIndex& Other = Points[pIndex].Connections[lIndex];
-			if (Other <= pIndex) {
+			if (Other <= pIndex) { 
 				Block->UnRegisterLine({ pIndex,Other }, Points, Id);
 			}
 		}
@@ -1746,7 +1746,7 @@ bool PointNode::IsFree() const {
 	return Connections[0] == FreePointIndex;
 }
 
-void PointNode::AddConnection(const PointIndex& p, bool allowSelf) {
+void PointNode::AddConnection(const PointIndex& p, [[maybe_unused]] bool allowSelf) {
 	assert(Connections[0] != FreePointIndex);
 	assert(allowSelf || Connections[0] != p);
 	assert(allowSelf || Connections[1] != p);

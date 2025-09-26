@@ -914,16 +914,15 @@ std::optional<VisualPathData> VisualBlockInterior::GeneratePreviewPath(const Poi
 
 	if (PreviewData.size() == 1) {
 		if (PreviewData[0] == Mouse) {
-			CompressedPathData pd{
+			CompressedPathData cpd{
 				std::vector<PointType>{Mouse},
 				std::vector<CompressedPathData::Line>{std::make_pair(0, 0)},
 				0
 			};
-			return VisualPathData(pd, this, true);
+			return VisualPathData(cpd, this, true);
 		};
 		if (VisualPathData::PointsMakeStreightLine(PreviewData[0], Mouse)) {
-			pd = VisualPathData(PreviewData[0], Mouse, this);
-			return pd;
+			return VisualPathData(PreviewData[0], Mouse, this);
 		}
 		pd = VisualPathData(PreviewData[0], { PreviewData[0].x(),Mouse.y() }, this);
 		pd.addTo(Mouse);
