@@ -255,11 +255,11 @@ public:
 	BufferedVertexVec<AssetVertex> MarkedAssetVBO;
 
 #ifdef ShowBasePositionOfBlocks
-	BufferedVertexVec<AssetFVertex> BasePositionVBO;
+	BufferedVertexVec<AssetVertex> BasePositionVBO;
 #endif
 
 #ifdef ShowBoundingBoxes
-	BufferedVertexVec<AssetFVertex> BBVBO;
+	BufferedVertexVec<AssetVertex> BBVBO;
 #endif
 
 public:

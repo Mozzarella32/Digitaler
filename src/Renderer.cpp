@@ -824,10 +824,10 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
       MarkedAssetVAO(CreateVAO<AssetVertex>()),
       AreaSelectVAO(CreateVAO<AssetVertex>()),
 #ifdef ShowBoundingBoxes
-      BBVAO(CreateVAO<AssetFVertex>()),
+      BBVAO(CreateVAO<AssetVertex>()),
 #endif
 #ifdef ShowBasePositionOfBlocks
-      BlockBasePositionVAO(CreateVAO<AssetFVertex>()),
+      BlockBasePositionVAO(CreateVAO<AssetVertex>()),
 #endif
       StaticTextVAO(CreateVAO<AssetVertex>()),
       TextAtlas(textureFromWxImage(PngManager::GetPng(PngManager::atlas), []() {

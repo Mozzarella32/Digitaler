@@ -5,9 +5,9 @@
 
 #define AlwaysDraw
 
-// #define RenderCollisionGrid
-// #define ShowBasePositionOfBlocks
-// #define ShowBoundingBoxes
+#define RenderCollisionGrid
+#define ShowBasePositionOfBlocks
+#define ShowBoundingBoxes
 
 #ifndef UseCollisionGrid
 #undef RenderCollisionGrid
