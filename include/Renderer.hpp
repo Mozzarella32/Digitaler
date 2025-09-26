@@ -23,7 +23,8 @@ public:
 	std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
 public:
-	double Zoom = 0.01;
+	static constexpr double DefaultZoom = 0.01;
+	double Zoom = DefaultZoom;
 	Eigen::Vector2f Offset = { 0,0 };
 	Eigen::Vector2f CanvasSize = { 1, 1 };
 	Eigen::Matrix3f ViewProjectionMatrix;
@@ -207,7 +208,7 @@ public:
 	const std::array<MyRectF, 4>& GetBlockBoundingBoxes(const CompressedBlockDataIndex& cbdi);
 
 private:
-	double GoHomeZoom = 0.01;
+	double GoHomeZoom = Renderer::DefaultZoom;
 	Eigen::Vector2f GoHomeOffset = { 0,0 };
 public:
 	int GoHomeFrame = 0;

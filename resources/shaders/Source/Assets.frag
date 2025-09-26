@@ -170,6 +170,10 @@ float ApplyScaling(float sdf) {
     return 1.0 - 0.15 / min(UZoomFactor, 0.05) * sdf;
 }
 
+float ApplyScalingInv(float sdfScaled) {
+    return (1.0 - sdfScaled) / (0.15 / min(UZoomFactor, 0.05));
+}
+
 vec4 MixInInner(vec4 Outer, vec4 Inner) {
     return vec4(mix(Outer.rgb, Inner.rgb,  max(0, ApplyScaling(Inner.a))), Outer.a);
 }
@@ -499,7 +503,7 @@ vec4 sdAreaSelect(vec2 Pos) {
 vec4 get() {
     switch (Index) {
         case 0://Box
-        return vec4(ColorA1.rgb, max((-ColorA1.a + 1.0) / 10.0, sdBox(Pos, FPoint + 0.3) - 0.1));
+        return vec4(ColorA1.rgb, max(ApplyScalingInv(ColorA1.a), sdBox(Pos, FPoint + 0.3) - 0.1));
         case 1://And
         return vec4(0.7,0.15,0.15, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
         case 2://Or

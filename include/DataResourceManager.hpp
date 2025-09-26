@@ -15,27 +15,16 @@ class BlockFileAddress {
 	std::string Name;
 };
 
-//class BlockPackage {
-//	
-//};
-//
-////Index Into 
-//struct BlockDataId {
-//	using BlockInPackageIndex = unsigned int;
-//	using PackageIndex = unsigned int;
-//};
-//
-//class VisualBlockInterior;
-//class VisualBlockExterior;
-//
-//class VisualPath;
-//
-//class VisualPathData;
-//
+namespace PredefinedNames {
+	static constexpr auto And =        "Logic:&";
+	static constexpr auto Or =         "Locig:>=1";
+	static constexpr auto XOr =        "Locig:=1";
+	static constexpr auto Mux =        "Connections:Mux";
+	static constexpr auto SixteenSeg = "Display:Sixteen Seg";
+	static constexpr auto SevenSeg =   "Display:Seven Seg";
+}
 
 class DataResourceManager {
-	/*std::unordered_map<BlockDataID, BlockFileAddress> IdToAddress;
-	std::unordered_map<BlockFileAddress, BlockDataID> AddressToId;*/
 public:
 	Renderer* renderer;
 	BlockSelector* Blockselector;
@@ -48,22 +37,6 @@ private:
 
 	std::unordered_map<BlockIdentifiyer, CompressedBlockDataIndex> IdentifyerToBlockIndex;
 	std::unordered_map<CompressedBlockDataIndex, BlockIdentifiyer> BlockIndexToIdentifiyer;
-
-	struct SpecialBlockIndex {
-		CompressedBlockDataIndex SevengSeg;
-		CompressedBlockDataIndex SixteenSeg;
-		CompressedBlockDataIndex And;
-		CompressedBlockDataIndex Or;
-		CompressedBlockDataIndex Xor;
-		CompressedBlockDataIndex Mux;
-	};
-
-	SpecialBlockIndex SpecialBlocks;
-
-	//Uncompressed:
-	//Index -> UseCount, Data
-	//std::unordered_map<BlockExteriorDataIndex, BlockExteriorData> blockExteriorData;
-
 
 	CompressedBlockDataIndex AddCompressedData(CompressedBlockData&& CBD);
 
@@ -86,6 +59,4 @@ public:
 	CompressedBlockDataIndex GetBlockIndex(const BlockIdentifiyer& Ident) const;
 
 	void SetCurrent(const CompressedBlockDataIndex& cbdi, double Zoom, const Eigen::Vector2f& Offset, bool Push);
-
-	const SpecialBlockIndex& GetSpecialBlockIndex() const;
 };

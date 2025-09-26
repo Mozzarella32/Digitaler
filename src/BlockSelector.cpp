@@ -18,7 +18,7 @@ BlockSelector::BlockSelector(DataResourceManager* ResourceManager, Renderer* ren
 void BlockSelector::PushInfo(const BlockInfo& Block) {
 	Blocks.back().Zoom= Block.Zoom;
 	Blocks.back().Offset = Block.Offset;
-	Blocks.emplace_back(Block.Ident,0.01,Eigen::Vector2f{0,0});
+	Blocks.emplace_back(Block.Ident, Renderer::DefaultZoom ,Eigen::Vector2f{0,0});
 	UpdateExtendsAndText();
 }
 

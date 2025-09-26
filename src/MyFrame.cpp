@@ -594,7 +594,7 @@ void MyFrame::OnGLInit() {
   BlockManager->SetCurrent(
       BlockManager->GetBlockIndex(
           BlockIdentifiyer::ParsePredefined("Testing:MainBlock")),
-      0.01f, { 0, 0 }, true);
+      Renderer::DefaultZoom, { 0, 0 }, true);
 
   InitilizeDescriptor =
       "Resizing Textures, Creating BoundingBoxes and Initial Render";

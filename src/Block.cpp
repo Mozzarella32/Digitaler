@@ -1257,8 +1257,6 @@ void VisualBlockInterior::UpdateBlocks() {
 			BasePositionVBO.append(AssetFVertex::AreaSelect(Base.cast<float>() + Eigen::Vector2f(0.2, 0.2), Base.cast<float>() - Eigen::Vector2f(0.2, 0.2), ColourType{ 1.0f,1.0f,0.0f,1.0f }));
 #endif
 
-			const auto& SB = ResourceManager->GetSpecialBlockIndex();
-
 			assert((ssize_t)MarkedBlocks.size() > id);
 			bool isMarked = MarkedBlocks[id];
 			bool isHighlighted = (id == Highlited) && !isMarked;
@@ -1268,7 +1266,18 @@ void VisualBlockInterior::UpdateBlocks() {
 				return vert;
 			};
 
-			if (IndexContained != SB.And && IndexContained != SB.Or && IndexContained != SB.Xor) {
+			static auto GetBI = [this](const char* name) {
+				return ResourceManager->GetBlockIndex(BlockIdentifiyer::ParsePredefined(name)); 
+			};
+
+			static const auto AND = GetBI(PredefinedNames::And);
+			static const auto OR = GetBI(PredefinedNames::Or);
+			static const auto XOR = GetBI(PredefinedNames::XOr);
+			static const auto SEVENSEG = GetBI(PredefinedNames::SevenSeg);
+			static const auto SIXTEENSEG = GetBI(PredefinedNames::SixteenSeg);
+			static const auto MUX = GetBI(PredefinedNames::Mux);
+
+			if (IndexContained != AND && IndexContained != OR && IndexContained != XOR) {
 
 				//Normal pins are under the shapes and round pins are over it
 				for (const auto& Pin : InputPins) {
@@ -1291,21 +1300,21 @@ void VisualBlockInterior::UpdateBlocks() {
 				}
 			}
 
-			if (IndexContained == SB.SevengSeg) {
+			if (IndexContained == SEVENSEG) {
 				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SevenSeg, Meta.Transform(), AssetVertex::NumberTo7Flags[time(0) % 0x10], Base, ColourType{ 0.78f,0.992f,0.0f,1.0f }, id));
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 			}
-			else if (IndexContained == SB.SixteenSeg) {
+			else if (IndexContained == SIXTEENSEG) {
 				static std::array<int, 218> Translation = { 73,99,104,32,104,97,98,101,32,106,101,116,122,116,32,101,105,110,102,117,110,107,116,105,111,110,105,101,114,101,110,100,101,115,49,54,32,83,101,103,109,101,110,116,32,68,105,115,112,108,97,121,100,97,115,32,97,108,108,101,32,97,115,99,105,105,32,90,101,105,99,104,101,110,100,97,114,115,116,101,108,108,101,110,32,107,97,110,110,58,48,49,50,51,52,53,54,55,56,57,116,104,101,32,113,117,105,99,107,32,98,114,111,119,110,32,102,111,120,32,106,117,109,112,115,32,111,118,101,114,32,116,104,101,32,108,97,122,121,32,100,111,103,84,72,69,32,81,85,73,67,75,32,66,82,79,87,78,32,70,79,88,32,74,85,77,80,83,32,79,86,69,82,32,84,72,69,32,76,65,90,89,32,68,79,71,33,64,35,36,37,94,38,42,40,41,95,45,43,123,125,124,58,34,60,62,63,96,126,91,93,92,59,39,44,46,47,126, };
 				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SixteenSeg, Meta.Transform(), AssetVertex::NumberTo16Flags[Translation[std::max(i - 5, 0)]], Base, ColourType{ 0.992f,0.43f,0.0f,1.0f }, id));
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 			}
-			else if (IndexContained == SB.And || IndexContained == SB.Or || IndexContained == SB.Xor) {
-				if (IndexContained == SB.And) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Base, id));
-				else if (IndexContained == SB.Or) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Base, id));
-				else if (IndexContained == SB.Xor) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Base, id));
+			else if (IndexContained == AND || IndexContained == OR || IndexContained == XOR) {
+				if (IndexContained == AND) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Base, id));
+				else if (IndexContained == OR) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Base, id));
+				else if (IndexContained == XOR) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Base, id));
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 
@@ -1326,7 +1335,7 @@ void VisualBlockInterior::UpdateBlocks() {
 				ShowBlockLabl(BlockSize, Meta, Name);
 				continue;
 			}
-			else if (IndexContained == SB.Mux) {
+			else if (IndexContained == MUX) {
 				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{1.0f, 0.7f, 0.4f, 1.0f}, id));
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));

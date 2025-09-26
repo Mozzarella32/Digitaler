@@ -568,16 +568,18 @@ void Renderer::Render() {
 
       if (size == 0) {
         BlockMetadata Meta{};
-        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5), 0, 0));
+        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5), 0));
       } else {
         BlockMetadata Meta{};
         auto [cr, cg, cb] = GetColour(size);
-        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(cr, cg, cb, 0.5), 0, 0));
+        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(cr, cg, cb, 0.5), 0));
       }
     }
   }
 
+  assetShader.bind();
   SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO);
+  assetShader.unbind();
 #endif
 
   if (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty()) {
@@ -700,14 +702,14 @@ void Renderer::Render() {
   }
 
 #ifdef ShowBasePositionOfBlocks
-  if (!b.GetBasePotitionOfBlocksVBO().empty()) {
+  if (!b.BasePositionVBO.empty()) {
 
     PROFILE_SCOPE("BasePotitionOfBlocks");
 
     assetShader.bind();
 
     BlockBasePositionVAO.bind();
-    b.GetBasePotitionOfBlocksVBO().replaceBuffer(BlockBasePositionVAO, 0);
+    b.BasePositionVBO.replaceBuffer(BlockBasePositionVAO, 0);
     BlockBasePositionVAO.DrawAs(GL_POINTS);
     BlockBasePositionVAO.unbind();
 
@@ -716,11 +718,11 @@ void Renderer::Render() {
 #endif
 
 #ifdef ShowBoundingBoxes
-  if(!b.GetBBVBO().empty()){
+  if(!b.BBVBO.empty()){
     assetShader.bind();
 
     BBVAO.bind();
-    b.GetBBVBO().replaceBuffer(BBVAO, 0);
+    b.BBVBO.replaceBuffer(BBVAO, 0);
     BBVAO.DrawAs(GL_POINTS);
     BBVAO.unbind();
     
@@ -991,11 +993,9 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   auto AltCanvasSize = CanvasSize;
 
   Offset = Eigen::Vector2f{0, 0};
-  float TargetZoom = 0.01f;
+  double TargetZoom = 0.01;
 
   Zoom = TargetZoom;
-
-  auto &SB = Frame->BlockManager->GetSpecialBlockIndex();
 
   const auto &ContainedExteriorOpt =
       Frame->BlockManager->GetCompressedBlockData(cbdi);
@@ -1027,23 +1027,6 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   GLCALL(glClearTexImage(FBOIDTexture.GetId(), 0, GL_RED_INTEGER,
                          GL_UNSIGNED_INT, &clearint));
 
-  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
-
-  // auto SimplePass = [](auto &MyBuffer,
-  //                      VertexArrayObject &VAO,
-  //                      ShaderManager::Shaders ShaderName,
-  //                      size_t BufferIndex = 1,
-  //                      GLenum primitive = GL_TRIANGLE_STRIP) {
-  //   Shader &shader = ShaderManager::GetShader(ShaderName);
-
-  //   shader.bind();
-  //   VAO.bind();
-  //   MyBuffer.replaceBuffer(VAO, BufferIndex);
-  //   VAO.DrawAs(primitive);
-  //   VAO.unbind();
-  //   shader.unbind();
-  // };
-
   ColourType NoColor = {0.0, 0.0, 0.0, 1.0};
 
   BlockMetadata Meta;
@@ -1057,10 +1040,19 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   BufferedVertexVec<AssetVertex> VBO;
 
-  if (cbdi == SB.And || cbdi == SB.Or || cbdi == SB.Xor) {
-    if (cbdi == SB.And) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1));
-    else if (cbdi == SB.Or) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1));
-    else if (cbdi == SB.Xor) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1));
+	static auto GetBI = [this](const char* name) {
+		return Frame->BlockManager->GetBlockIndex(BlockIdentifiyer::ParsePredefined(name)); 
+	};
+
+	static const auto AND = GetBI(PredefinedNames::And);
+	static const auto OR = GetBI(PredefinedNames::Or);
+	static const auto XOR = GetBI(PredefinedNames::XOr);
+	static const auto MUX = GetBI(PredefinedNames::Mux);
+
+  if (cbdi == AND || cbdi == OR || cbdi == XOR) {
+    if (cbdi == AND) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1));
+    else if (cbdi == OR) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1));
+    else if (cbdi == XOR) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1));
 
     for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
         BlockMetadata PinMeta;
@@ -1072,7 +1064,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
         PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
         VBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
     }
-  } else if (cbdi == SB.Mux) {
+  } else if (cbdi == MUX) {
       VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1));
 
       for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
@@ -1133,7 +1125,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   std::unique_lock ul_Funcs(BBUpdateFuncsMutex);
 
   BBUpdateFuncs.push([vec = vec.release(), ViewportSize, TargetZoom, BlockSize,
-                      this, SB, cbdi]() {
+                      this, cbdi]() {
     PROFILE_FUNKTION;
 
     int xmin = ViewportSize.x();
@@ -1194,7 +1186,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     BBs[MyDirection::Right].Position.x() += BlockSize.y();
     BBs[MyDirection::Right].Position.y() -= BlockSize.x();
 
-    if (cbdi == SB.Mux) {
+    if (cbdi == MUX) {
       std::swap(BBs[MyDirection::Left], BBs[MyDirection::Right]);
       std::swap(BBs[MyDirection::Down], BBs[MyDirection::Up]);
     }
@@ -1253,7 +1245,7 @@ void Renderer::StartGoHome() {
 bool Renderer::StepGoHome() {
   GoHomeFrame++;
 
-  double TargetZoom = 0.01;
+  double TargetZoom = DefaultZoom;
   Eigen::Vector2f TargetOffset = {0, 0};
 
   double t = GoHomeFrame / 10.0;
