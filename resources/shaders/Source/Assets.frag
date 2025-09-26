@@ -182,7 +182,7 @@ float sdOr(vec2 Pos) {
             sdBezier(Pos, vec2(0.0, 1.9), vec2(1.0, 1.9), vec2(1.25, -1.9)) - 0.15,
             sdBezier(Pos, vec2(-1.25, -1.9), vec2(0.0, -1.0), vec2(1.25, -1.9)) - 0.15
         ),
-        sdTriangle(Pos, vec2(0.0, 1.5), vec2(0.0, -1.0), vec2(0.75, -1.2)) - 0.5
+        sdTriangle(Pos, vec2(0.0, 1.5), vec2(0.0, -1.0), vec2(0.8, -1.20)) - 0.5
     );
 }
 
@@ -260,7 +260,7 @@ vec4 sdSevenSeg(vec2 Pos) {
 	    SegColor = vec4(0.2, 0.2, 0.2, max(2.0 * Off, 0.0));
 	}
 
-    vec4 box = vec4(0.1, 0.1, 0.1 , sdBox(PosUnshifted, FPoint + 0.3));
+    vec4 box = vec4(0.1, 0.1, 0.1 , sdBox(PosUnshifted, FPoint + 0.3) - 0.1);
 
     return MixInInner(box, SegColor);
  }
@@ -372,7 +372,7 @@ vec4 sdSixteenSeg(vec2 Pos) {
 	    SegColor = vec4(0.2, 0.2, 0.2, max(2.0 * Off, 0.0));
 	}
 
-    vec4 box = vec4(0.1, 0.1, 0.1 , sdBox(PosUnshifted, FPoint + 0.3));
+    vec4 box = vec4(0.1, 0.1, 0.1 , sdBox(PosUnshifted, FPoint + 0.3) - 0.1);
 
     return MixInInner(box, SegColor);
  }
@@ -499,7 +499,7 @@ vec4 sdAreaSelect(vec2 Pos) {
 vec4 get() {
     switch (Index) {
         case 0://Box
-        return vec4(ColorA1.rgb, max((-ColorA1.a + 1.0) / 10.0, sdBox(Pos, FPoint + 0.3)));
+        return vec4(ColorA1.rgb, max((-ColorA1.a + 1.0) / 10.0, sdBox(Pos, FPoint + 0.3) - 0.1));
         case 1://And
         return vec4(0.7,0.15,0.15, sdTunnel(Pos - vec2(0.0, 0.7), vec2(1.3,2.7)));
         case 2://Or
@@ -532,15 +532,23 @@ vec4 get() {
         case 15://AreaSelct
         return sdAreaSelect(Pos);
     }
-    return vec4(ColorA1.rgb, sdBox(Pos, FPoint + 0.3));
+    return vec4(ColorA1.rgb, sdBox(Pos, FPoint + 0.3) - 0.1);
 }
 
 float median(float a, float b, float c){
 	return max(min(a,b),min(c,max(a,b)));
 }
 
+float pxRange() {
+    // float zoomFactor = UZoomFactor;
+    // return max(0.001 / zoomFactor, 1.0);
+    return 1.0;
+}
+
 float screenPxRange() {
-    return max(0.001 / UZoomFactor, 1.0);
+    vec2 unitRange = vec2(pxRange())/vec2(textureSize(UText, 0));
+    vec2 screenTexSize = vec2(1.0)/fwidth(TextureCoord);
+    return max(0.5*dot(unitRange, screenTexSize), 1.0);
 }
 
 void main () {
@@ -575,17 +583,17 @@ void main () {
         }
     }
 
-    if (Index == 14) {//AreaSelect
+    if (Index == 15) {//AreaSelect
         FragColor = vec4(col.rgb, clamp(col.a, 0.0, 1.0));
         return;
     }
 
     float sdf = ApplyScaling(col.a);
 
-    // vec3 withOutline =  mix(vec3(1.0), col.rgb, clamp(sdf, 0.0, 1.0));
+    vec3 withOutline =  mix(vec3(0.0), col.rgb, clamp(sdf, 0.0, 1.0));
 
-    // FragColor = vec4(withOutline, clamp(sdf, 0.0, 1.0));
-    FragColor = vec4(col.rgb, clamp(sdf, 0.0, 1.0));
+    FragColor = vec4(withOutline, clamp(sdf, 0.0, 1.0));
+    // FragColor = vec4(col.rgb, clamp(sdf, 0.0, 1.0));
 
     // if(ApplyScaling(col.a) < 0.0){
     //     FragColor = vec4(1.0, 1.0, 1.0,0.2);

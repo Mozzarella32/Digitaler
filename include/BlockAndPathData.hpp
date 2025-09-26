@@ -171,7 +171,7 @@ struct PointNode {
 
 	bool IsFree() const;
 
-	void AddConnection(const PointIndex& p);
+	void AddConnection(const PointIndex& p, bool allowSelf = false);
 
 	void AddConnectionReserved(const PointIndex& p);
 
@@ -227,7 +227,7 @@ private:
 
 	PointIndex AddPoint(const PointType& p);
 
-	void AddLine(const PointIndex& a, const PointIndex& b);
+	void AddLine(const PointIndex& a, const PointIndex& b, bool allowSame = false);
 
 	void AddLineReservedUnreserved(const PointIndex& a, const PointIndex& b);
 
@@ -329,7 +329,7 @@ public:
 	//Is unusable until reassigned(every funktion fails assert)
 	VisualPathData(VisualBlockInterior* Block = nullptr) : LineCount(0), Block(Block), Id(KlassInstanceCounter++) {}
 	VisualPathData(const PointType& p1, const PointType& p2, VisualBlockInterior* Block);
-	VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block);
+	VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block, bool AllowSinglePoint = false);
 	VisualPathData(VisualPathData&& other) noexcept;
 	VisualPathData& operator=(VisualPathData&& other) noexcept;
 
@@ -399,7 +399,7 @@ public:
 	std::vector<PointType> Points;
 	std::vector<Line> Lines;
 	::LineIndex LastAddedLine;
-	bool NeedsToBeSanitized;
+	bool NeedsToBeSanitized = false;
 public:
 
 	//CompressedPathData() = default;
@@ -408,7 +408,7 @@ public:
 
 	CompressedPathData(std::vector<PointType>&& Points,
 		std::vector<Line>&& Lines,
-		::LineIndex&& LastAddedLine)
+		CompressedPathData::LineIndex&& LastAddedLine)
 		:Points(std::move(Points)),
 		Lines(std::move(Lines)),
 		LastAddedLine(LastAddedLine) {

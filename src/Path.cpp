@@ -121,7 +121,7 @@ void VisualPath::ClearNeedsMerging() {
 	NeedsMergingAfterMove = false;
 }
 
-void VisualPath::ComputeAll(const MyRectI& BB) {
+void VisualPath::ComputeAll(const MyRectI& BB, bool allowSelf) {
 	if (!Data.BoundingBox.Intersectes(BB)) {
 		// Edges.clear();
 		// EdgesMarked.clear();
@@ -176,7 +176,7 @@ void VisualPath::ComputeAll(const MyRectI& BB) {
 			const PointType& A = p.Pos;
 			const PointType& B = other.Pos;
 
-			assert(A != B && "You Messed Up, Points Of line are identical");
+			assert(allowSelf || (A != B && "You Messed Up, Points Of line are identical"));
 
 			if (!MyRectI::FromCorners(A, B).Intersectes(BB)) continue;
 

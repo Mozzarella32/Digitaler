@@ -593,7 +593,7 @@ void Renderer::Render() {
                        0.01f * CanvasSize.x() / 2.0f,
                        0.01f * CanvasSize.y() / 2.0f});
     assetShader.apply("UOffset", Shader::Data2f{0.0,0.0});
-    assetShader.apply("UZoomFactor", Shader::Data1f{0.01f});
+    assetShader.apply("UZoomFactor", Shader::Data1f{0.001f});
 
     if (Frame->Blockselector) {
       Frame->Blockselector->Update();

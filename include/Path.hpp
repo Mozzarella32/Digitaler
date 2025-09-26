@@ -87,7 +87,7 @@ public:
 	void ClearNeedsMerging();
 
 	//Cached therfore not const
-	void ComputeAll(const MyRectI& BB);
+	void ComputeAll(const MyRectI& BB, bool allowSelf = false);
 
 	bool Intercept(const PointType& Pos) const;
 

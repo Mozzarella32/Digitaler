@@ -721,7 +721,7 @@ void VisualBlockInterior::UpdateVectsForVAOsPreview(const MyRectF& ViewRect, con
 			ViewRect.Position.cast<int>() + ViewRect.Size.cast<int>() + PointType(1, 1)
 		);
 
-		Preview.ComputeAll(ViewRectI);
+		Preview.ComputeAll(ViewRectI, true);
 		preview.append(Preview.normal);
 	}
 }
@@ -907,17 +907,20 @@ void VisualBlockInterior::MergeAfterMove() {
 	}
 }
 
-// bool VisualBlockInterior::HasMark(bool Preview) {
-// 	return !GetEdgesMarked(Preview).empty();
-// }
-
-std::optional<VisualPathData > VisualBlockInterior::GeneratePreviewPath(const PointType& Mouse) {
+std::optional<VisualPathData> VisualBlockInterior::GeneratePreviewPath(const PointType& Mouse) {
 	if (PreviewData.size() < 1) return std::nullopt;
 
 	VisualPathData pd;
 
 	if (PreviewData.size() == 1) {
-		if (PreviewData[0] == Mouse)return std::nullopt;
+		if (PreviewData[0] == Mouse) {
+			CompressedPathData pd{
+				std::vector<PointType>{Mouse},
+				std::vector<CompressedPathData::Line>{std::make_pair(0, 0)},
+				0
+			};
+			return VisualPathData(pd, this, true);
+		};
 		if (VisualPathData::PointsMakeStreightLine(PreviewData[0], Mouse)) {
 			pd = VisualPathData(PreviewData[0], Mouse, this);
 			return pd;

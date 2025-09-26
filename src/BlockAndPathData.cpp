@@ -166,15 +166,15 @@ PointIndex VisualPathData::AddPoint(const PointType& p) {
 	return OldHead;
 }
 
-void VisualPathData::AddLine(const PointIndex& a, const PointIndex& b) {
-	assert(a != b);
+void VisualPathData::AddLine(const PointIndex& a, const PointIndex& b, bool allowSame) {
+	assert(allowSame || a != b);
 	assert(a < Points.size());
 	assert(b < Points.size());
 	assert(!Points[a].IsFree());
 	assert(!Points[b].IsFree());
 	assert(Block != nullptr);
-	Points[a].AddConnection(b);
-	Points[b].AddConnection(a);
+	Points[a].AddConnection(b, allowSame);
+	Points[b].AddConnection(a, allowSame);
 	LineCount++;
 #ifdef UseCollisionGrid
 	Block->RegisterLine(LineIndex{ a,b }, Points, Id);
@@ -928,34 +928,12 @@ void VisualPathData::Sanitize() {
 #ifndef NDEBUG
 	IsValidCaller __vc(this);
 #endif
-	//Start:
-		//for (PointIndex i = 0; i < Points.size(); i++) {
-			//A - b - B
 	for (PointIndex p = 0; p < Points.size(); p++) {
 		if (Points[p].IsFree())continue;
 
 		StreightLineMiddelRemove(p);
 	}
-	/*if (Points[i].IsFree()) continue;
-	const auto& p = Points[i];
-	if (p.ConnectionCount() != 2) continue;
-	LineIndex l0 = InvalidLineIndex;
-	LineIndex l1 = InvalidLineIndex;
-	for (LineIndexInPoint j = 0; j < 4; j++) {
-		if (Points[i].Connections[j] != InvalidPointIndex && Points[i].Connections[j] != ReservedPointIndex) {
-			if (l0 == InvalidLineIndex) {
-				l0 = LineIndex{ i,Points[i].Connections[j] };
-				continue;
-			}
-			if (l1 == InvalidLineIndex) {
-				l1 = LineIndex{ i,Points[i].Connections[j] };
-				break;
-			}
-		}
-	}
-
-
-	if (LineIsHorizontal(l0) != LineIsHorizontal(l1));*/
+	
 }
 
 VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlockInterior* Block)
@@ -972,14 +950,14 @@ VisualPathData::VisualPathData(const PointType& a, const PointType& b, VisualBlo
 	LastAddedLine = LineIndex{ aIndex,bIndex };
 }
 
-VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block)
-	:LineCount(0), Block(Block)/*, BoundingBox(pd.BoundingBox)*/, Id(KlassInstanceCounter++), LastAddedLine(pd.LastAddedLine) {
+VisualPathData::VisualPathData(const CompressedPathData& pd, VisualBlockInterior* Block, bool AllowSinglePoint)
+	:LineCount(0), Block(Block), Id(KlassInstanceCounter++), LastAddedLine(pd.LastAddedLine) {
 
 	for (const PointType& p : pd.Points) {
 		AddPoint(p);
 	}
 	for (const CompressedPathData::Line& l : pd.Lines) {
-		AddLine(l.first, l.second);
+		AddLine(l.first, l.second, AllowSinglePoint);
 	}
 	if (pd.NeedsToBeSanitized) {
 		Sanitize();
@@ -1768,25 +1746,17 @@ bool PointNode::IsFree() const {
 	return Connections[0] == FreePointIndex;
 }
 
-void PointNode::AddConnection(const PointIndex& p) {
+void PointNode::AddConnection(const PointIndex& p, bool allowSelf) {
 	assert(Connections[0] != FreePointIndex);
-	assert(Connections[0] != p);
-	assert(Connections[1] != p);
-	assert(Connections[2] != p);
-	assert(Connections[3] != p);
+	assert(allowSelf || Connections[0] != p);
+	assert(allowSelf || Connections[1] != p);
+	assert(allowSelf || Connections[2] != p);
+	assert(allowSelf || Connections[3] != p);
 	for (LineIndexInPoint i = 0; i < 4; i++) {
 		if (Connections[i] == InvalidPointIndex) {
 			Connections[i] = p;
 			return;
 		}
-		/*if (Connections[i] == ReservedPointIndex) {
-		Connections[i] = p;
-		PointIndex Last = ReservedPointIndex;
-		for (LineIndexInPoint j = i + 1; j < 4; j++) {
-		Last = std::exchange(Connections[j], Last);
-		}
-		return;
-		}*/
 	}
 	assert(false);
 	//std::unreachable();
