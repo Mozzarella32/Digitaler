@@ -33,10 +33,13 @@ public:
 
 	bool Dirty : 1 = true;
 	bool IdMapDirty : 1 = true;
+	bool PreviewBlurDirty : 1 = true;
+	bool HighlitedBlurDirty : 1 = true;
+	bool MarkedBlurDirty : 1 = true;
 private:
-	bool blurPreviewDirty : 1 = true;
-	bool blurHighlightedDirty : 1 = true;
-	bool blurMarkedDirty : 1 = true;
+	bool PreviewNeedsReblur : 1 = true;
+	bool HighlightedNeedsReblur : 1 = true;
+	bool MarkedNeedsReblur : 1 = true;
 private:
 
 	//Order is important
@@ -47,8 +50,6 @@ private:
 
 	Texture FBOPathIDTexture;
 	FrameBufferObject FBOPathID;
-	Texture FBOPathColorTexture;
-	FrameBufferObject FBOPath;
 
 	Texture FBOMainStencileDepthTexture;
 	Texture FBOMainColorTexture;

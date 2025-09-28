@@ -229,71 +229,60 @@ void Renderer::RenderWires() {
     Pass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts, b.preview.IntersectionPoints, false);
   }
 
-  //Preview
   GLuint clearint = 0;
-  GLCALL(glClearTexImage(FBOBlurPreviewTexture.GetId(), 0, GL_RED_INTEGER,
-      GL_UNSIGNED_INT, &clearint));
+  //Preview
+  if (PreviewBlurDirty) {
+    GLCALL(glClearTexImage(FBOBlurPreviewTexture.GetId(), 0, GL_RED_INTEGER,
+        GL_UNSIGNED_INT, &clearint));
 
-  FBOBlurPreview.bind(FrameBufferObject::BindMode::Draw);
+    FBOBlurPreview.bind(FrameBufferObject::BindMode::Draw);
 
-  GLCALL(glStencilMask(0xFF));
-  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+    GLCALL(glStencilMask(0xFF));
+    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.preview.GetEdges().empty()) {
-    blurPreviewDirty = true;
-    Pass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts, b.preview.IntersectionPoints, true);
+    if (!b.preview.GetEdges().empty()) {
+      PreviewNeedsReblur = true;
+      Pass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts, b.preview.IntersectionPoints, true);
+    }
+
+    FBOBlurPreview.unbind();
   }
-
-  FBOBlurPreview.unbind();
 
   //Highlight
-  GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
-      GL_UNSIGNED_INT, &clearint));
+  if (HighlitedBlurDirty) {
+    GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
+        GL_UNSIGNED_INT, &clearint));
 
-  FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
+    FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
-  GLCALL(glStencilMask(0xFF));
-  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+    GLCALL(glStencilMask(0xFF));
+    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.highlighted.GetEdges().empty() && !b.HasPreview()) {
-    blurHighlightedDirty = true;
-    Pass(VAOsPathHighlighted, b.highlighted.GetEdges(), b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
+    if (!b.highlighted.GetEdges().empty() && !b.HasPreview()) {
+      HighlightedNeedsReblur = true;
+      Pass(VAOsPathHighlighted, b.highlighted.GetEdges(), b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
+    }
+
+    FBOBlurHighlight.unbind();
   }
-
-  FBOBlurHighlight.unbind();
 
   //Marked
-  GLCALL(glClearTexImage(FBOBlurMarkedTexture.GetId(), 0, GL_RED_INTEGER,
-      GL_UNSIGNED_INT, &clearint));
+  if (MarkedBlurDirty) {
+    GLCALL(glClearTexImage(FBOBlurMarkedTexture.GetId(), 0, GL_RED_INTEGER,
+        GL_UNSIGNED_INT, &clearint));
 
-  FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
+    FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
-  GLCALL(glStencilMask(0xFF));
-  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
+    GLCALL(glStencilMask(0xFF));
+    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
 
-  if (!b.marked.GetEdges().empty() && !b.HasPreview()) {
-    blurMarkedDirty = true;
-    Pass(VAOsPathMarked, b.marked.GetEdges(), b.marked.Verts, b.marked.IntersectionPoints, true);
+    if (!b.marked.GetEdges().empty() && !b.HasPreview()) {
+      MarkedNeedsReblur = true;
+      Pass(VAOsPathMarked, b.marked.GetEdges(), b.marked.Verts, b.marked.IntersectionPoints, true);
+    }
+
+    FBOBlurHighlight.unbind();
   }
-
-  FBOBlurHighlight.unbind();
-
-
-  PROFILE_SCOPE_ID_START("Copy To FBO Path", 2);
-
-  FBOMain.bind(FrameBufferObject::Read);
-  FBOPath.bind(FrameBufferObject::Draw);
-
-  GLCALL(glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-
-  GLCALL(glBlitFramebuffer(
-      0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0, CanvasSize.x(),
-      CanvasSize.y(), GL_COLOR_BUFFER_BIT, GL_NEAREST));
-
-  FBOPath.unbind();
-  FBOMain.unbind();
-
-  PROFILE_SCOPE_ID_END(2);
 
   PROFILE_SCOPE_ID_START("Recreate Stencil from Path", 3);
 
@@ -371,11 +360,15 @@ void Renderer::Render() {
 
   ShaderManager::applyGlobal("UTime", Shader::Data1f{std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() / 1000.0f});
 
+  PreviewBlurDirty = true;
+  HighlitedBlurDirty = true;
+  MarkedBlurDirty = true;
+
   Dirty = false;
   IdMapDirty = true;
-  blurPreviewDirty = false;
-  blurHighlightedDirty = false;
-  blurMarkedDirty = false;
+  PreviewNeedsReblur = false;
+  HighlightedNeedsReblur = false;
+  MarkedNeedsReblur = false;
 
 #ifdef HotShaderReload
   if (ShaderManager::IsDirty) {
@@ -424,6 +417,7 @@ void Renderer::Render() {
   GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
   GLCALL(glStencilMask(0x00));
 
+
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {
       VAO.bind();
@@ -433,50 +427,55 @@ void Renderer::Render() {
     }
   };
 
-  TextAtlas.bind(assetShader, "UText", "", 2);
-  FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
-  FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
+  auto BlurPass = [](auto VertsGetter, VertexArrayObject &VAO, FrameBufferObject& FBO) {
+    if (!VertsGetter().empty()) {
+
+      FBO.bind(FrameBufferObject::BindMode::Draw);
+      
+      VAO.bind();
+      VertsGetter().replaceBuffer(VAO, 0);
+      VAO.DrawAs(GL_POINTS);
+      VAO.unbind();
+
+      FBO.unbind();
+    }
+  };
+
+  TextAtlas.bind(assetShader, "UText", "", 1);
+  FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 0);
   SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
-  FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 1);
-  FBOPathColorTexture.bind(assetShader,"UPath", "", 0);
+  FBOPathIDTexture.unbind();
   TextAtlas.unbind();
 
-  if (b.HasHighlited() && !b.HasPreview()) {
-      blurHighlightedDirty = true;
-      FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
+  assetShader.apply("UIDRun", Shader::Data1i{true});
 
-      assetShader.apply("UIDRun", Shader::Data1i{true});
-      SimplePass([&b]() {return b.HighlightAssetVBO;}, HighlightAssetVAO);
-      assetShader.apply("UIDRun", Shader::Data1i{false});
-
-      FBOBlurHighlight.unbind();
+  if (b.HasHighlited() && !b.HasPreview() && HighlitedBlurDirty) {
+      HighlightedNeedsReblur = true;
+      BlurPass([&b]() {return b.HighlightAssetVBO;}, HighlightAssetVAO, FBOBlurHighlight);
   }
 
-  if (!b.MarkedAssetVBO.empty() && !b.HasPreview()) {
-      blurMarkedDirty = true;
-      FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
-
-      assetShader.apply("UIDRun", Shader::Data1i{true});
-      SimplePass([&b]() {return b.MarkedAssetVBO; }, MarkedAssetVAO);
-      assetShader.apply("UIDRun", Shader::Data1i{false});
-
-      FBOBlurMarked.unbind();
-
-      FBOMain.bind(FrameBufferObject::Draw);
+  if (!b.MarkedAssetVBO.empty() && !b.HasPreview() && MarkedBlurDirty) {
+      MarkedNeedsReblur = true;
+      BlurPass([&b]() {return b.MarkedAssetVBO;}, MarkedAssetVAO, FBOBlurMarked);
   }
 
+  assetShader.apply("UIDRun", Shader::Data1i{false});
   assetShader.unbind();
 
   PROFILE_SCOPE_ID_END(4);
 
   PROFILE_SCOPE_ID_START("Blur", 10);
 
-  if (blurPreviewDirty)
+  if (PreviewNeedsReblur)
     BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 1);
-  if (blurHighlightedDirty)
+  if (HighlightedNeedsReblur)
     BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 1);
-  if (blurMarkedDirty)
+  if (MarkedNeedsReblur)
     BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 1);
+
+  PreviewBlurDirty = false;
+  HighlitedBlurDirty = false;
+  MarkedBlurDirty = false;
 
   FBOMain.bind(FrameBufferObject::Draw);
 
@@ -589,7 +588,7 @@ void Renderer::Render() {
    };
 
   auto& liquidGlassShader = ShaderManager::GetShader(ShaderManager::LiquidGlass);
-  if(blurPreviewDirty || blurHighlightedDirty || blurMarkedDirty) {
+  if(PreviewNeedsReblur || HighlightedNeedsReblur || MarkedNeedsReblur) {
     liquidGlassShader.bind();
     Frame->HoleScreenVAO->bind();
     FBOMain.unbind();
@@ -598,7 +597,7 @@ void Renderer::Render() {
     FBOMainSwap.unbind();
   }
 
-  if(blurMarkedDirty) {
+  if(MarkedNeedsReblur) {
     mainFBOActive().bind();
     mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
@@ -610,7 +609,7 @@ void Renderer::Render() {
     mainFBOSwap = !mainFBOSwap;
   }
 
-  if(blurHighlightedDirty) {
+  if(HighlightedNeedsReblur) {
     mainFBOActive().bind();
     mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
@@ -622,7 +621,7 @@ void Renderer::Render() {
     mainFBOSwap = !mainFBOSwap;
   }
 
-  if(blurPreviewDirty) {
+  if(PreviewNeedsReblur) {
     mainFBOActive().bind();
     mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
@@ -635,7 +634,7 @@ void Renderer::Render() {
   }
 
   mainFBOSwap = !mainFBOSwap;
-  if(blurPreviewDirty || blurHighlightedDirty || blurMarkedDirty) {
+  if(PreviewNeedsReblur || HighlightedNeedsReblur || MarkedNeedsReblur) {
     Frame->HoleScreenVAO->unbind();
     liquidGlassShader.unbind();
     mainFBOActive().bind();
@@ -764,9 +763,6 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                      return desc;
                    }()),
       FBOPathID({&FBOPathIDTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
-      FBOPathColorTexture(1, 1),
-      FBOPath({&FBOPathColorTexture},
-              {GL_COLOR_ATTACHMENT0}),
       FBOMainStencileDepthTexture(CreateStencileDepthTexture()),
       FBOMainColorTexture(1, 1),
       FBOMain({&FBOMainColorTexture, &FBOMainStencileDepthTexture},
@@ -862,7 +858,6 @@ void Renderer::UpdateSize() {
   FBOBackgroundTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOPathIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
-  FBOPathColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOMainStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOMainColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
@@ -952,7 +947,11 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     assert(false && "you messed up");
   }
   const auto &ContainedExterior = ContainedExteriorOpt.value();
-  const auto &BlockSize = ContainedExterior.blockExteriorData.Size;
+  auto BlockSize = ContainedExterior.blockExteriorData.Size;
+
+  if (BlockSize == PointType{-1, -1}) {
+    BlockSize = PointType{0, 0};
+  }
 
   auto rectVertical =
       MyRectF::FromCorners(Eigen::Vector2f{-1.5, 1.5},
@@ -989,56 +988,55 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
 
   BufferedVertexVec<AssetVertex> VBO;
 
-	static auto GetBI = [this](const char* name) {
+	static auto GetBI = [this](const std::string_view name) {
 		return Frame->BlockManager->GetBlockIndex(BlockIdentifiyer::ParsePredefined(name)); 
 	};
 
-	static const auto AND = GetBI(PredefinedNames::And);
-	static const auto OR = GetBI(PredefinedNames::Or);
-	static const auto XOR = GetBI(PredefinedNames::XOr);
-	static const auto MUX = GetBI(PredefinedNames::Mux);
+  using namespace PredefinedNames;
 
-  if (cbdi == AND || cbdi == OR || cbdi == XOR) {
-    if (cbdi == AND) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1));
-    else if (cbdi == OR) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1));
-    else if (cbdi == XOR) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1));
+	static const auto AND =          GetBI(And);
+	static const auto OR =           GetBI(Or);
+	static const auto XOR =          GetBI(XOr);
+	static const auto MUX =          GetBI(Mux);
+	static const auto DRIVER =       GetBI(Driver);
+	// static const auto TOGGLEBUTTON = GetBI(ToggleButton);
+	// static const auto BUTTON =       GetBI(Button);
+	static const auto CONSTANT =     GetBI(Constant);
+	static const auto PROBE =        GetBI(Probe);
 
-    for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
-        BlockMetadata PinMeta;
-        PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-        VBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
-    }
-    for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
-        BlockMetadata PinMeta;
-        PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-        VBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), 1));
-    }
-  } else if (cbdi == MUX) {
-      VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1));
+  for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
+      if (Pin.Round) continue;
+      BlockMetadata PinMeta;
+      PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+      VBO.append(AssetVertex::Pin(AssetVertex::ID::InputPin, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+  }
+  for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
+      if (Pin.Round) continue;
+      BlockMetadata PinMeta;
+      PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+      VBO.append(AssetVertex::Pin(AssetVertex::ID::OutputPin, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+  }
 
-      for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
-          BlockMetadata PinMeta;
-          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
-      }
-      for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
-          BlockMetadata PinMeta;
-          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
-      }
-  } 
-  else {
-      VBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, NoColor, 1));
-      for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
-          BlockMetadata PinMeta;
-          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(true, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
-      }
-      for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
-          BlockMetadata PinMeta;
-          PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
-          VBO.append(AssetVertex::Pin(false, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
-      }
+  if (cbdi == AND) VBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Meta.Pos, 1));
+  else if (cbdi == OR) VBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Meta.Pos, 1));
+  else if (cbdi == XOR) VBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Meta.Pos, 1));
+  else if (cbdi == MUX) VBO.append(AssetVertex::Mux(Meta.Transform(), 1, Meta.Pos, NoColor, 1));
+  else if (cbdi == DRIVER) VBO.append(AssetVertex::Driver(Meta.Transform(), 1, Meta.Pos, NoColor, 1));
+  else if (cbdi == CONSTANT);// dont do anything
+  else if (cbdi == PROBE);// dont do anything
+  else VBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, NoColor, 1));
+
+  for (const auto& Pin : ContainedExterior.blockExteriorData.InputPin) {
+      if (!Pin.Round) continue;
+      BlockMetadata PinMeta;
+      PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+      VBO.append(AssetVertex::Pin(AssetVertex::ID::InputRoundPin, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
+  }
+  for (const auto& Pin : ContainedExterior.blockExteriorData.OutputPin) {
+      if (!Pin.Round) continue;
+      BlockMetadata PinMeta;
+      PinMeta.Rotation = VisualBlockInterior::GetPinRotation(Meta, Pin);
+      VBO.append(AssetVertex::Pin(AssetVertex::ID::OutputRoundPin, PinMeta.Transform(), VisualBlockInterior::GetPinPosition(BlockSize, Meta, Pin, 1), NoColor, 1));
   }
 
   auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
@@ -1135,7 +1133,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
     BBs[MyDirection::Right].Position.x() += BlockSize.y();
     BBs[MyDirection::Right].Position.y() -= BlockSize.x();
 
-    if (cbdi == MUX) {
+    if (cbdi == MUX || cbdi == DRIVER) {
       std::swap(BBs[MyDirection::Left], BBs[MyDirection::Right]);
       std::swap(BBs[MyDirection::Down], BBs[MyDirection::Up]);
     }

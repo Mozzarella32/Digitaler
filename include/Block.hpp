@@ -132,7 +132,7 @@ public:
 	void MarkArea(const MyRectF& Area/*, BlockBoundingBoxCallback bbbc*/);
 
 public:
-	static PointType GetPositionDiff(const BlockMetadata& Meta, const PointType& BlockSize);
+	static PointType GetPositionDiff(BlockMetadata Meta, PointType BlockSize);
 
 	static PointType GetBasePosition(const BlockMetadata& Meta, const PointType& BlockSize);
 private:
@@ -280,9 +280,9 @@ public:
 private:
 	void ShowMultiplicity(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
 
-	void ShowLable(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
+	void ShowLabel(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin);
 
-	void ShowBlockLabl(const PointType& BlockSize, const BlockMetadata& Meta, const std::string& Name);
+	void ShowBlockLabel(PointType BlockSize, BlockMetadata Meta, const std::string& Name);
 
 private:
 	void UpdateBlocks();

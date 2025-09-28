@@ -73,7 +73,7 @@ public:
 	static std::optional<BlockIdentifiyer> Parse(const std::string& str);
 
 	//Package and Name are required
-	static BlockIdentifiyer ParsePredefined(const std::string& str);
+	static BlockIdentifiyer ParsePredefined(const std::string_view sv);
 
 	const std::string& GetPackage() const;
 	const std::vector<std::string>& GetDirs() const;
@@ -106,29 +106,23 @@ struct CompressedBlockData {
 
 		std::unordered_map<BlockIdentifiyer, std::vector<BlockMetadata>> ContainedBlocks;
 
-		//std::string Package;
-		//std::filesystem::path PathInPackage;
-
 		ColourType ColorRGB;
 		ColourType TextColorRGB;
-		/*
-		Special Names:
-		"Seven Segment Display"
-
-		*/
 
 		BlockIdentifiyer Identifiyer;
+		bool ShowIdentifiyer = true;
 
 		struct Pin {
 			static const constexpr unsigned int VariableMultiplicity = (unsigned int)-1;
 
-			MyDirection::Direction Rotation;
-			int Offset;
+			MyDirection::Direction Rotation = MyDirection::Up;
+			int Offset = 0;
 			unsigned int Multiplicity = 1;
 			std::string Name;
+			bool Round = false;
 		};
 
-		PointType Size;
+		PointType Size = {1, 1};
 
 		std::vector<Pin> InputPin;
 		std::vector<Pin> OutputPin;

@@ -105,6 +105,8 @@ vec4 getRect(uint Index) {
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2, 3)));
         case Mux:
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(2)));
+        case Driver:
+        return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
         case InputPin:
         case OutputPin:
         case InputRoundPin:
@@ -136,6 +138,8 @@ float[4] getMargins(uint Index) {
         return float[4](0.9, 0.2, 1.5, 0.2);
         case Mux:
         return float[4](0.2, 0.7, 0.2, 0.7);
+        case Driver:
+        return float[4](0.7, 0.3, 0.7, 0.3);
         case InputPin:
         case OutputPin:
         return float[4](-0.1, -0.1, 0.2, -0.1);
@@ -152,7 +156,8 @@ float[4] getMargins(uint Index) {
         case PathIntersectionPoint:
         return float[4](0.0, 0.0, 0.0, 0.0);
         case PathVertex:
-        return float[4](-0.35, -0.35, -0.35, -0.35);
+        // return float[4](-0.35, -0.35, -0.35, -0.35);
+        return float[4](0.0, 0.0, 0.0, 0.0);
         case Text:
         return float[4](-0.5, -0.5, -0.5, -0.5);
         case AreaSelect:
@@ -161,6 +166,16 @@ float[4] getMargins(uint Index) {
     return float[4](0.0, 0.0, 0.0, 0.0);
 }
 
+float doMarginExtend() {
+    switch (Index) {
+        case PathEdge:
+        case PathIntersectionPoint:
+        case PathVertex:
+        return 0.0;
+        default:
+        return 1.0;
+    }
+}
 
 ivec2 lookup[4] = ivec2[4](
     ivec2(1,0),        
@@ -200,6 +215,12 @@ void main() {
     vec2 base = vec2(rect.xy + rect.zw) / 2.0;
 
     float diff[4] = getMargins(Index);
+
+    float marginBlurExtend = 20.0 * min(UZoomFactor, 0.05) * doMarginExtend();
+    diff[0] += marginBlurExtend;
+    diff[1] += marginBlurExtend;
+    diff[2] += marginBlurExtend;
+    diff[3] += marginBlurExtend;
 
     vec2 Up = vec2(0.0, 1.0) * rot(Rot);
     vec2 Right = vec2(1.0, 0.0) * rot(Rot);

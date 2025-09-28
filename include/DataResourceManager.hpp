@@ -16,12 +16,18 @@ class BlockFileAddress {
 };
 
 namespace PredefinedNames {
-	static constexpr auto And =        "Logic:&";
-	static constexpr auto Or =         "Locig:>=1";
-	static constexpr auto XOr =        "Locig:=1";
-	static constexpr auto Mux =        "Connections:Mux";
-	static constexpr auto SixteenSeg = "Display:Sixteen Seg";
-	static constexpr auto SevenSeg =   "Display:Seven Seg";
+	using namespace std::string_view_literals;
+	static constexpr auto And =          "Logic:&"sv;
+	static constexpr auto Or =           "Locig:>=1"sv;
+	static constexpr auto XOr =          "Locig:=1"sv;
+	static constexpr auto Mux =          "Connections:Mux"sv;
+	static constexpr auto Driver =       "Connections:Driver"sv;
+	static constexpr auto SixteenSeg =   "Output:Sixteen Segment"sv;
+	static constexpr auto SevenSeg =     "Output:Seven Segment"sv;
+	static constexpr auto ToggleButton = "Input:Toggle Button"sv;
+	static constexpr auto Button =       "Input:Button"sv;
+	static constexpr auto Constant =     "Input:Constant"sv;
+	static constexpr auto Probe =        "Output:Probe"sv;
 }
 
 class DataResourceManager {

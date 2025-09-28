@@ -3,11 +3,12 @@
 //#define Testing
 #define UseCollisionGrid
 
-#define AlwaysDraw
+// #define AlwaysDraw
 
 // #define RenderCollisionGrid
 // #define ShowBasePositionOfBlocks
 // #define ShowBoundingBoxes
+// #define PathRandomColor
 
 #ifndef UseCollisionGrid
 #undef RenderCollisionGrid

@@ -10,13 +10,15 @@ out vec4 FragColor;
 
 //Uniforms
 uniform usampler2D UBluredBase;
-uniform sampler2D UTex;
-uniform vec3 UColor;
-
-uniform float UTime;
+uniform sampler2D  UTex;
+uniform vec3       UColor;
+uniform float      UZoomFactor;
+uniform float      UTime;
 
 void main() {
 	uvec4 pix = texture(UBluredBase, TextureCoord);
+	// FragColor = vec4(vec3(log(pix.r)), 0.5);
+	// return;
 
 	float read = pix.r / 4294967295.0;
 
@@ -65,6 +67,11 @@ void main() {
 	// FragColor = vec4(vec3((val - 0.2) * h), 1.0);
 	// return;
 	h *= max(40.0 * (val * val - 0.05), 0.0);
+
+	h *= 0.25 / (1.0 + exp(UZoomFactor * 50.0 - 0.5)) + 0.75;
+
+	// FragColor = vec4(vec3(1.0 / (1.0 + exp(UZoomFactor * 10.0 - 0.5)) + 0.0),1.0);
+	// return;
 
 	vec3 mixed = mix(Color.rgb, UColor, val);
 

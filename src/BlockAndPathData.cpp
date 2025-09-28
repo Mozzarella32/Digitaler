@@ -107,11 +107,12 @@ std::optional<BlockIdentifiyer> BlockIdentifiyer::Parse(const std::string& str) 
 }
 
 //Package and Name are required
-BlockIdentifiyer BlockIdentifiyer::ParsePredefined(const std::string& str) {
-	assert(str != "");
+BlockIdentifiyer BlockIdentifiyer::ParsePredefined(const std::string_view sv) {
+	assert(sv != "");
 
 	std::vector<std::string> result;
-	std::stringstream ss(str);
+	std::stringstream ss;
+	ss << sv;
 	std::string token;
 
 	while (std::getline(ss, token, ':')) {

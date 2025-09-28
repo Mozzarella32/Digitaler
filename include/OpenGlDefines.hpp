@@ -188,13 +188,13 @@ struct AssetVertex {
 	static AssetVertex Mux(unsigned int transform, int selected, const Eigen::Vector2i& p, const ColourType& colorSelected, unsigned int id) {
 		return AssetVertex((unsigned int)ID::Mux, id, transform, p.x(), p.y(), selected, 0, colorSelected.x(), colorSelected.y(), colorSelected.z(), colorSelected.w());
 	}
-
-	static AssetVertex Pin(bool input, unsigned int transform, const Eigen::Vector2i& p, const ColourType& color, unsigned int id) {
-		return AssetVertex((unsigned int)(input ? ID::InputPin : ID::OutputPin), id, transform, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), color.w());
+	static AssetVertex Driver(unsigned int transform, int selected, const Eigen::Vector2i& p, const ColourType& colorSelected, unsigned int id) {
+		return AssetVertex((unsigned int)ID::Driver, id, transform, p.x(), p.y(), selected, 0, colorSelected.x(), colorSelected.y(), colorSelected.z(), colorSelected.w());
 	}
 
-	static AssetVertex RoundPin(bool input, unsigned int transform, const Eigen::Vector2i& p, unsigned int id) {
-		return AssetVertex((unsigned int)(input ? ID::InputRoundPin : ID::OutputRoundPin), id, transform, p.x(), p.y(), 0, 0, 0.0, 0.0, 0.0, 0.0);
+	static AssetVertex Pin(ID type, unsigned int transform, const Eigen::Vector2i& p, const ColourType& color, unsigned int id) {
+		assert(type == ID::InputPin || type == ID::OutputPin || type == ID::InputRoundPin || type == ID::OutputRoundPin);
+		return AssetVertex((unsigned int)type, id, transform, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), color.w());
 	}
 
 	static constexpr unsigned int BlurId = 0xFFFFFFFFu;

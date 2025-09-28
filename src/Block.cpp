@@ -7,6 +7,7 @@
 #include "Renderer.hpp"
 
 #include "RenderTextUtility.hpp"
+#include <utility>
 
 #ifdef UseCollisionGrid
 int VisualBlockInterior::BoxSize = 5;
@@ -198,7 +199,7 @@ bool VisualBlockInterior::ApplyToMarkedPath(const PathApplyer& Pathapplyer) {
 	return FoundPath;
 }
 
-PointType VisualBlockInterior::GetPositionDiff(const BlockMetadata& Meta, const PointType& BlockSize) {
+PointType VisualBlockInterior::GetPositionDiff(BlockMetadata Meta, PointType BlockSize) {
 	using enum MyDirection::Direction;
 	PointType Off{};
 
@@ -218,7 +219,6 @@ PointType VisualBlockInterior::GetPositionDiff(const BlockMetadata& Meta, const 
 	default:
 		std::unreachable();
 	}
-
 
 	auto ToVec2f = [](const MyDirection::Direction& d) {
 		switch (d) {
@@ -1074,6 +1074,16 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 		default:
 			std::unreachable();
 		}
+	case Neutral:
+		switch (Rotation) {
+		case Up:
+		case Right:
+		case Down:
+		case Left:
+			return (TopLeft + BottomRight) / 2;
+		default:
+			std::unreachable();
+		}
 
 	default:
 		std::unreachable();
@@ -1082,11 +1092,14 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 
 MyDirection::Direction VisualBlockInterior::GetPinRotation(const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
 	using enum MyDirection::Direction;
-	MyDirection::Direction d;
-	if (Meta.Rotation == Up) d = Pin.Rotation;
-	else if (Meta.Rotation == Left) d = MyDirection::RotateCCW(Pin.Rotation);
-	else if (Meta.Rotation == Down) d = MyDirection::RotateCW(MyDirection::RotateCW(Pin.Rotation));
-	else if (Meta.Rotation == Right) d = MyDirection::RotateCW(Pin.Rotation);
+	MyDirection::Direction d = Pin.Rotation;
+	if(d == Neutral) {
+		d = Up;
+	}
+	if (Meta.Rotation == Up) ;
+	else if (Meta.Rotation == Left) d = MyDirection::RotateCCW(d);
+	else if (Meta.Rotation == Down) d = MyDirection::RotateCW(MyDirection::RotateCW(d));
+	else if (Meta.Rotation == Right) d = MyDirection::RotateCW(d);
 	else d = Neutral;
 	if (Meta.xflip) {
 		d = MyDirection::FlipH(d);
@@ -1139,7 +1152,7 @@ void VisualBlockInterior::ShowMultiplicity(const PointType& BlockSize, const Blo
 	//Do final stuff
 }
 
-void VisualBlockInterior::ShowLable(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
+void VisualBlockInterior::ShowLabel(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
 	using namespace MyDirection;
 	Point<float> Offset;
 
@@ -1176,8 +1189,21 @@ void VisualBlockInterior::ShowLable(const PointType& BlockSize, const BlockMetad
 	//Do final stuff
 };
 
-void VisualBlockInterior::ShowBlockLabl(const PointType& BlockSize, const BlockMetadata& Meta, const std::string& Name) {
+void VisualBlockInterior::ShowBlockLabel(PointType BlockSize, BlockMetadata Meta, const std::string& Name) {
 	Point<float> Off{ 0,0 };
+	if (BlockSize == PointType{-1,-1}) {
+		if ((Meta.xflip && MyDirection::IsHorizontal(Meta.Rotation)) ||
+			  (Meta.yflip && !MyDirection::IsHorizontal(Meta.Rotation))) {
+			Meta.Rotation = MyDirection::RotateCW(MyDirection::RotateCW(Meta.Rotation));
+		}
+		Meta.Rotation = MyDirection::RotateCCW(Meta.Rotation);
+		BlockSize = PointType{0,0};
+		// Off = Point<float>{-0.5, 0.5};
+		Point<float> Right{0, 0};
+		Right += MyDirection::RotateCW(Meta.Rotation); 
+	  Off += 0.5 * Right * (MyDirection::IsHorizontal(Meta.Rotation) ? -1.0 : 1.0);
+		Meta.Rotation = MyDirection::RotateCW(Meta.Rotation);
+	}
 	PointType TopLeft;
 	Point<float> Flip = { 1.0f - 2.0f * Meta.xflip,1.0f - 2.0f * Meta.yflip };
 	PointType FlipOff = { Meta.xflip * BlockSize.x(),-int(Meta.yflip) * BlockSize.y() };
@@ -1223,6 +1249,7 @@ void VisualBlockInterior::UpdateBlocks() {
 		const auto& InputPins = ContainedExterior.blockExteriorData.InputPin;
 		const auto& OutputPins = ContainedExterior.blockExteriorData.OutputPin;
 		const auto& Name = ContainedExterior.blockExteriorData.Identifiyer.GetName();
+		const auto& ShowIdentifiyer = ContainedExterior.blockExteriorData.ShowIdentifiyer;
 
 		auto BBs = renderer->GetBlockBoundingBoxes(IndexContained);
 
@@ -1266,85 +1293,77 @@ void VisualBlockInterior::UpdateBlocks() {
 				return vert;
 			};
 
-			static auto GetBI = [this](const char* name) {
+			static auto GetBI = [this](const std::string_view name) {
 				return ResourceManager->GetBlockIndex(BlockIdentifiyer::ParsePredefined(name)); 
 			};
 
-			static const auto AND = GetBI(PredefinedNames::And);
-			static const auto OR = GetBI(PredefinedNames::Or);
-			static const auto XOR = GetBI(PredefinedNames::XOr);
-			static const auto SEVENSEG = GetBI(PredefinedNames::SevenSeg);
-			static const auto SIXTEENSEG = GetBI(PredefinedNames::SixteenSeg);
-			static const auto MUX = GetBI(PredefinedNames::Mux);
-
-			if (IndexContained != AND && IndexContained != OR && IndexContained != XOR) {
-
-				//Normal pins are under the shapes and round pins are over it
-				for (const auto& Pin : InputPins) {
-					BlockMetadata PinMeta;
-					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					AssetVBO.emplace(AssetVertex::Pin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
-					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					ShowMultiplicity(BlockSize, Meta, Pin);
-					ShowLable(BlockSize, Meta, Pin);
-				}
-				for (const auto& Pin : OutputPins) {
-					BlockMetadata PinMeta;
-					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					AssetVBO.emplace(AssetVertex::Pin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
-					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					ShowMultiplicity(BlockSize, Meta, Pin);
-					ShowLable(BlockSize, Meta, Pin);
-				}
-			}
-
-			if (IndexContained == SEVENSEG) {
-				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SevenSeg, Meta.Transform(), AssetVertex::NumberTo7Flags[time(0) % 0x10], Base, ColourType{ 0.78f,0.992f,0.0f,1.0f }, id));
+			auto Append = [this, isMarked, isHighlighted, SetIdForBlur] (AssetVertex && vert) {
+				AssetVBO.emplace(vert);
 				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
 				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+			};
+
+			using namespace PredefinedNames;
+
+			static const auto AND =          GetBI(And);
+			static const auto OR =           GetBI(Or);
+			static const auto XOR =          GetBI(XOr);
+			static const auto SEVENSEG =     GetBI(SevenSeg);
+			static const auto SIXTEENSEG =   GetBI(SixteenSeg);
+			static const auto MUX =          GetBI(Mux);
+			static const auto DRIVER =       GetBI(Driver);
+			// static const auto TOGGLEBUTTON = GetBI(ToggleButton);
+			// static const auto BUTTON =       GetBI(Button);
+			static const auto CONSTANT =     GetBI(Constant);
+			static const auto PROBE =     GetBI(Probe);
+
+			//Normal pins are under the shapes and round pins are over it
+			for (const auto& Pin : InputPins) {
+				if (Pin.Round) continue;
+				BlockMetadata PinMeta;
+				PinMeta.Rotation = GetPinRotation(Meta, Pin);
+				Append(AssetVertex::Pin(AssetVertex::ID::InputPin, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+				ShowMultiplicity(BlockSize, Meta, Pin);
+				ShowLabel(BlockSize, Meta, Pin);
 			}
+			for (const auto& Pin : OutputPins) {
+				if (Pin.Round) continue;
+				BlockMetadata PinMeta;
+				PinMeta.Rotation = GetPinRotation(Meta, Pin);
+				Append(AssetVertex::Pin(AssetVertex::ID::OutputPin, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+				ShowMultiplicity(BlockSize, Meta, Pin);
+				ShowLabel(BlockSize, Meta, Pin);
+			}
+
+			if (IndexContained == SEVENSEG) Append(AssetVertex::Display(AssetVertex::ID::SevenSeg, Meta.Transform(), AssetVertex::NumberTo7Flags[time(0) % 0x10], Base, ColourType{ 0.78f,0.992f,0.0f,1.0f }, id));
 			else if (IndexContained == SIXTEENSEG) {
 				static std::array<int, 218> Translation = { 73,99,104,32,104,97,98,101,32,106,101,116,122,116,32,101,105,110,102,117,110,107,116,105,111,110,105,101,114,101,110,100,101,115,49,54,32,83,101,103,109,101,110,116,32,68,105,115,112,108,97,121,100,97,115,32,97,108,108,101,32,97,115,99,105,105,32,90,101,105,99,104,101,110,100,97,114,115,116,101,108,108,101,110,32,107,97,110,110,58,48,49,50,51,52,53,54,55,56,57,116,104,101,32,113,117,105,99,107,32,98,114,111,119,110,32,102,111,120,32,106,117,109,112,115,32,111,118,101,114,32,116,104,101,32,108,97,122,121,32,100,111,103,84,72,69,32,81,85,73,67,75,32,66,82,79,87,78,32,70,79,88,32,74,85,77,80,83,32,79,86,69,82,32,84,72,69,32,76,65,90,89,32,68,79,71,33,64,35,36,37,94,38,42,40,41,95,45,43,123,125,124,58,34,60,62,63,96,126,91,93,92,59,39,44,46,47,126, };
-				AssetVBO.append(AssetVertex::Display(AssetVertex::ID::SixteenSeg, Meta.Transform(), AssetVertex::NumberTo16Flags[Translation[std::max(i - 5, 0)]], Base, ColourType{ 0.992f,0.43f,0.0f,1.0f }, id));
-				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+				Append(AssetVertex::Display(AssetVertex::ID::SixteenSeg, Meta.Transform(), AssetVertex::NumberTo16Flags[Translation[std::max(i - 5, 0)]], Base, ColourType{ 0.992f,0.43f,0.0f,1.0f }, id));
 			}
-			else if (IndexContained == AND || IndexContained == OR || IndexContained == XOR) {
-				if (IndexContained == AND) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Base, id));
-				else if (IndexContained == OR) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Base, id));
-				else if (IndexContained == XOR) AssetVBO.append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Base, id));
-				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+			else if (IndexContained == AND) Append(AssetVertex::Gate(AssetVertex::ID::And, Meta.Transform(), Base, id));
+			else if (IndexContained == OR) Append(AssetVertex::Gate(AssetVertex::ID::Or, Meta.Transform(), Base, id));
+			else if (IndexContained == XOR) Append(AssetVertex::Gate(AssetVertex::ID::Xor, Meta.Transform(), Base, id));
+			else if (IndexContained == MUX) Append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+			else if (IndexContained == DRIVER) Append(AssetVertex::Driver(Meta.Transform(), 1, Base, ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
+			else if (IndexContained == CONSTANT) ShowBlockLabel(PointType{-1,-1}, Meta, "0x123456789ABCDEF");
+			else if (IndexContained == PROBE) ShowBlockLabel(PointType{-1,-1}, Meta, "???");
+			else Append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.5f,0.5f,1.0f,1.0f }, id));
 
-				for (const auto& Pin : InputPins) {
-					BlockMetadata PinMeta;
-					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					AssetVBO.append(AssetVertex::RoundPin(true, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
-					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-				}
-				for (const auto& Pin : OutputPins) {
-					BlockMetadata PinMeta;
-					PinMeta.Rotation = GetPinRotation(Meta, Pin);
-					AssetVBO.append(AssetVertex::RoundPin(false, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), id));
-					if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-					if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-				}
-				ShowBlockLabl(BlockSize, Meta, Name);
-				continue;
+			for (const auto& Pin : InputPins) {
+				if (!Pin.Round) continue;
+				BlockMetadata PinMeta;
+				PinMeta.Rotation = GetPinRotation(Meta, Pin);
+				Append(AssetVertex::Pin(AssetVertex::ID::InputRoundPin, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
 			}
-			else if (IndexContained == MUX) {
-				AssetVBO.append(AssetVertex::Mux(Meta.Transform(), 1, Base, ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
-				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
+			for (const auto& Pin : OutputPins) {
+				if (!Pin.Round) continue;
+				BlockMetadata PinMeta;
+				PinMeta.Rotation = GetPinRotation(Meta, Pin);
+				Append(AssetVertex::Pin(AssetVertex::ID::OutputRoundPin, PinMeta.Transform(), GetPinPosition(BlockSize, Meta, Pin, 1), ColourType{ 0.5f,0.0f,0.5f,1.0f }, id));
 			}
-			else {
-				AssetVBO.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType{ 0.5f,0.5f,1.0f,1.0f }, id));
-				if (isHighlighted) HighlightAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-				if (isMarked) MarkedAssetVBO.append(SetIdForBlur(AssetVBO.back()));
-				ShowBlockLabl(BlockSize, Meta, Name);
+
+			if (ShowIdentifiyer) {
+				ShowBlockLabel(BlockSize, Meta, Name);
 			}
 		}
 	}

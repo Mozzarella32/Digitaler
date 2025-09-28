@@ -144,6 +144,9 @@ void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) 
 	//verts and if they are marked
 	std::unordered_map<PointType, bool> verts;
 
+	ColourType MyColor = ColourType{0.5f,0.0f,0.5f,1.0f };
+
+#ifdef PathRandomColor
 	static std::unordered_map<int, ColourType> ColourMap;
 	auto GetColour = [&](const int& i) {
 		auto it = ColourMap.find(i);
@@ -155,7 +158,8 @@ void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) 
 		};
 
 
-	ColourType MyColor = GetColour(Data.GetId());
+	MyColor = GetColour(Data.GetId());
+#endif
 
 	for (PointIndex i = 0; i < Data.Points.size(); i++) {
 		const PointNode& p = Data.Points[i];
