@@ -88,6 +88,10 @@ void Renderer::UpdateViewProjectionMatrix(bool OnlyForUniforms) {
 
   PROFILE_SCOPE_ID_END(5);
 
+  PreviewBlurDirty = true;
+  HighlightedBlurDirty = true;
+  MarkedBlurDirty = true;
+
   RenderBackground();
 }
 
@@ -163,70 +167,40 @@ void Renderer::RenderWires() {
   assetShader.apply("UIDRun", Shader::Data1i{false});
 
   const auto Pass = [&assetShader, this](
-     PathVAOs& VAOs,
-     BufferedVertexVec<AssetVertex>& edges,
-     BufferedVertexVec<AssetVertex>& verts,
-     BufferedVertexVec<AssetVertex>& intersectionPoints,
+     VertexArrayObject& VAO,
+     BufferedVertexVec<AssetVertex>& Path,
      bool BlurRun) {
-    if(edges.empty()) return;
-    GLCALL(glStencilOp(GL_KEEP, GL_KEEP, GL_INCR));
-    GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
-    GLCALL(glStencilMask(0xFF));
-    
-    VAOs.EdgesVAO.bind();
-    edges.replaceBuffer(VAOs.EdgesVAO, 0);
+    if(Path.empty()) return;
+
+    VAO.bind();
+
+    Path.replaceBuffer(VAO, 0);
+
     if(BlurRun) {
-      GLCALL(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
-    }
-    VAOs.EdgesVAO.DrawAs(GL_POINTS);
-    if (!BlurRun) {
-        VAOs.EdgesVAO.unbind();
-    }
-    else {
         GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-        assetShader.apply("UIDRun", Shader::Data1i{true});
-        GLCALL(glStencilFunc(GL_ALWAYS, 1, 0xFF));
-        GLCALL(glStencilMask(0x00));
-        VAOs.EdgesVAO.DrawAs(GL_POINTS);
-        VAOs.EdgesVAO.unbind();
+      assetShader.apply("UIDRun", Shader::Data1i{true});
+      assetShader.apply("UBlurRun", Shader::Data1i{true});
     }
-
-    GLCALL(glStencilMask(0x00));
-    GLCALL(glStencilFunc(GL_EQUAL, 0, 0xFF));
-
-    VAOs.VertsVAO.bind();
-    verts.replaceBuffer(VAOs.VertsVAO, 0);
-    VAOs.VertsVAO.DrawAs(GL_POINTS);
-    VAOs.VertsVAO.unbind();
-
-    GLCALL(glStencilFunc(GL_EQUAL, 2, 0xFF));
 
     if (!BlurRun)
         FBOBackgroundTexture.bind(assetShader,"UBackground","", 0);
 
-    VAOs.IntersectionPointsVAO.bind();
-    intersectionPoints.replaceBuffer(VAOs.IntersectionPointsVAO, 0);
-    VAOs.IntersectionPointsVAO.DrawAs(GL_POINTS);
-    VAOs.IntersectionPointsVAO.unbind();
+    VAO.DrawAs(GL_POINTS);
 
     if (BlurRun) {
         assetShader.apply("UIDRun", Shader::Data1i{false});
+        assetShader.apply("UBlurRun", Shader::Data1i{false});
     }
-
     if (!BlurRun)
         FBOBackgroundTexture.unbind();
+
+    VAO.unbind();
   };
 
-  GLCALL(glStencilMask(0xFF));
-  GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-
-  Pass(VAOsPath, b.normal.GetEdges(), b.normal.Verts, b.normal.IntersectionPoints, false);
+  Pass(PathVAO, b.normal.GetPath(), false);
   
   if (b.HasPreview()) {
-    GLCALL(glStencilMask(0xFF));
-    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-
-    Pass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts, b.preview.IntersectionPoints, false);
+    Pass(PathPreviewVAO, b.preview.GetPath(), false);
   }
 
   GLuint clearint = 0;
@@ -237,30 +211,24 @@ void Renderer::RenderWires() {
 
     FBOBlurPreview.bind(FrameBufferObject::BindMode::Draw);
 
-    GLCALL(glStencilMask(0xFF));
-    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-
-    if (!b.preview.GetEdges().empty()) {
+    if (!b.preview.GetPath().empty()) {
       PreviewNeedsReblur = true;
-      Pass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts, b.preview.IntersectionPoints, true);
+      Pass(PathPreviewVAO, b.preview.GetPath(), true);
     }
 
     FBOBlurPreview.unbind();
   }
 
   //Highlight
-  if (HighlitedBlurDirty) {
+  if (HighlightedBlurDirty) {
     GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
         GL_UNSIGNED_INT, &clearint));
 
     FBOBlurHighlight.bind(FrameBufferObject::BindMode::Draw);
 
-    GLCALL(glStencilMask(0xFF));
-    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-
-    if (!b.highlighted.GetEdges().empty() && !b.HasPreview()) {
+    if (!b.highlighted.GetPath().empty() && !b.HasPreview()) {
       HighlightedNeedsReblur = true;
-      Pass(VAOsPathHighlighted, b.highlighted.GetEdges(), b.highlighted.Verts, b.highlighted.IntersectionPoints, true);
+      Pass(PathHighlightedVAO, b.highlighted.GetPath(), true);
     }
 
     FBOBlurHighlight.unbind();
@@ -273,44 +241,34 @@ void Renderer::RenderWires() {
 
     FBOBlurMarked.bind(FrameBufferObject::BindMode::Draw);
 
-    GLCALL(glStencilMask(0xFF));
-    GLCALL(glClear(GL_STENCIL_BUFFER_BIT));
-
-    if (!b.marked.GetEdges().empty() && !b.HasPreview()) {
+    if (!b.marked.GetPath().empty() && !b.HasPreview()) {
       MarkedNeedsReblur = true;
-      Pass(VAOsPathMarked, b.marked.GetEdges(), b.marked.Verts, b.marked.IntersectionPoints, true);
+      Pass(PathMarkedVAO, b.marked.GetPath(), true);
     }
 
     FBOBlurHighlight.unbind();
   }
 
-  PROFILE_SCOPE_ID_START("Recreate Stencil from Path", 3);
+  PROFILE_SCOPE_ID_START("Index from Path", 3);
 
   FBOPathID.bind();
 
-  // Recreate Stencli Buffer
-  auto StencilRecreationPass = [](PathVAOs& VAOs,
-     BufferedVertexVec<AssetVertex>& edges,
-     BufferedVertexVec<AssetVertex>& verts
-   ) {
-    if (edges.empty())
+  // Recreate Index Buffer
+  auto IndexRecreationPass = [](VertexArrayObject& VAO,
+     BufferedVertexVec<AssetVertex>& Path) {
+    if (Path.empty())
       return;
 
-    VAOs.EdgesVAO.bind();
-    edges.replaceBuffer(VAOs.EdgesVAO, 0);
-    VAOs.EdgesVAO.DrawAs(GL_POINTS);
-    VAOs.EdgesVAO.unbind();
-
-    VAOs.VertsVAO.bind();
-    verts.replaceBuffer(VAOs.VertsVAO, 0);
-    VAOs.VertsVAO.DrawAs(GL_POINTS);
-    VAOs.VertsVAO.unbind();
+    VAO.bind();
+    Path.replaceBuffer(VAO, 0);
+    VAO.DrawAs(GL_POINTS);
+    VAO.unbind();
   };
 
   assetShader.apply("UIndexRun", Shader::Data1i{true});
   GLCALL(glClear(GL_COLOR_BUFFER_BIT));
-  StencilRecreationPass(VAOsPath, b.normal.GetEdges(), b.normal.Verts);
-  StencilRecreationPass(VAOsPathPreview, b.preview.GetEdges(), b.preview.Verts);
+  IndexRecreationPass(PathVAO, b.normal.GetPath());
+  IndexRecreationPass(PathPreviewVAO, b.preview.GetPath());
   assetShader.apply("UIndexRun", Shader::Data1i{false});
 
   FBOPathID.unbind();
@@ -360,9 +318,9 @@ void Renderer::Render() {
 
   ShaderManager::applyGlobal("UTime", Shader::Data1f{std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() / 1000.0f});
 
-  PreviewBlurDirty = true;
-  HighlitedBlurDirty = true;
-  MarkedBlurDirty = true;
+  // PreviewBlurDirty = true;
+  // HighlightedBlurDirty = true;
+  // MarkedBlurDirty = true;
 
   Dirty = false;
   IdMapDirty = true;
@@ -388,8 +346,7 @@ void Renderer::Render() {
 
   FBOMain.bind(FrameBufferObject::Draw);
 
-  GLCALL(glStencilMask(0xFF));
-  GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+  GLCALL(glClear(GL_COLOR_BUFFER_BIT));
 
   GLCALL(glViewport(0, 0, CanvasSize.x(), CanvasSize.y()));
 
@@ -414,9 +371,6 @@ void Renderer::Render() {
   PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
 
   GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
-  GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-  GLCALL(glStencilMask(0x00));
-
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {
@@ -448,8 +402,9 @@ void Renderer::Render() {
   TextAtlas.unbind();
 
   assetShader.apply("UIDRun", Shader::Data1i{true});
+  assetShader.apply("UBlurRun", Shader::Data1i{true});
 
-  if (b.HasHighlited() && !b.HasPreview() && HighlitedBlurDirty) {
+  if (!b.HighlightAssetVBO.empty() && !b.HasPreview() && HighlightedBlurDirty) {
       HighlightedNeedsReblur = true;
       BlurPass([&b]() {return b.HighlightAssetVBO;}, HighlightAssetVAO, FBOBlurHighlight);
   }
@@ -460,6 +415,7 @@ void Renderer::Render() {
   }
 
   assetShader.apply("UIDRun", Shader::Data1i{false});
+  assetShader.apply("UBlurRun", Shader::Data1i{false});
   assetShader.unbind();
 
   PROFILE_SCOPE_ID_END(4);
@@ -474,19 +430,12 @@ void Renderer::Render() {
     BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 1);
 
   PreviewBlurDirty = false;
-  HighlitedBlurDirty = false;
+  HighlightedBlurDirty = false;
   MarkedBlurDirty = false;
 
   FBOMain.bind(FrameBufferObject::Draw);
 
   PROFILE_SCOPE_ID_END(10);
-
-  PROFILE_SCOPE_ID_START("Pins", 5);
-
-  GLCALL(glStencilFunc(GL_ALWAYS, 0, 0x00));
-  GLCALL(glStencilMask(0x00));
-
-  PROFILE_SCOPE_ID_END(5);
 
 #ifdef RenderCollisionGrid
   BufferedVertexVec<AssetVertex> Blocks;
@@ -588,7 +537,7 @@ void Renderer::Render() {
    };
 
   auto& liquidGlassShader = ShaderManager::GetShader(ShaderManager::LiquidGlass);
-  if(PreviewNeedsReblur || HighlightedNeedsReblur || MarkedNeedsReblur) {
+  if(b.HasPreview() || b.HasHighlited() || b.HasHighlitedPath() || b.HasAnythingMarked()) {
     liquidGlassShader.bind();
     Frame->HoleScreenVAO->bind();
     FBOMain.unbind();
@@ -597,7 +546,7 @@ void Renderer::Render() {
     FBOMainSwap.unbind();
   }
 
-  if(MarkedNeedsReblur) {
+  if(b.HasAnythingMarked()) {
     mainFBOActive().bind();
     mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
@@ -609,7 +558,7 @@ void Renderer::Render() {
     mainFBOSwap = !mainFBOSwap;
   }
 
-  if(HighlightedNeedsReblur) {
+  if(b.HasHighlited() || b.HasHighlitedPath()) {
     mainFBOActive().bind();
     mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
@@ -621,7 +570,7 @@ void Renderer::Render() {
     mainFBOSwap = !mainFBOSwap;
   }
 
-  if(PreviewNeedsReblur) {
+  if(b.HasPreview()) {
     mainFBOActive().bind();
     mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
     FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
@@ -634,7 +583,7 @@ void Renderer::Render() {
   }
 
   mainFBOSwap = !mainFBOSwap;
-  if(PreviewNeedsReblur || HighlightedNeedsReblur || MarkedNeedsReblur) {
+  if(b.HasPreview() || b.HasHighlited() || b.HasHighlitedPath() || b.HasAnythingMarked()) {
     Frame->HoleScreenVAO->unbind();
     liquidGlassShader.unbind();
     mainFBOActive().bind();
@@ -763,10 +712,9 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                      return desc;
                    }()),
       FBOPathID({&FBOPathIDTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
-      FBOMainStencileDepthTexture(CreateStencileDepthTexture()),
       FBOMainColorTexture(1, 1),
-      FBOMain({&FBOMainColorTexture, &FBOMainStencileDepthTexture},
-              {GL_COLOR_ATTACHMENT0, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOMain({&FBOMainColorTexture},
+              {GL_COLOR_ATTACHMENT0}),
       FBOMainColorSwapTexture(1, 1),
       FBOMainSwap({&FBOMainColorSwapTexture}, {GL_COLOR_ATTACHMENT0}),
       FBOIDTexture(1, 1, nullptr,
@@ -780,36 +728,17 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                    }()),
       FBOID({&FBOIDTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurHighlightTexture(CreateBlurTexture()),
-      FBOBlurHighlightStencileDepthTexture(CreateStencileDepthTexture()),
-      FBOBlurHighlight({&FBOBlurHighlightTexture, &FBOBlurHighlightStencileDepthTexture }, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOBlurHighlight({&FBOBlurHighlightTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurPreviewTexture(CreateBlurTexture()),
-      FBOBlurPreviewStencileDepthTexture(CreateStencileDepthTexture()),
-      FBOBlurPreview({&FBOBlurPreviewTexture, &FBOBlurPreviewStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOBlurPreview({&FBOBlurPreviewTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurMarkedTexture(CreateBlurTexture()),
-      FBOBlurMarkedStencileDepthTexture(CreateStencileDepthTexture()),
-      FBOBlurMarked({&FBOBlurMarkedTexture, &FBOBlurMarkedStencileDepthTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1, GL_DEPTH_STENCIL_ATTACHMENT}),
+      FBOBlurMarked({&FBOBlurMarkedTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurSwapTexture(CreateBlurTexture()),
       FBOBlurSwap({&FBOBlurSwapTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
-      VAOsPath(PathVAOs{
-          .EdgesVAO = CreateVAO<AssetVertex>(),
-          .VertsVAO = CreateVAO<AssetVertex>(),
-          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
-      }),
-      VAOsPathPreview(PathVAOs{
-          .EdgesVAO = CreateVAO<AssetVertex>(),
-          .VertsVAO = CreateVAO<AssetVertex>(),
-          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
-      }),
-      VAOsPathHighlighted(PathVAOs{
-          .EdgesVAO = CreateVAO<AssetVertex>(),
-          .VertsVAO = CreateVAO<AssetVertex>(),
-          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
-      }),
-      VAOsPathMarked(PathVAOs{
-          .EdgesVAO = CreateVAO<AssetVertex>(),
-          .VertsVAO = CreateVAO<AssetVertex>(),
-          .IntersectionPointsVAO = CreateVAO<AssetVertex>(),
-      }),
+      PathVAO(CreateVAO<AssetVertex>()),
+      PathPreviewVAO(CreateVAO<AssetVertex>()),
+      PathHighlightedVAO(CreateVAO<AssetVertex>()),
+      PathMarkedVAO(CreateVAO<AssetVertex>()),
 #ifdef RenderCollisionGrid
       CollisionGridVAO(CreateVAO<AssetVertex>()),
 #endif
@@ -859,18 +788,14 @@ void Renderer::UpdateSize() {
 
   FBOPathIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
-  FBOMainStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOMainColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOMainColorSwapTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOBlurHighlightTexture.Resize(CanvasSize.x(), CanvasSize.y());
-  FBOBlurHighlightStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOBlurPreviewTexture.Resize(CanvasSize.x(), CanvasSize.y());
-  FBOBlurPreviewStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOBlurMarkedTexture.Resize(CanvasSize.x(), CanvasSize.y());
-  FBOBlurMarkedStencileDepthTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOBlurSwapTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   UpdateViewProjectionMatrix();

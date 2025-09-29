@@ -231,6 +231,62 @@ void VisualPathData::AddLineCorrectReserve(const PointIndex& a, const PointIndex
 	}
 }
 
+
+unsigned int VisualPathData::GetPointDirections(const PointIndex& p) const {
+	assert(p < Points.size());
+	assert(!Points[p].IsFree());
+
+	unsigned int Directions = 0;
+	
+	auto pPos = Points[p].Pos;
+	for (LineIndexInPoint i = 0; i < 4; i++) {
+			if (Points[p].Connections[i] == InvalidPointIndex ||
+			    Points[p].Connections[i] == ReservedPointIndex) continue;
+			assert(!Points[Points[p].Connections[i]].IsFree());
+			auto oPos = Points[Points[p].Connections[i]].Pos;
+
+			if (oPos.y() == pPos.y()) { //Horizontal
+				if(oPos.x() > pPos.x()) Directions |= 1 << 1; //Right
+				else Directions |= 1 << 3; //Left
+			}
+			else{
+				if(oPos.y() > pPos.y()) Directions |= 1 << 0; // Up;
+				else Directions |= 1 << 2; //Down
+			}
+	}
+
+	return Directions;
+}
+
+unsigned int VisualPathData::GetPointDirectionsMarked(const PointIndex& p, const std::unordered_map<LineIndex, bool>& Marked) const {
+	assert(p < Points.size());
+	assert(!Points[p].IsFree());
+
+	unsigned int Directions = 0;
+	
+	auto pPos = Points[p].Pos;
+	for (LineIndexInPoint i = 0; i < 4; i++) {
+			if (Points[p].Connections[i] == InvalidPointIndex ||
+			    Points[p].Connections[i] == ReservedPointIndex) continue;
+			auto it = Marked.find(LineIndex{p, Points[p].Connections[i]});
+			if (it == Marked.end()) continue;
+			if (it->second == false) continue;
+			assert(!Points[Points[p].Connections[i]].IsFree());
+			auto oPos = Points[Points[p].Connections[i]].Pos;
+
+			if (oPos.y() == pPos.y()) { //Horizontal
+				if(oPos.x() > pPos.x()) Directions |= 1 << 1; //Right
+				else Directions |= 1 << 3; //Left
+			}
+			else{
+				if(oPos.y() > pPos.y()) Directions |= 1 << 0; // Up;
+				else Directions |= 1 << 2; //Down
+			}
+	}
+
+	return Directions;
+}
+
 LineIndex VisualPathData::LineExists(const PointIndex& a, const PointIndex& b) const {
 #ifndef NDEBUG 
 	IsValidCaller __vc(this);
@@ -243,7 +299,7 @@ LineIndex VisualPathData::LineExists(const PointIndex& a, const PointIndex& b) c
 	assert(!Points[a].IsFree());
 	assert(!Points[b].IsFree());
 
-	for (LineIndexInPoint i = 0; i < Points[a].ConnectionCount(); i++) {
+	for (LineIndexInPoint i = 0; i < 4; i++) {
 		if (Points[a].Connections[i] == b) {
 			return LineIndex{ a,Points[a].Connections[i] };
 		}
@@ -275,7 +331,7 @@ PointIndex VisualPathData::PointExists(const PointType& p) const {
 
 	for (size_t i = 0; i < Points.size(); i++) {
 		if (Points[i].IsFree()) continue;
-		if (Points[i].Pos == p)return i;
+		if (Points[i].Pos == p) return i;
 	}
 
 	return InvalidPointIndex;

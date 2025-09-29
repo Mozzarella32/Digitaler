@@ -34,7 +34,7 @@ public:
 	bool Dirty : 1 = true;
 	bool IdMapDirty : 1 = true;
 	bool PreviewBlurDirty : 1 = true;
-	bool HighlitedBlurDirty : 1 = true;
+	bool HighlightedBlurDirty : 1 = true;
 	bool MarkedBlurDirty : 1 = true;
 private:
 	bool PreviewNeedsReblur : 1 = true;
@@ -51,7 +51,6 @@ private:
 	Texture FBOPathIDTexture;
 	FrameBufferObject FBOPathID;
 
-	Texture FBOMainStencileDepthTexture;
 	Texture FBOMainColorTexture;
 	FrameBufferObject FBOMain;
 	Texture FBOMainColorSwapTexture;
@@ -61,33 +60,21 @@ private:
 	FrameBufferObject FBOID;
 
 	Texture FBOBlurHighlightTexture;
-	Texture FBOBlurHighlightStencileDepthTexture;
 	FrameBufferObject FBOBlurHighlight;
 
 	Texture FBOBlurPreviewTexture;
-	Texture FBOBlurPreviewStencileDepthTexture;
 	FrameBufferObject FBOBlurPreview;
 
 	Texture FBOBlurMarkedTexture;
-	Texture FBOBlurMarkedStencileDepthTexture;
 	FrameBufferObject FBOBlurMarked;
 
 	Texture FBOBlurSwapTexture;
 	FrameBufferObject FBOBlurSwap;
 
-	//std::array<GLenum, 2> DrawBuffer0 = { GL_COLOR_ATTACHMENT0, GL_NONE };
-	//std::array<GLenum, 2> DrawBuffer1 = { GL_NONE, GL_COLOR_ATTACHMENT1 };
-
-	struct PathVAOs {
-		VertexArrayObject EdgesVAO;
-		VertexArrayObject VertsVAO;
-		VertexArrayObject IntersectionPointsVAO;
-	};
-
-	PathVAOs VAOsPath;
-	PathVAOs VAOsPathPreview;
-	PathVAOs VAOsPathHighlighted;
-	PathVAOs VAOsPathMarked;
+	VertexArrayObject PathVAO;
+	VertexArrayObject PathPreviewVAO;
+	VertexArrayObject PathHighlightedVAO;
+	VertexArrayObject PathMarkedVAO;
 
 #ifdef RenderCollisionGrid
 	VertexArrayObject CollisionGridVAO;

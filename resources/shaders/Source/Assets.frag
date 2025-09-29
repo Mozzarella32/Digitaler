@@ -22,6 +22,7 @@ layout(location = 1) out uint Id;
 //Uniform
 uniform float      UZoomFactor;
 uniform bool       UIDRun;
+uniform bool       UBlurRun;
 uniform bool       UIndexRun;
 uniform sampler2D  UBackground;
 uniform isampler2D UPathPresent;
@@ -43,8 +44,7 @@ uniform vec2       UMousePos;
 #define OutputRoundPin        InputRoundPin         + 1
 #define PathEdge              OutputRoundPin        + 1
 #define PathIntersectionPoint PathEdge              + 1
-#define PathVertex            PathIntersectionPoint + 1
-#define Text                  PathVertex            + 1
+#define Text                  PathIntersectionPoint + 1
 #define AreaSelect            Text                  + 1
 
 float dot2(vec2 v) {
@@ -186,15 +186,21 @@ float sdUnion(float sd1, float sd2) {
 }
 
 float ApplyScaling(float sdf) {
-    if (UIDRun) {
+    if (UIDRun && UBlurRun) {
         return 1.0 - 0.05 / min(UZoomFactor, 0.05) * sdf;
+    }
+    if (UIDRun && !UBlurRun) {
+        return 1.0 - 0.15 / min(UZoomFactor / 2.0, 0.05) * sdf;
     }
     return 1.0 - 0.15 / min(UZoomFactor, 0.05) * sdf;
 }
 
 float ApplyScalingInv(float sdfScaled) {
-    if (UIDRun) {
-        return (1.0 - sdfScaled) / (0.5 / min(UZoomFactor, 0.05));
+    if (UIDRun && UBlurRun) {
+        return (1.0 - sdfScaled) / (0.05 / min(UZoomFactor, 0.05));
+    }
+    if (UIDRun && !UBlurRun) {
+        return (1.0 - sdfScaled) / (0.15 / min(UZoomFactor / 2.0, 0.05));
     }
     return (1.0 - sdfScaled) / (0.15 / min(UZoomFactor, 0.05));
 }
@@ -522,12 +528,6 @@ float sdPathIntersectionPointsTrue(vec2 Pos) {
     return 0.425 - length(abs(Pos) - vec2(0.5));
 }
 
-vec4 sdPathVertex(vec2 Pos) {
-    vec4 corner = vec4(PathCornerColor, length(Pos) - 0.03);
-    vec4 segment = vec4(ColorA1.rgb, length(Pos) - 0.075);
-    return MixInInner(segment, corner);
-}
-
 float median(float a, float b, float c){
 	return max(min(a,b),min(c,max(a,b)));
 }
@@ -597,8 +597,6 @@ vec4 get() {
         else {
             return sdPathIntersectionPoints(Pos);
         }
-        case PathVertex:
-        return sdPathVertex(Pos);
         case Text:
         return sdText(Pos);
         case AreaSelect:
@@ -607,7 +605,7 @@ vec4 get() {
     return vec4(ColorA1.rgb, sdBox(Pos, FPoint + 0.3) - 0.1);
 }
 
-bool UsesOutline() {
+float UsesOutline() {
     switch (Index) {
         case AreaSelect:
         case Text:
@@ -615,10 +613,9 @@ bool UsesOutline() {
         case OutputRoundPin:
         case PathEdge:
         // case PathIntersectionPoint: Dont kown, dont touch!
-        case PathVertex:
-        return false;
+        return 0.0;
         default:
-        return true;
+        return 1.0;
     }
 }
 
@@ -631,6 +628,9 @@ void main () {
     vec4 col = get();
 
     if (UIDRun) {
+        if (Index == Text) {
+            discard;
+        }
         if (ZeroID) {
             Id = 0;
             return;
@@ -646,7 +646,7 @@ void main () {
 
     float sdf = ApplyScaling(col.a);
 
-    float outline = mix(1.0, sdf, float(UsesOutline()));
+    float outline = mix(1.0, sdf, UsesOutline());
 
     vec3 colWithOutline =  mix(vec3(0.0), col.rgb, clamp(outline, 0.0, 1.0));
     FragColor = vec4(colWithOutline, clamp(sdf, 0.0, 1.0));
@@ -654,4 +654,5 @@ void main () {
     // if(sdf < -5.0) {
     //     FragColor = vec4(1.0, 0.0, 0.0, 0.4);
     // }
+
 }

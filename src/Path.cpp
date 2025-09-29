@@ -139,11 +139,6 @@ void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) 
 	normal.clear();
 	marked.clear();
 
-	//intersectionPoints and if they are marked
-	std::unordered_map<PointType, bool> intersectionPoints;
-	//verts and if they are marked
-	std::unordered_map<PointType, bool> verts;
-
 	ColourType MyColor = ColourType{0.5f,0.0f,0.5f,1.0f };
 
 #ifdef PathRandomColor
@@ -194,43 +189,24 @@ void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) 
 			else {
 				normal.EdgesV.push_back(AssetVertex::PathEdge(A, B, MyColor));
 			}
-
-			if (BB.Contains(A) && p.ConnectionCount() >= 2) {
-				auto it = intersectionPoints.find(A);
-				if(it == intersectionPoints.end() || !it->second)
-					intersectionPoints[A] = isMarked;
-			}
-			if (BB.Contains(B) && other.ConnectionCount() >= 2) {
-				auto it = intersectionPoints.find(B);
-				if(it == intersectionPoints.end() || !it->second)
-					intersectionPoints[B] = isMarked;
-			}
-
-			if (BB.Contains(A)) {
-				auto it = verts.find(A);
-				if(it == verts.end() || !it->second)
-					verts[A] = isMarked;
-			}
-			if (BB.Contains(B)) {
-				auto it = verts.find(B);
-				if(it == verts.end() || !it->second)
-					verts[B] = isMarked;
-			}
 		}
 	}
 
-	normal.IntersectionPoints.reserve(intersectionPoints.size());
-	for (const auto& p : intersectionPoints) {
-		normal.IntersectionPoints.push_back(AssetVertex::PathIntersection(p.first, MyColor));
-		if(p.second)
-			marked.IntersectionPoints.push_back(AssetVertex::PathIntersection(p.first, MyColor));
-	}
-
-	normal.Verts.reserve(verts.size());
-	for (const auto& p : verts) {
-		normal.Verts.push_back(AssetVertex::PathVertex(p.first, MyColor));
-		if (p.second)
-			marked.Verts.push_back(AssetVertex::PathVertex(p.first, MyColor));
+	for (PointIndex i = 0; i < Data.Points.size(); i++) {
+		if (Data.Points[i].IsFree()) continue;
+		unsigned int d = Data.GetPointDirections(i);
+		unsigned int dm = Data.GetPointDirectionsMarked(i, LineMarked);
+		for (int j = 0; j < 4; j++) {
+			if((d & (1 << j)) && (d & (1 << ((j + 1) % 4)))){
+				normal.IntersectionPoints.push_back(AssetVertex::PathIntersection(j, Data.Points[i].Pos, MyColor));
+			}
+			if((dm & (1 << j)) && (dm & (1 << ((j + 1) % 4)))){
+				marked.IntersectionPoints.push_back(AssetVertex::PathIntersection(j, Data.Points[i].Pos, MyColor));
+			}
+		}
+		// normal.IntersectionPoints.push_back(AssetVertex::PathIntersection(BlockMetadata{.Rotation = MyDirection::Up}.Transform(), Data.Points[i].Pos, MyColor));
+		// // if(p.second)
+		// 	marked.IntersectionPoints.push_back(AssetVertex::PathIntersection(BlockMetadata{.Rotation = MyDirection::Up}.Transform(), Data.Points[i].Pos, MyColor));
 	}
 }
 

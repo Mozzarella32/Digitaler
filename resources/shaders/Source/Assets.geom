@@ -88,8 +88,7 @@ vec4 rectFromPointAndSize(vec2 pos, vec2 size) {
 #define OutputRoundPin        InputRoundPin         + 1
 #define PathEdge              OutputRoundPin        + 1
 #define PathIntersectionPoint PathEdge              + 1
-#define PathVertex            PathIntersectionPoint + 1
-#define Text                  PathVertex            + 1
+#define Text                  PathIntersectionPoint + 1
 #define AreaSelect            Text                  + 1
 
 vec4 getRect(uint Index) {
@@ -115,7 +114,6 @@ vec4 getRect(uint Index) {
         case PathEdge:
         return vec4(VSIPoint2[0], VSIPoint1[0]);
         case PathIntersectionPoint:
-        case PathVertex:
         return vec4(rectFromPointAndSize(VSIPoint1[0], vec2(0)));
         case Text:
         return VSOffsets[0];
@@ -123,6 +121,20 @@ vec4 getRect(uint Index) {
         return vec4(VSFPoint1[0], VSFPoint2[0]);
     }
     return vec4(VSIPoint1[0], VSIPoint2[0]);
+}
+
+float[4] rotate(float[4] arr, uint amount) {
+    switch (amount) {
+        case 0:
+        return arr;
+        case 1:
+        return float[4](arr[3], arr[0], arr[1], arr[2]);
+        case 2:
+        return float[4](arr[2], arr[3], arr[0], arr[1]);
+        case 3:
+        return float[4](arr[1], arr[2], arr[3], arr[0]);
+    }
+    return arr;
 }
 
 float[4] getMargins(uint Index) {
@@ -147,17 +159,9 @@ float[4] getMargins(uint Index) {
         case OutputRoundPin:
         return float[4](-0.1, -0.1, -0.1, -0.1);
         case PathEdge:
-        {
-            float v = float(VSIPoint1[0].x == VSIPoint2[0].x);
-            float v1 = mix(-0.0, -0.5, v);
-            float v2 = mix(-0.5, -0.0, v);
-            return float[4](v1, v2, v1, v2);
-        }
+        return float[4](0.0, 0.0, 0.0, 0.0);
         case PathIntersectionPoint:
-        return float[4](0.0, 0.0, 0.0, 0.0);
-        case PathVertex:
-        // return float[4](-0.35, -0.35, -0.35, -0.35);
-        return float[4](0.0, 0.0, 0.0, 0.0);
+        return rotate(float[4](0.0, 0.0, -0.5, -0.5), VSIPoint2[0].x);
         case Text:
         return float[4](-0.5, -0.5, -0.5, -0.5);
         case AreaSelect:
@@ -170,7 +174,7 @@ float doMarginExtend() {
     switch (Index) {
         case PathEdge:
         case PathIntersectionPoint:
-        case PathVertex:
+        case AreaSelect:
         return 0.0;
         default:
         return 1.0;

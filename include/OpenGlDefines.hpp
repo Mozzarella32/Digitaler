@@ -158,7 +158,6 @@ struct AssetVertex {
 		OutputRoundPin,
 		PathEdge,
 		PathIntersection,
-		PathVertex,
 		Text,
 		AreaSelect,
 		IDSize
@@ -203,12 +202,8 @@ struct AssetVertex {
 		return AssetVertex((unsigned int)ID::PathEdge, BlurId, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
 	}
 
-	static AssetVertex PathIntersection(const Eigen::Vector2i& p, const ColourType& color) {
-		return AssetVertex((unsigned int)ID::PathIntersection, BlurId, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
-	}
-
-	static AssetVertex PathVertex(const Eigen::Vector2i& p, const ColourType& color) {
-		return AssetVertex((unsigned int)ID::PathVertex, BlurId, 0, p.x(), p.y(), 0, 0, color.x(), color.y(), color.z(), 0.0);
+	static AssetVertex PathIntersection(unsigned int transform, const Eigen::Vector2i& p, const ColourType& color) {
+		return AssetVertex((unsigned int)ID::PathIntersection, BlurId, 0, p.x(), p.y(), transform, 0, color.x(), color.y(), color.z(), 0.0);
 	}
 
 	static AssetVertex Text(const Point<float>& Pos, const float* PosOff, const float* UVOff, const float& Scale, const MyDirection::Direction& d, const ColourType& Foregrorund, const ColourType& Background) {
@@ -218,7 +213,6 @@ struct AssetVertex {
 	}
 
 	static AssetVertex AreaSelect(const Eigen::Vector2f& p1, const Eigen::Vector2f& p2, const ColourType& color) {
-		// return AssetVertex((int)ID::AreaSelect, 0, 0, std::max(p1.x(), p2.x()), std::max(p1.y(),p2.y()), std::min(p1.x(),p2.x()), std::min(p1.y(),p2.y()), color.x(), color.y(), color.z(), 0.0);
 		return AssetVertex((unsigned int)ID::AreaSelect, 0, 0, 0, 0, 0, 0, color.x(), color.y(), color.z(), color.w(), 0.0f, 0.0f, 0.0f, 0.0f, std::max(p1.x(), p2.x()), std::max(p1.y(), p2.y()), std::min(p1.x(), p2.x()), std::min(p1.y(), p2.y()));
 	}
 

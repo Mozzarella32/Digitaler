@@ -26,35 +26,33 @@ public:
 	struct PathDrawData {
 		std::vector<AssetVertex>                      EdgesV;
 		std::vector<AssetVertex>                      EdgesH;
-		std::optional<BufferedVertexVec<AssetVertex>> Edges;
-		BufferedVertexVec<AssetVertex>                Verts;
-		BufferedVertexVec<AssetVertex>                IntersectionPoints;
+		std::optional<BufferedVertexVec<AssetVertex>> Path;
+		std::vector<AssetVertex>                      IntersectionPoints;
 
 		void clear() {
-			Edges.reset();
+			Path.reset();
 			EdgesV.clear();
 			EdgesH.clear();
-			Verts.clear();
 			IntersectionPoints.clear();
 		}
 
 		void append(const VisualPath::DrawData& data) {
 			EdgesV.insert(std::end(EdgesV), std::begin(data.EdgesV), std::end(data.EdgesV));
 			EdgesH.insert(std::end(EdgesH), std::begin(data.EdgesH), std::end(data.EdgesH));
-			Verts.append(data.Verts);
-			IntersectionPoints.append(data.IntersectionPoints);
+			IntersectionPoints.insert(std::end(IntersectionPoints), std::begin(data.IntersectionPoints), std::end(data.IntersectionPoints));
 		}
 
-		BufferedVertexVec<AssetVertex>& GetEdges() {
-			if(Edges.has_value()){
-				return Edges.value();
+		BufferedVertexVec<AssetVertex>& GetPath() {
+			if(Path.has_value()){
+				return Path.value();
 			}
-			Edges = BufferedVertexVec<AssetVertex>{};
-			Edges.value().append(EdgesV);
-			Edges.value().append(EdgesH);
+			Path = BufferedVertexVec<AssetVertex>{};
+			Path.value().append(EdgesV);
+			Path.value().append(EdgesH);
+			Path.value().append(IntersectionPoints);
 			EdgesV.clear();
 			EdgesH.clear();
-			return Edges.value();
+			return Path.value();
 		}
 	};
 

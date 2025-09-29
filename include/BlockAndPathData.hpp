@@ -229,6 +229,10 @@ private:
 
 	void AddLineCorrectReserve(const PointIndex& a, const PointIndex& b, bool aHasReserved, bool bHasReserved);
 
+	unsigned int GetPointDirections(const PointIndex& p) const;
+
+	unsigned int GetPointDirectionsMarked(const PointIndex& p, const std::unordered_map<LineIndex, bool>& Marked) const;
+
 	/*void RemovePoint(const PointIndex& p) {
 		assert(p < Points.size());
 		assert(!Points[p].IsFree());
