@@ -435,7 +435,7 @@ bool VisualBlockInterior::DeleteMarked() {
 	bool HadMarkedBlocks = HasMarkedBlocks();
 
 	if (HadMarkedBlocks) {
-		unsigned int id = 0;
+		ssize_t id = 0;
 		size_t Deleted = 0;
 
 		for (auto& [type, vec] : Blocks) {
