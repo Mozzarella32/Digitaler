@@ -87,7 +87,9 @@ ShaderManager& ShaderManager::GetInstance() {
 
 #ifdef HotShaderReload
 void ShaderManager::Work() {
+		PROFILE_FUNKTION;
     while (Running) {
+			PROFILE_SCOPE("Do loop");
 
 #define X(Vert, Frag) \
         { \

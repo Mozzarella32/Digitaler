@@ -32,14 +32,17 @@ public:
 	MyRectF BoundingBox;
 
 	bool Dirty : 1 = true;
-	bool IdMapDirty : 1 = true;
-	bool PreviewBlurDirty : 1 = true;
-	bool HighlightedBlurDirty : 1 = true;
-	bool MarkedBlurDirty : 1 = true;
+	bool SkipNextFrame : 1 = true;
+	// bool IdMapDirty : 1 = true;
+	// bool PreviewBlurDirty : 1 = true;
+	// bool HighlightedBlurDirty : 1 = true;
+	// bool MarkedBlurDirty : 1 = true;
 private:
 	bool PreviewNeedsReblur : 1 = true;
 	bool HighlightedNeedsReblur : 1 = true;
 	bool MarkedNeedsReblur : 1 = true;
+
+	bool IDMap1 : 1 = true;
 private:
 
 	//Order is important
@@ -56,9 +59,22 @@ private:
 	Texture FBOMainColorSwapTexture;
 	FrameBufferObject FBOMainSwap;
 
-	Texture FBOIDTexture;
-	FrameBufferObject FBOID;
+	Texture FBOIDTexture1;
+	FrameBufferObject FBOID1;
+	Texture FBOIDTexture2;
+	FrameBufferObject FBOID2;
 
+	Texture& FBOIDTexture(bool first) {
+		return first ? FBOIDTexture1 : FBOIDTexture2;
+	}
+
+	FrameBufferObject& FBOID(bool first) {
+		return first ? FBOID1 : FBOID2;
+	}
+
+	Texture FBOBBTexture;
+	FrameBufferObject FBOBB;
+	
 	Texture FBOBlurHighlightTexture;
 	FrameBufferObject FBOBlurHighlight;
 
@@ -118,7 +134,7 @@ private:
 
 public:
 
-	void Render();
+	void Render(bool Requested = true);
 
 	static void RenderPlacholder(MyFrame& frame, Eigen::Vector2f CanvasSize);
 
@@ -151,15 +167,15 @@ public:
 		return Texture(1, 1, nullptr, desc);
 	}
 
-	static Texture CreateStencileDepthTexture() {
-		Texture::Descriptor desc;
-		desc.Format = GL_DEPTH_STENCIL;
-		desc.Internal_Format = GL_DEPTH24_STENCIL8;
-		desc.Depth_Stencil_Texture_Mode =
-			GL_STENCIL_INDEX;
-		desc.Type = GL_UNSIGNED_INT_24_8;
-		return Texture(1, 1, nullptr, desc);
-	}
+	// static Texture CreateStencileDepthTexture() {
+	// 	Texture::Descriptor desc;
+	// 	desc.Format = GL_DEPTH_STENCIL;
+	// 	desc.Internal_Format = GL_DEPTH24_STENCIL8;
+	// 	desc.Depth_Stencil_Texture_Mode =
+	// 		GL_STENCIL_INDEX;
+	// 	desc.Type = GL_UNSIGNED_INT_24_8;
+	// 	return Texture(1, 1, nullptr, desc);
+	// }
 
 	public:
 

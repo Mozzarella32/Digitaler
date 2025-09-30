@@ -19,6 +19,7 @@ int RenderTextUtility::GetCharMapIndex(const char& c, const bool& bold, const bo
 RenderTextUtility::RenderTextUtility()
 	:
 	CharMap([]() {
+	PROFILE_FUNKTION;
 	std::map<int, CharInfo> CharMap;
 	//         0  1  2   3 4 5 6 7 8 9 10
 	//bolditallic id adv l t r b l t r b

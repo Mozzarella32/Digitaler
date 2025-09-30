@@ -51,8 +51,6 @@ void IOHandler::OnDelete() {
 		if (b.SetMarked(b.GetHighlited(), true)) {
 			b.DeleteMarked();
 			r.Dirty = true;
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Render();
 		}
 		return;
@@ -74,9 +72,9 @@ Eigen::Vector2f IOHandler::PixelToScreenCoord(const Eigen::Vector2f& Pos) {
 
 //Returnes if the index changed
 bool IOHandler::UpdateMouseIndex(const Eigen::Vector2f& Pos) {
+	PROFILE_FUNKTION;
 
 	Renderer& r = *Frame->renderer;
-	VisualBlockInterior& b = Frame->BlockManager->Interior;
 
 	auto LastMouseIndex = MouseIndex;
 	MouseIndex = r.CoordToNearestPoint(PixelToScreenCoord(Pos));
@@ -87,9 +85,6 @@ bool IOHandler::UpdateMouseIndex(const Eigen::Vector2f& Pos) {
 
 	if (LastMouseIndex == MouseIndex)return false;
 
-	if(b.HasPreview())
-		r.PreviewBlurDirty = true;
-	r.HighlightedBlurDirty = true;
 	r.UpdateMouseIndex(MouseIndex);
 
 	return true;
@@ -98,6 +93,7 @@ bool IOHandler::UpdateMouseIndex(const Eigen::Vector2f& Pos) {
 IOHandler::IOHandler(MyFrame* Frame) : Frame(Frame) {}
 
 void IOHandler::MoveViewUpdate() {
+	PROFILE_FUNKTION;
 	const Eigen::Vector2f Speed = Keyboarddata.Shift ? Eigen::Vector2f{ 100, 100 } : Eigen::Vector2f{ 25, 25 };
 	Eigen::Vector2f Diff{ 0,0 };
 
@@ -195,6 +191,7 @@ void IOHandler::DoLoop() {
 	Renderer& r = *Frame->renderer;
 
 	if (state == State::GoHome) {
+		PROFILE_SCOPE("Handle Go Home");
 		if (r.StepGoHome()) {
 			SetState(GoHomeSaveState);
 			return;
@@ -203,7 +200,7 @@ void IOHandler::DoLoop() {
 
 	MoveViewUpdate();
 
-	r.Render();
+	r.Render(false);
 }
 
 void IOHandler::OnMouseWheel(const Eigen::Vector2f& Pos, double Rotation) {
@@ -232,6 +229,7 @@ void IOHandler::OnMouseWheel(const Eigen::Vector2f& Pos, double Rotation) {
 }
 
 void IOHandler::OnMouseMove(const Eigen::Vector2f& Pos) {
+	PROFILE_FUNKTION;
 	/*
 	{ -1.0, -1.0 },
 	{ -1.0,1.0 },
@@ -247,34 +245,34 @@ void IOHandler::OnMouseMove(const Eigen::Vector2f& Pos) {
 	//SetTitle(ss.str());
 
 	if (Frame->Blockselector->Hover(Pos.cast<int>())) {
+		PROFILE_SCOPE("Handle Blockselector Hover");
 		r.Dirty = true;
 		r.Render();
 	}
 
 	if (state == State::Normal || state == State::Marking) {
+		PROFILE_SCOPE("Handle Highlited Block Update");
 		if (b.SetHighlited(r.GetHighlited(Keyboarddata.MousePosition))) {
 			r.Dirty = true;
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Render();
 		}
 	}
 
 	if (state == State::DraggingMarked) {
+		PROFILE_SCOPE("Handle MouseIndex Update");
 		Click = false;
 		Eigen::Vector2i CurrentMouseIndex = MouseIndex;
 		if (UpdateMouseIndex({ (int)Keyboarddata.MousePosition.x(),(int)Keyboarddata.MousePosition.y() })) {
 			Eigen::Vector2i Diff = MouseIndex - CurrentMouseIndex;
 			b.MoveMarked(Diff);
 			r.Dirty = true;
-			r.PreviewBlurDirty = true;
-			r.HighlightedBlurDirty = true;
 			r.Render();
 		}
 		return;
 	}
 
 	if (state == State::AreaFirstPoint) {
+		PROFILE_SCOPE("Handle Mouse AreaSelect sknd");
 
 		AreaSecondPoint = PixelToScreenCoord(Pos);
 
@@ -287,12 +285,12 @@ void IOHandler::OnMouseMove(const Eigen::Vector2f& Pos) {
 		buff.append(AssetVertex::AreaSelect(AreaFirstPoint, AreaSecondPoint, ColourType{ 1.0f,0.0f,1.0f,0.1f }));
 
 		r.Dirty = true;
-		r.HighlightedBlurDirty = true;
-		r.MarkedBlurDirty = true;
 		r.Render();
 	}
 
 	if (state == State::Dragging || state == State::DraggingWhilePlacingLine || state == State::DraggingWithMarking || state == State::DraggingWhileAreaFistPoint) {
+		PROFILE_SCOPE("Dragging sth");
+		
 		Click = false;
 		auto LastOrigin = DraggingOrigin;
 		DraggingOrigin = Pos;
@@ -367,8 +365,6 @@ void IOHandler::OnMouseUp(const Eigen::Vector2f& Pos) {
 			if (h != 0) {
 				b.SetMarked(h, true);
 				r.Dirty = true;
-				r.HighlightedBlurDirty= true;
-				r.MarkedBlurDirty = true;
 				r.Render();
 
 				SetState(State::Marking);
@@ -378,7 +374,6 @@ void IOHandler::OnMouseUp(const Eigen::Vector2f& Pos) {
 			SetState(State::PlacingLine);
 			b.StartDrag(MouseIndex);
 			r.Dirty = true;
-			r.PreviewBlurDirty = true;
 			r.Render();
 			return;
 		}
@@ -396,8 +391,6 @@ void IOHandler::OnMouseUp(const Eigen::Vector2f& Pos) {
 				SetState(State::Normal);
 			}
 			r.Dirty = true;
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Render();
 			return;
 		}
@@ -414,8 +407,6 @@ void IOHandler::OnMouseUp(const Eigen::Vector2f& Pos) {
 			AreaFirstPoint = {};
 
 			r.GetAreaSelectVerts().clear();
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Dirty = true;
 			r.Render();
 			return;
@@ -439,14 +430,11 @@ void IOHandler::OnRightMouseDown(const Eigen::Vector2f& Pos) {
 	VisualBlockInterior& b = Frame->BlockManager->Interior;
 	if (state == State::Marking || state == State::DraggingMarked || state == State::DraggingWithMarking) {
 		b.ClearMarked();
-		r.HighlightedBlurDirty = true;
-		r.MarkedBlurDirty = true;
 		r.Dirty = true;
 		r.Render();
 	}
 	if (state == State::PlacingLine || state == State::DraggingWhilePlacingLine) {
 		b.CancleDrag();
-		r.PreviewBlurDirty = true;
 		r.Dirty = true;
 		r.Render();
 	}
@@ -490,9 +478,6 @@ void IOHandler::OnDClick([[maybe_unused]] const Eigen::Vector2f& pos) {
 	if (!identOpt) return;
 	Frame->BlockManager->SetCurrent(optindex.value(),r.Zoom,r.Offset,true);
 	r.Dirty = true;
-	r.PreviewBlurDirty = true;
-	r.HighlightedBlurDirty = true;
-	r.MarkedBlurDirty = true;
 	r.Render();
 }
 
@@ -536,8 +521,6 @@ void IOHandler::OnKeyDown(wxKeyEvent& evt) {
 
 			SetState(State::Marking);
 			b.MarkAll();
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Dirty = true;
 			r.Render();
 			break;
@@ -560,7 +543,6 @@ void IOHandler::OnKeyDown(wxKeyEvent& evt) {
 	{
 		if (b.RotateMarked(Keyboarddata.Shift)) {
 			r.Dirty = true;
-			r.MarkedBlurDirty = true;
 			r.Render();
 		}
 		/*PointType Around = b.RotateMarked();
@@ -578,7 +560,6 @@ void IOHandler::OnKeyDown(wxKeyEvent& evt) {
 	{
 		if (b.FlipMarked(false)) {
 			r.Dirty = true;
-			r.HighlightedBlurDirty = true;
 			r.Render();
 		}
 	}
@@ -587,7 +568,6 @@ void IOHandler::OnKeyDown(wxKeyEvent& evt) {
 	{
 		if (b.FlipMarked(true)) {
 			r.Dirty = true;
-			r.HighlightedBlurDirty = true;
 			r.Render();
 		}
 	}
@@ -648,7 +628,6 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 			SetState(State::Normal);
 
 			r.Dirty = true;
-			r.PreviewBlurDirty = true;
 			r.Render();
 			return;
 		}
@@ -656,8 +635,6 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 			SetState(State::Normal);
 
 			b.ClearMarked();
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Dirty = true;
 			r.Render();
 			return;
@@ -670,8 +647,6 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 			b.ClearMarked();
 
 			r.GetAreaSelectVerts().clear();
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Dirty = true;
 			r.Render();
 		}
@@ -681,8 +656,6 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 			unsigned int h = r.GetHighlited(Keyboarddata.MousePosition);
 			if (h != 0) {
 				b.SetMarked(h, true);
-				r.HighlightedBlurDirty = true;
-				r.MarkedBlurDirty = true;
 				r.Dirty = true;
 				r.Render();
 
@@ -692,7 +665,6 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 
 			SetState(State::PlacingLine);
 			Frame->BlockManager->Interior.StartDrag(MouseIndex);
-			r.PreviewBlurDirty = true;
 			r.Dirty = true;
 			r.Render();
 			return;
@@ -700,7 +672,6 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 		if (state == State::PlacingLine) {
 			if (Frame->BlockManager->Interior.AddDrag(MouseIndex)) {
 				Frame->BlockManager->Interior.EndDrag();
-				r.PreviewBlurDirty = true;
 				SetState(State::Normal);
 			}
 			r.Dirty = true;
@@ -716,8 +687,6 @@ void IOHandler::OnChar(wxKeyEvent& evt) {
 				b.ClearMarked();
 			}
 			r.Dirty = true;
-			r.HighlightedBlurDirty = true;
-			r.MarkedBlurDirty = true;
 			r.Render();
 			return;
 		}

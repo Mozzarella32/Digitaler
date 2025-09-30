@@ -861,6 +861,8 @@ void VisualBlockInterior::AbsorbOrAdd(VisualPathData&& Data) {
 
 //Be carfull, may invalidate Paths ref/ptr/it
 VisualPath& VisualBlockInterior::SplitPath(size_t PathIndex) {
+	PROFILE_FUNKTION;
+
 	assert(PathIndex < Paths.size());
 	assert(!Paths[PathIndex].IsFree());
 	assert(!Paths[PathIndex].IsFullyMarked());
@@ -908,6 +910,8 @@ void VisualBlockInterior::MergeAfterMove() {
 }
 
 std::optional<VisualPathData> VisualBlockInterior::GeneratePreviewPath(const PointType& Mouse) {
+	PROFILE_FUNKTION;
+
 	if (PreviewData.size() < 1) return std::nullopt;
 
 	VisualPathData pd;
@@ -947,6 +951,8 @@ std::optional<VisualPathData> VisualBlockInterior::GeneratePreviewPath(const Poi
 }
 
 std::optional<VisualPathData> VisualBlockInterior::GeneratePreviewPath() {
+	PROFILE_FUNKTION;
+
 	if (PreviewData.size() < 2) return std::nullopt;
 	if (PreviewData[0] == PreviewData[1])return std::nullopt;
 
@@ -1014,6 +1020,7 @@ bool VisualBlockInterior::HasPreview() const {
 }
 
 PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin, const int& Expoltion) {
+
 	const MyDirection::Direction& Rotation = Meta.Rotation;
 	PointType TopLeft;
 	PointType BottomLeft;
@@ -1091,6 +1098,8 @@ PointType VisualBlockInterior::GetPinPosition(const PointType& BlockSize, const 
 }
 
 MyDirection::Direction VisualBlockInterior::GetPinRotation(const BlockMetadata& Meta, const CompressedBlockData::BlockExteriorData::Pin& Pin) {
+	PROFILE_FUNKTION;
+
 	using enum MyDirection::Direction;
 	MyDirection::Direction d = Pin.Rotation;
 	if(d == Neutral) {
@@ -1225,6 +1234,7 @@ void VisualBlockInterior::ShowBlockLabel(PointType BlockSize, BlockMetadata Meta
 };
 
 void VisualBlockInterior::UpdateBlocks() {
+	PROFILE_FUNKTION;
 	if (!DirtyBlocks)return;
 	DirtyBlocks = false;
 	AssetVBO.clear();
@@ -1383,7 +1393,6 @@ void VisualBlockInterior::AddBlock(const CompressedBlockDataIndex& bedi, const B
 }
 
 void VisualBlockInterior::AddBlockBatched(const std::map<CompressedBlockDataIndex, std::vector<BlockMetadata>>& ToInsert) {
-
 	for (const auto& [id, vec] : ToInsert) {
 		Blocks[id].insert(Blocks[id].end(), std::make_move_iterator(vec.begin()), std::make_move_iterator(vec.end()));
 	}

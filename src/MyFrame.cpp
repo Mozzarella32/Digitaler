@@ -630,7 +630,6 @@ void MyFrame::Loop() {
 #endif
   renderer->FrameCount++;
   //}
-  IO->DoLoop();
 #ifdef Testing
   renderer->Dirty = true;
 #endif
@@ -646,6 +645,7 @@ void MyFrame::Loop() {
     renderer->Dirty = true;
   }
 #endif
+  IO->DoLoop();
   // renderer->Dirty = true;
   SetTitle(renderer->title + " " + IO->GetStateString());
   // SetTitle("HI");

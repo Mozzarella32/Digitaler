@@ -30,6 +30,7 @@ public:
 		std::vector<AssetVertex>                      IntersectionPoints;
 
 		void clear() {
+			PROFILE_FUNKTION;
 			Path.reset();
 			EdgesV.clear();
 			EdgesH.clear();
@@ -37,12 +38,14 @@ public:
 		}
 
 		void append(const VisualPath::DrawData& data) {
+			PROFILE_FUNKTION;
 			EdgesV.insert(std::end(EdgesV), std::begin(data.EdgesV), std::end(data.EdgesV));
 			EdgesH.insert(std::end(EdgesH), std::begin(data.EdgesH), std::end(data.EdgesH));
 			IntersectionPoints.insert(std::end(IntersectionPoints), std::begin(data.IntersectionPoints), std::end(data.IntersectionPoints));
 		}
 
 		BufferedVertexVec<AssetVertex>& GetPath() {
+			PROFILE_FUNKTION;
 			if(Path.has_value()){
 				return Path.value();
 			}

@@ -8,7 +8,6 @@
 
 class Renderer;
 class BlockSelector;
-//
 class BlockFileAddress {
 	std::string Package;
 	std::vector<std::string> Dirs;

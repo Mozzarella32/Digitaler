@@ -122,6 +122,7 @@ void VisualPath::ClearNeedsMerging() {
 }
 
 void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) {
+	PROFILE_FUNKTION;
 	if (!Data.BoundingBox.Intersectes(BB)) {
 		normal.clear();
 		marked.clear();
@@ -156,6 +157,8 @@ void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) 
 	MyColor = GetColour(Data.GetId());
 #endif
 
+
+	PROFILE_SCOPE_ID_START("Edges", 0);
 	for (PointIndex i = 0; i < Data.Points.size(); i++) {
 		const PointNode& p = Data.Points[i];
 		if (p.IsFree())continue;
@@ -191,7 +194,9 @@ void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) 
 			}
 		}
 	}
+	PROFILE_SCOPE_ID_END(0);
 
+	PROFILE_SCOPE("IntersectionPoints");
 	for (PointIndex i = 0; i < Data.Points.size(); i++) {
 		if (Data.Points[i].IsFree()) continue;
 		unsigned int d = Data.GetPointDirections(i);
@@ -204,9 +209,6 @@ void VisualPath::ComputeAll(const MyRectI& BB, [[maybe_unused]] bool allowSelf) 
 				marked.IntersectionPoints.push_back(AssetVertex::PathIntersection(j, Data.Points[i].Pos, MyColor));
 			}
 		}
-		// normal.IntersectionPoints.push_back(AssetVertex::PathIntersection(BlockMetadata{.Rotation = MyDirection::Up}.Transform(), Data.Points[i].Pos, MyColor));
-		// // if(p.second)
-		// 	marked.IntersectionPoints.push_back(AssetVertex::PathIntersection(BlockMetadata{.Rotation = MyDirection::Up}.Transform(), Data.Points[i].Pos, MyColor));
 	}
 }
 

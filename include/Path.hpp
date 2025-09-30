@@ -34,6 +34,7 @@ public:
 		std::vector<AssetVertex> IntersectionPoints;
 
 		void clear() {
+			PROFILE_FUNKTION;
 			EdgesV.clear();
 			EdgesH.clear();
 			IntersectionPoints.clear();

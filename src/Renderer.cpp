@@ -88,16 +88,10 @@ void Renderer::UpdateViewProjectionMatrix(bool OnlyForUniforms) {
 
   PROFILE_SCOPE_ID_END(5);
 
-  PreviewBlurDirty = true;
-  HighlightedBlurDirty = true;
-  MarkedBlurDirty = true;
-
   RenderBackground();
 }
 
 Eigen::Vector2i Renderer::CoordToNearestPoint(Eigen::Vector2f Pos) {
-  // PROFILE_FUNKTION;
-
   return Eigen::Vector2i(static_cast<int>(std::round(Pos.x())),
                          static_cast<int>(std::round(Pos.y())));
 }
@@ -108,31 +102,14 @@ template <typename VertexType> VertexArrayObject Renderer::CreateVAO() {
 }
 
 void Renderer::RenderIDMap() {
-  PROFILE_FUNKTION;
+  // PROFILE_FUNKTION;
 
-  if (!IdMapDirty) {
-    return;
-  }
-
-  if (!Frame->Canvas->BindContext()) {
-    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
-  }
-
-  IdMapDirty = false;
-
-  FBOID.bind(FrameBufferObject::Draw);
-
-  Shader& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
-
-  assetShader.bind();
-
-  assetShader.apply("UIDRun", Shader::Data1i{true});
+  PROFILE_SCOPE("RenderIDMap to Texture " + std::to_string(FBOIDTexture(IDMap1).TextureId));
+  FBOID(IDMap1).bind(FrameBufferObject::Draw);
 
   GLuint clearint = 0;
-  GLCALL(glClearTexImage(FBOIDTexture.GetId(), 0, GL_RED_INTEGER,
+  GLCALL(glClearTexImage(FBOIDTexture(IDMap1).GetId(), 0, GL_RED_INTEGER,
                          GL_UNSIGNED_INT, &clearint));
-
-  VisualBlockInterior &b = Frame->BlockManager->Interior;
 
   auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
     if (!VertsGetter().empty()) {
@@ -143,26 +120,25 @@ void Renderer::RenderIDMap() {
     }
   };
 
+  Shader& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
+  VisualBlockInterior &b = Frame->BlockManager->Interior;
+
+  assetShader.apply("UIDRun", Shader::Data1i{true});
   SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
+  assetShader.apply("UIDRun", Shader::Data1i{false});
 
-  assetShader.unbind();
-
-  FBOID.unbind();
+  FBOID(IDMap1).unbind();
+  IDMap1 = !IDMap1;
 }
 
 void Renderer::RenderWires() {
   PROFILE_FUNKTION;
 
   VisualBlockInterior &b = Frame->BlockManager->Interior;
-  
-  b.UpdateVectsForVAOs(BoundingBox, MouseIndex, AllowHover);
-  b.UpdateVectsForVAOsPreview(BoundingBox, MouseIndex);
 
   FBOMain.bind(FrameBufferObject::Draw);
 
   Shader& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
-
-  assetShader.bind();
 
   assetShader.apply("UIDRun", Shader::Data1i{false});
 
@@ -197,15 +173,21 @@ void Renderer::RenderWires() {
     VAO.unbind();
   };
 
-  Pass(PathVAO, b.normal.GetPath(), false);
-  
+  {
+    PROFILE_SCOPE("normal Pass");
+    Pass(PathVAO, b.normal.GetPath(), false);
+  }
+
   if (b.HasPreview()) {
+    PROFILE_SCOPE("preview Pass");
     Pass(PathPreviewVAO, b.preview.GetPath(), false);
   }
 
-  GLuint clearint = 0;
-  //Preview
-  if (PreviewBlurDirty) {
+
+  {
+    PROFILE_SCOPE("Create Blurbase");
+    GLuint clearint = 0;
+    //Preview
     GLCALL(glClearTexImage(FBOBlurPreviewTexture.GetId(), 0, GL_RED_INTEGER,
         GL_UNSIGNED_INT, &clearint));
 
@@ -217,10 +199,8 @@ void Renderer::RenderWires() {
     }
 
     FBOBlurPreview.unbind();
-  }
 
-  //Highlight
-  if (HighlightedBlurDirty) {
+    //Highlight
     GLCALL(glClearTexImage(FBOBlurHighlightTexture.GetId(), 0, GL_RED_INTEGER,
         GL_UNSIGNED_INT, &clearint));
 
@@ -232,10 +212,8 @@ void Renderer::RenderWires() {
     }
 
     FBOBlurHighlight.unbind();
-  }
 
-  //Marked
-  if (MarkedBlurDirty) {
+    //Marked
     GLCALL(glClearTexImage(FBOBlurMarkedTexture.GetId(), 0, GL_RED_INTEGER,
         GL_UNSIGNED_INT, &clearint));
 
@@ -273,11 +251,7 @@ void Renderer::RenderWires() {
 
   FBOPathID.unbind();
 
-  assetShader.unbind();
-
   PROFILE_SCOPE_ID_END(3);
-
-  FBOMain.bind(FrameBufferObject::Draw);
 }
 
 void Renderer::BlurI(FrameBufferObject& FBO, const Texture& iTexture, const int iterations) {
@@ -306,24 +280,30 @@ void Renderer::BlurI(FrameBufferObject& FBO, const Texture& iTexture, const int 
   gaussianShader.unbind(); 
 }
 
-void Renderer::Render() {
+void Renderer::Render(bool Requested) {
   PROFILE_FUNKTION;
 #ifdef HotShaderReload
   if (!Dirty && !ShaderManager::IsDirty)
-    return;
+   return;
 #else
-  if (!Dirty)
+  if (!Dirty && !PreviewBlurDirty && !HighlightedBlurDirty && !MarkedBlurDrity)
     return;
 #endif
 
   ShaderManager::applyGlobal("UTime", Shader::Data1f{std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() / 1000.0f});
 
-  // PreviewBlurDirty = true;
-  // HighlightedBlurDirty = true;
-  // MarkedBlurDirty = true;
+  if (Requested) {
+    SkipNextFrame = true;
+  }
 
-  Dirty = false;
-  IdMapDirty = true;
+  if (!Requested) {
+    if (SkipNextFrame) {
+      SkipNextFrame = false;
+      return;
+    }
+    Dirty = false;
+  }
+
   PreviewNeedsReblur = false;
   HighlightedNeedsReblur = false;
   MarkedNeedsReblur = false;
@@ -337,156 +317,167 @@ void Renderer::Render() {
 #endif
 
   VisualBlockInterior &b = Frame->BlockManager->Interior;
-
-  PROFILE_SCOPE_ID_START("Blit Background", 0);
-
-  if (!Frame->Canvas->BindContext()) {
-    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+  auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
+  {
+    PROFILE_SCOPE("Update Vecs");
+    b.UpdateVectsForVAOs(BoundingBox, MouseIndex, AllowHover);
+    b.UpdateVectsForVAOsPreview(BoundingBox, MouseIndex);
   }
 
-  FBOMain.bind(FrameBufferObject::Draw);
+  assetShader.bind();
+  RenderIDMap();
 
-  GLCALL(glClear(GL_COLOR_BUFFER_BIT));
+  {
+    PROFILE_SCOPE("Blit Background");
 
-  GLCALL(glViewport(0, 0, CanvasSize.x(), CanvasSize.y()));
+    if (!Frame->Canvas->BindContext()) {
+      wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+    }
 
-  FBOBackground.bind(FrameBufferObject::Read);
+    FBOMain.bind(FrameBufferObject::Draw);
 
-  GLCALL(glBlitFramebuffer(0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0,
-                           CanvasSize.x(), CanvasSize.y(), GL_COLOR_BUFFER_BIT,
-                           GL_NEAREST));
+    GLCALL(glClear(GL_COLOR_BUFFER_BIT));
 
-  FBOBackground.unbind();
+    GLCALL(glViewport(0, 0, CanvasSize.x(), CanvasSize.y()));
 
-  PROFILE_SCOPE_ID_END(0);
- 
+    FBOBackground.bind(FrameBufferObject::Read);
+
+    GLCALL(glBlitFramebuffer(0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0,
+                               CanvasSize.x(), CanvasSize.y(), GL_COLOR_BUFFER_BIT,
+                               GL_NEAREST));
+
+    FBOBackground.unbind();
+  }
+
   RenderWires();
 
-  auto& assetShader = ShaderManager::GetShader(ShaderManager::Assets);
+  {
+   PROFILE_SCOPE("Render Assets");
 
-  assetShader.bind();
+    FBOMain.bind(FrameBufferObject::Draw);
 
-  assetShader.apply("UIDRun", Shader::Data1i{ false });
+    assetShader.apply("UIDRun", Shader::Data1i{ false });
 
-  PROFILE_SCOPE_ID_START("Draw And Or XOR", 4);
+    auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
+      if (!VertsGetter().empty()) {
+        VAO.bind();
+        VertsGetter().replaceBuffer(VAO, 0);
+        VAO.DrawAs(GL_POINTS);
+        VAO.unbind();
+      }
+    };
 
-  GLCALL(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+    TextAtlas.bind(assetShader, "UText", "", 1);
+    FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 0);
+    SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
+    FBOPathIDTexture.unbind();
+    TextAtlas.unbind();
 
-  auto SimplePass = [](auto VertsGetter, VertexArrayObject &VAO) {
-    if (!VertsGetter().empty()) {
-      VAO.bind();
-      VertsGetter().replaceBuffer(VAO, 0);
-      VAO.DrawAs(GL_POINTS);
-      VAO.unbind();
-    }
-  };
+    FBOMain.unbind();
+  }
 
-  auto BlurPass = [](auto VertsGetter, VertexArrayObject &VAO, FrameBufferObject& FBO) {
-    if (!VertsGetter().empty()) {
+  {
+    PROFILE_SCOPE("Create Baseblur for assets");
 
-      FBO.bind(FrameBufferObject::BindMode::Draw);
+    FBOMain.bind(FrameBufferObject::Draw);
+
+    assetShader.apply("UIDRun", Shader::Data1i{true});
+    assetShader.apply("UBlurRun", Shader::Data1i{true});
+    auto BlurPass = [](auto VertsGetter, VertexArrayObject &VAO, FrameBufferObject& FBO) {
+      if (!VertsGetter().empty()) {
+
+        FBO.bind(FrameBufferObject::BindMode::Draw);
       
-      VAO.bind();
-      VertsGetter().replaceBuffer(VAO, 0);
-      VAO.DrawAs(GL_POINTS);
-      VAO.unbind();
+        VAO.bind();
+        VertsGetter().replaceBuffer(VAO, 0);
+        VAO.DrawAs(GL_POINTS);
+        VAO.unbind();
 
-      FBO.unbind();
+        FBO.unbind();
+      }
+    };
+
+
+    if (!b.HighlightAssetVBO.empty() && !b.HasPreview()) {
+        HighlightedNeedsReblur = true;
+        BlurPass([&b]() {return b.HighlightAssetVBO;}, HighlightAssetVAO, FBOBlurHighlight);
     }
-  };
 
-  TextAtlas.bind(assetShader, "UText", "", 1);
-  FBOPathIDTexture.bind(assetShader, "UPathPresent", "", 0);
-  SimplePass([&b]() { return b.AssetVBO; }, AssetVAO);
-  FBOPathIDTexture.unbind();
-  TextAtlas.unbind();
+    if (!b.MarkedAssetVBO.empty() && !b.HasPreview()) {
+        MarkedNeedsReblur = true;
+        BlurPass([&b]() {return b.MarkedAssetVBO;}, MarkedAssetVAO, FBOBlurMarked);
+    }
 
-  assetShader.apply("UIDRun", Shader::Data1i{true});
-  assetShader.apply("UBlurRun", Shader::Data1i{true});
-
-  if (!b.HighlightAssetVBO.empty() && !b.HasPreview() && HighlightedBlurDirty) {
-      HighlightedNeedsReblur = true;
-      BlurPass([&b]() {return b.HighlightAssetVBO;}, HighlightAssetVAO, FBOBlurHighlight);
+    assetShader.apply("UIDRun", Shader::Data1i{false});
+    assetShader.apply("UBlurRun", Shader::Data1i{false});
+    assetShader.unbind();
   }
 
-  if (!b.MarkedAssetVBO.empty() && !b.HasPreview() && MarkedBlurDirty) {
-      MarkedNeedsReblur = true;
-      BlurPass([&b]() {return b.MarkedAssetVBO;}, MarkedAssetVAO, FBOBlurMarked);
+  {
+    PROFILE_SCOPE("Blur");
+    if (PreviewNeedsReblur)
+      BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 1);
+    if (HighlightedNeedsReblur)
+      BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 1);
+    if (MarkedNeedsReblur)
+      BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 1);
   }
-
-  assetShader.apply("UIDRun", Shader::Data1i{false});
-  assetShader.apply("UBlurRun", Shader::Data1i{false});
-  assetShader.unbind();
-
-  PROFILE_SCOPE_ID_END(4);
-
-  PROFILE_SCOPE_ID_START("Blur", 10);
-
-  if (PreviewNeedsReblur)
-    BlurI(FBOBlurPreview, FBOBlurPreviewTexture, 1);
-  if (HighlightedNeedsReblur)
-    BlurI(FBOBlurHighlight, FBOBlurHighlightTexture, 1);
-  if (MarkedNeedsReblur)
-    BlurI(FBOBlurMarked, FBOBlurMarkedTexture, 1);
-
-  PreviewBlurDirty = false;
-  HighlightedBlurDirty = false;
-  MarkedBlurDirty = false;
 
   FBOMain.bind(FrameBufferObject::Draw);
 
-  PROFILE_SCOPE_ID_END(10);
-
 #ifdef RenderCollisionGrid
-  BufferedVertexVec<AssetVertex> Blocks;
+  {
+    PROFILE_SCOPE("Render Collision Grid");
 
-  static std::unordered_map<int, std::tuple<float, float, float>> ColourMap;
-  auto GetColour = [&](const int &i) {
-    if (i == 0)
-      return std::make_tuple(1.0f, 1.0f, 1.0f);
-    auto it = ColourMap.find(i);
-    if (it == ColourMap.end()) {
-      ColourMap[i] = std::make_tuple(float(rand()) / (float)RAND_MAX,
-                                     float(rand()) / (float)RAND_MAX,
-                                     float(rand()) / (float)RAND_MAX);
-      return ColourMap[i];
-    }
-    return it->second;
-  };
+    BufferedVertexVec<AssetVertex> Blocks;
 
-  for (const auto &pair : b.CollisionMap) {
-    MyRectI BB = MyRectI::FromCorners(
-        pair.first, pair.first + PointType{VisualBlockInterior::BoxSize,
-                                           VisualBlockInterior::BoxSize});
-    if (BoundingBox.Intersectes(
-            MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
-      const auto &size = pair.second.size();
-      BB.Position.y() += BB.Size.y() - 1;
+    static std::unordered_map<int, std::tuple<float, float, float>> ColourMap;
+    auto GetColour = [&](const int &i) {
+      if (i == 0)
+        return std::make_tuple(1.0f, 1.0f, 1.0f);
+      auto it = ColourMap.find(i);
+      if (it == ColourMap.end()) {
+        ColourMap[i] = std::make_tuple(float(rand()) / (float)RAND_MAX,
+                                       float(rand()) / (float)RAND_MAX,
+                                       float(rand()) / (float)RAND_MAX);
+        return ColourMap[i];
+      }
+      return it->second;
+    };
 
-      PointType Pos1 = BB.Position;
-      Pos1.y() -= BB.Size.y() - 1;
-      PointType Pos2 = BB.Position;
-      Pos2.x() += BB.Size.x() - 1;
+    for (const auto &pair : b.CollisionMap) {
+      MyRectI BB = MyRectI::FromCorners(
+          pair.first, pair.first + PointType{VisualBlockInterior::BoxSize,
+                                             VisualBlockInterior::BoxSize});
+      if (BoundingBox.Intersectes(
+              MyRectF(BB.Position.cast<float>(), BB.Size.cast<float>()))) {
+        const auto &size = pair.second.size();
+        BB.Position.y() += BB.Size.y() - 1;
 
-      if (size == 0) {
-        BlockMetadata Meta{};
-        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5), 0));
-      } else {
-        BlockMetadata Meta{};
-        auto [cr, cg, cb] = GetColour(size);
-        Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(cr, cg, cb, 0.5), 0));
+        PointType Pos1 = BB.Position;
+        Pos1.y() -= BB.Size.y() - 1;
+        PointType Pos2 = BB.Position;
+        Pos2.x() += BB.Size.x() - 1;
+
+        if (size == 0) {
+          BlockMetadata Meta{};
+          Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(0.5, 0.5, 0.5, 0.5), 0));
+        } else {
+          BlockMetadata Meta{};
+          auto [cr, cg, cb] = GetColour(size);
+          Blocks.append(AssetVertex::Box(Meta.Transform(), Pos1, Pos2, ColourType(cr, cg, cb, 0.5), 0));
+        }
       }
     }
-  }
 
-  assetShader.bind();
-  SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO);
-  assetShader.unbind();
+    assetShader.bind();
+    SimplePass([&Blocks]() { return Blocks; }, CollisionGridVAO);
+    assetShader.unbind();
+  }
 #endif
 
   if (Frame->Blockselector && !Frame->Blockselector->GetTextVBO().empty()) {
-
-    PROFILE_SCOPE("Text");
+    PROFILE_SCOPE("Render Text");
 
     assetShader.bind();
 
@@ -520,8 +511,6 @@ void Renderer::Render() {
     assetShader.unbind();
   }
 
-  PROFILE_SCOPE("Swap Buffers");
-
   title = "Zoom: " + std::to_string(Zoom) +
           " Off: " + std::to_string(Offset.x()) + ", " +
           std::to_string(Offset.y());
@@ -536,62 +525,65 @@ void Renderer::Render() {
       return (mainFBOSwap) ? FBOMainColorTexture : FBOMainColorSwapTexture;
    };
 
-  auto& liquidGlassShader = ShaderManager::GetShader(ShaderManager::LiquidGlass);
-  if(b.HasPreview() || b.HasHighlited() || b.HasHighlitedPath() || b.HasAnythingMarked()) {
-    liquidGlassShader.bind();
-    Frame->HoleScreenVAO->bind();
-    FBOMain.unbind();
-    FBOMainSwap.bind();
-    GLCALL(glClear(GL_COLOR_BUFFER_BIT));
-    FBOMainSwap.unbind();
-  }
+  {
+    PROFILE_SCOPE("Render Liquid Glass");
 
-  if(b.HasAnythingMarked()) {
-    mainFBOActive().bind();
-    mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
-    FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
-    liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 0.0, 1.0});
-    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-    FBOBlurMarkedTexture.unbind();
-    mainFBOTexture().unbind();
-    mainFBOActive().unbind();
+    auto& liquidGlassShader = ShaderManager::GetShader(ShaderManager::LiquidGlass);
+    if (b.HasPreview() || b.HasHighlited() || b.HasHighlitedPath() || b.HasAnythingMarked()) {
+      liquidGlassShader.bind();
+      Frame->HoleScreenVAO->bind();
+      FBOMain.unbind();
+      FBOMainSwap.bind();
+      GLCALL(glClear(GL_COLOR_BUFFER_BIT));
+      FBOMainSwap.unbind();
+    }
+
+    if (b.HasAnythingMarked()) {
+      mainFBOActive().bind();
+      mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
+      FBOBlurMarkedTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+      liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 0.0, 1.0});
+      Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+      FBOBlurMarkedTexture.unbind();
+      mainFBOTexture().unbind();
+      mainFBOActive().unbind();
+      mainFBOSwap = !mainFBOSwap;
+    }
+
+    if (b.HasHighlited() || b.HasHighlitedPath()) {
+      mainFBOActive().bind();
+      mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
+      FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+      liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 1.0, 0.0});
+      Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+      FBOBlurHighlightTexture.unbind();
+      mainFBOTexture().unbind();
+      mainFBOActive().unbind();
+      mainFBOSwap = !mainFBOSwap;
+    }
+
+    if (!Requested && b.HasPreview()) {
+      mainFBOActive().bind();
+      mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
+      FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
+      liquidGlassShader.apply("UColor", Shader::Data3f{0.0, 1.0, 0.0});
+      Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
+      FBOBlurPreviewTexture.unbind();
+      mainFBOTexture().unbind();
+      mainFBOActive().unbind();
+      mainFBOSwap = !mainFBOSwap;
+    }
+
     mainFBOSwap = !mainFBOSwap;
-  }
-
-  if(b.HasHighlited() || b.HasHighlitedPath()) {
-    mainFBOActive().bind();
-    mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
-    FBOBlurHighlightTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
-    liquidGlassShader.apply("UColor", Shader::Data3f{1.0, 1.0, 0.0});
-    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-    FBOBlurHighlightTexture.unbind();
-    mainFBOTexture().unbind();
-    mainFBOActive().unbind();
-    mainFBOSwap = !mainFBOSwap;
-  }
-
-  if(b.HasPreview()) {
-    mainFBOActive().bind();
-    mainFBOTexture().bind(liquidGlassShader, "UTex", "", 1);
-    FBOBlurPreviewTexture.bind(liquidGlassShader, "UBluredBase", "", 0);
-    liquidGlassShader.apply("UColor", Shader::Data3f{0.0, 1.0, 0.0});
-    Frame->HoleScreenVAO->DrawAs(GL_TRIANGLE_STRIP);
-    FBOBlurPreviewTexture.unbind();
-    mainFBOTexture().unbind();
-    mainFBOActive().unbind();
-    mainFBOSwap = !mainFBOSwap;
-  }
-
-  mainFBOSwap = !mainFBOSwap;
-  if(b.HasPreview() || b.HasHighlited() || b.HasHighlitedPath() || b.HasAnythingMarked()) {
-    Frame->HoleScreenVAO->unbind();
-    liquidGlassShader.unbind();
-    mainFBOActive().bind();
+    if(b.HasPreview() || b.HasHighlited() || b.HasHighlitedPath() || b.HasAnythingMarked()) {
+      Frame->HoleScreenVAO->unbind();
+      liquidGlassShader.unbind();
+      mainFBOActive().bind();
+    }
   }
 
   if (!AreaSelectVerts.empty()) {
-
-    PROFILE_SCOPE("AreaSelect");
+    PROFILE_SCOPE("Render AreaSelect");
 
     assetShader.bind();
 
@@ -605,8 +597,7 @@ void Renderer::Render() {
 
 #ifdef ShowBasePositionOfBlocks
   if (!b.BasePositionVBO.empty()) {
-
-    PROFILE_SCOPE("BasePotitionOfBlocks");
+    PROFILE_SCOPE("Render BasePotitionOfBlocks");
 
     assetShader.bind();
 
@@ -621,6 +612,8 @@ void Renderer::Render() {
 
 #ifdef ShowBoundingBoxes
   if(!b.BBVBO.empty()){
+    PROFILE_SCOPE("Render Bounding Boxes");
+
     assetShader.bind();
 
     BBVAO.bind();
@@ -633,23 +626,30 @@ void Renderer::Render() {
 #endif
   
   mainFBOActive().unbind();
-  
-  if (!Frame->Canvas->BindContext()) {
-    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+
+  { 
+    PROFILE_SCOPE("Blit MainFBO to Backbuffer");
+
+    if (!Frame->Canvas->BindContext()) {
+      wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
+    }
+
+    mainFBOActive().bind(FrameBufferObject::Read);
+
+    GLCALL(glBlitFramebuffer(0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0,
+                             CanvasSize.x(), CanvasSize.y(), GL_COLOR_BUFFER_BIT,
+                             GL_NEAREST));
+
+    mainFBOActive().unbind();
   }
-
-  mainFBOActive().bind(FrameBufferObject::Read);
-
-  GLCALL(glBlitFramebuffer(0, 0, CanvasSize.x(), CanvasSize.y(), 0, 0,
-                           CanvasSize.x(), CanvasSize.y(), GL_COLOR_BUFFER_BIT,
-                           GL_NEAREST));
-
-  mainFBOActive().unbind();
+  
+  PROFILE_SCOPE("Swap Buffers");
 
   Frame->Canvas->SwapBuffers();
 }
 
 void Renderer::CheckZoomDots() {
+	PROFILE_FUNKTION;
 
   bool Update = false;
 
@@ -717,7 +717,7 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
               {GL_COLOR_ATTACHMENT0}),
       FBOMainColorSwapTexture(1, 1),
       FBOMainSwap({&FBOMainColorSwapTexture}, {GL_COLOR_ATTACHMENT0}),
-      FBOIDTexture(1, 1, nullptr,
+      FBOIDTexture1(1, 1, nullptr,
                    []() {
                      Texture::Descriptor desc;
                      desc.Format = GL_RED_INTEGER;
@@ -726,7 +726,27 @@ Renderer::Renderer(MyApp *App, MyFrame *Frame)
                      desc.Type = GL_UNSIGNED_INT;
                      return desc;
                    }()),
-      FBOID({&FBOIDTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
+      FBOID1({&FBOIDTexture1}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
+      FBOIDTexture2(1, 1, nullptr,
+                   []() {
+                     Texture::Descriptor desc;
+                     desc.Format = GL_RED_INTEGER;
+                     desc.Internal_Format = GL_R32UI;
+                     desc.Depth_Stencil_Texture_Mode = GL_STENCIL_INDEX;
+                     desc.Type = GL_UNSIGNED_INT;
+                     return desc;
+                   }()),
+      FBOID2({&FBOIDTexture2}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
+      FBOBBTexture(1, 1, nullptr,
+                   []() {
+                     Texture::Descriptor desc;
+                     desc.Format = GL_RED_INTEGER;
+                     desc.Internal_Format = GL_R32UI;
+                     desc.Depth_Stencil_Texture_Mode = GL_STENCIL_INDEX;
+                     desc.Type = GL_UNSIGNED_INT;
+                     return desc;
+                   }()),
+      FBOBB({&FBOBBTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurHighlightTexture(CreateBlurTexture()),
       FBOBlurHighlight({&FBOBlurHighlightTexture}, {GL_NONE, GL_COLOR_ATTACHMENT1}),
       FBOBlurPreviewTexture(CreateBlurTexture()),
@@ -791,7 +811,8 @@ void Renderer::UpdateSize() {
   FBOMainColorTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOMainColorSwapTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
-  FBOIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
+  FBOIDTexture1.Resize(CanvasSize.x(), CanvasSize.y());
+  FBOIDTexture2.Resize(CanvasSize.x(), CanvasSize.y());
 
   FBOBlurHighlightTexture.Resize(CanvasSize.x(), CanvasSize.y());
   FBOBlurPreviewTexture.Resize(CanvasSize.x(), CanvasSize.y());
@@ -808,6 +829,7 @@ BufferedVertexVec<AssetVertex> &Renderer::GetAreaSelectVerts() {
 }
 
 void Renderer::UpdateMouseIndex(const PointType &newMouseIndex) {
+  PROFILE_FUNKTION;
 
   if (!Frame->Canvas->BindContext()) {
     wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
@@ -829,30 +851,24 @@ void Renderer::UpdateMouseIndex(const PointType &newMouseIndex) {
 }
 
 unsigned int Renderer::GetHighlited(const Eigen::Vector2f &Mouse) {
+  PROFILE_FUNKTION;
 
-  if (!Frame->Canvas->BindContext()) {
-    wxMessageBox("Context should be bindable by now!", "Error", wxICON_ERROR);
-  }
+  PROFILE_SCOPE("Waiting for a single pixel read from Texture " + std::to_string(FBOIDTexture(IDMap1).TextureId));
 
-  RenderIDMap();
-
-  FBOID.bind();
+  FBOID(IDMap1).bind();
 
   GLCALL(glReadBuffer(GL_COLOR_ATTACHMENT1));
 
-  auto Size = Frame->Canvas->GetSize();
-
   GLuint i;
-  GLCALL(glReadPixels(Mouse.x(), Size.y - Mouse.y(), 1, 1, GL_RED_INTEGER,
+  GLCALL(glReadPixels(Mouse.x(), CanvasSize.y() - Mouse.y(), 1, 1, GL_RED_INTEGER,
                       GL_UNSIGNED_INT, &i));
-  FBOID.unbind();
+  FBOID(IDMap1).unbind();
 
   return i;
 }
 
 const std::array<MyRectF, 4> &
 Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
-  PROFILE_FUNKTION;
   auto it = BlockBoundingBoxes.find(cbdi);
   if (it != BlockBoundingBoxes.end())
     return it->second;
@@ -886,18 +902,18 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   PointType ViewportSize = {int(rectVertical.Size.x()) * 1.0 / Zoom,
                     int(rectVertical.Size.y()) * 1.0 / Zoom};
 
-  FBOIDTexture.Resize(ViewportSize.x(), ViewportSize.y());
+  FBOBBTexture.Resize(ViewportSize.x(), ViewportSize.y());
 
   CanvasSize = Eigen::Vector2f{ViewportSize.x(), ViewportSize.y()};
 
   UpdateViewProjectionMatrix(true);
 
-  FBOID.bind();
+  FBOBB.bind();
 
   GLCALL(glViewport(0, 0, ViewportSize.x(), ViewportSize.y()));
 
   GLuint clearint = 0;
-  GLCALL(glClearTexImage(FBOIDTexture.GetId(), 0, GL_RED_INTEGER,
+  GLCALL(glClearTexImage(FBOBBTexture.GetId(), 0, GL_RED_INTEGER,
                          GL_UNSIGNED_INT, &clearint));
 
   ColourType NoColor = {0.0, 0.0, 0.0, 1.0};
@@ -974,11 +990,9 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   AssetVAO.unbind();
   assetShader.unbind();
 
-  FBOID.unbind();
+  FBOBB.unbind();
 
-  FBOID.bind();
-
-  // GLCALL(glDrawBuffers(DrawBuffer1.size(), DrawBuffer1.data()));
+  FBOBB.bind();
 
   GLCALL(glReadBuffer(GL_COLOR_ATTACHMENT1));
 
@@ -988,8 +1002,7 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   GLCALL(glReadPixels(0, 0, ViewportSize.x(), ViewportSize.y(), GL_RED_INTEGER,
                       GL_UNSIGNED_INT, vec->data()));
 
-  // GLCALL(glDrawBuffers(DrawBuffer0.size(), DrawBuffer0.data()));
-  FBOID.unbind();
+  FBOBB.unbind();
 
   MyRectF rect = MyRectF::FromCorners({0, 0}, {1, 1});
   BlockBoundingBoxes[cbdi] = {rect, rect, rect, rect};
@@ -1072,15 +1085,11 @@ Renderer::GetBlockBoundingBoxes(const CompressedBlockDataIndex &cbdi) {
   ul_Funcs.unlock();
   BBUpdaterCV.notify_one();
 
-  IdMapDirty = true;
-
   Zoom = AltZoom;
   Offset = AltOffset;
   CanvasSize = AltCanvasSize;
 
   UpdateViewProjectionMatrix(true);
-
-  FBOIDTexture.Resize(CanvasSize.x(), CanvasSize.y());
 
   return BlockBoundingBoxes.at(cbdi);
 }
