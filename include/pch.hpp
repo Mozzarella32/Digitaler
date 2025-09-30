@@ -37,28 +37,15 @@
 #include <GL/glu.h>
 #endif
 
-#include <wx/artprov.h>
-#include <wx/dnd.h>
 #include <wx/filename.h>
-#include <wx/gbsizer.h>
-#include <wx/hyperlink.h>
-#include <wx/image.h>
-#include <wx/mstream.h>
-#include <wx/popupwin.h>
-#include <wx/spinctrl.h>
-#include <wx/splitter.h>
 #include <wx/stdpaths.h>
-#include <wx/sysopt.h>
-#include <wx/treectrl.h>
-#include <wx/wfstream.h>
-#include <wx/wrapsizer.h>
-#include <wx/wx.h>
-#include <wx/zipstrm.h>
-#include <wx/glcanvas.h>
+#include <wx/mstream.h>
+#include <wx/menu.h>
+#include <wx/slider.h>
+#include <wx/panel.h>
 
 #include <GLInitialiser.hpp>
 #include <Utility.hpp>
-// #include <MyWxWidgets/ElementLayerer.h>
 #include <GameLoopTimer.hpp>
 
 #include <Shader.hpp>
