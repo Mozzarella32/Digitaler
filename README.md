@@ -19,19 +19,20 @@ sudo pacman -S xorgproto libx11 libxext libxau libxmu libxt libxpm libxrender li
 
 ```
 ## Building and Downloading
+choose release or debug to configure then build to build with the configuration and then run to run the executable
 ### Linux
 ```bash
 git clone --recurse-submodules --shallow-submodules --jobs 8 https://github.com/Mozzarella32/Digitaler.git
 cd Digitaler
-make release
-make run
+make release build run
 ```
 ### Windows
+choose app/debug.bat or app/release.bat to automaticly configure build and start the executable
 ```bash
 git clone --recurse-submodules --shallow-submodules --jobs 8 https://github.com/Mozzarella32/Digitaler.git
 cd Digitaler
 cd app
-./buildandstart.bat
+./release.bat
 ```
 
 ## Running

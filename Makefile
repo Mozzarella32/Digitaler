@@ -2,22 +2,29 @@ BUILD_DIR := build
 TARGET_PATH := app/Digitaler
 LOG_PATH := app/Error.log
 
-.PHONY: all debug release clean run
+.PHONY: all debug release clean run build
 
 NUM_THREADS := $(shell nproc)
 
-all: debug
+GENERATOR ?=
 
-debug:
-	@mkdir -p $(BUILD_DIR)
-	-rm $(LOG_PATH)
-	cmake -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Debug
-	cmake --build $(BUILD_DIR) -j$(NUM_THREADS)
+ifeq ($(GENERATOR),)
+GENERATOR_FLAG :=
+else
+GENERATOR_FLAG := -G "$(GENERATOR)"
+endif
 
-release:
+all: release build run
+
+debug: clean
 	@mkdir -p $(BUILD_DIR)
-	-rm $(LOG_PATH)
-	cmake -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Release
+	cmake -S . -B $(BUILD_DIR) $(GENERATOR_FLAG) -DCMAKE_BUILD_TYPE=Debug
+
+release: clean
+	@mkdir -p $(BUILD_DIR)
+	cmake -S . -B $(BUILD_DIR) $(GENERATOR_FLAG) -DCMAKE_BUILD_TYPE=Release
+
+build:
 	cmake --build $(BUILD_DIR) -j$(NUM_THREADS)
 
 run:
