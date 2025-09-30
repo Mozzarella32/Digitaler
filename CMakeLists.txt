@@ -48,6 +48,9 @@ set(wxUSE_STD_STRING ON CACHE BOOL "" FORCE)
 set(wxUSE_STD_IOSTREAM ON CACHE BOOL "" FORCE)
 
 # set(wxUSE_INTL ON CACHE BOOL "" FORCE)
+
+set(wxUSE_CRASHREPORT OFF CACHE BOOL "" FORCE)
+# set(wxUSE_DIALUP_MANAGER OFF CACHE BOOL "" FORCE)
    
 set(wxUSE_ANY OFF CACHE BOOL "use wxAny class" FORCE)
 # set(wxUSE_APPLE_IEEE OFF CACHE BOOL "use the Apple IEEE codec" FORCE)
@@ -58,8 +61,8 @@ set(wxUSE_ON_FATAL_EXCEPTION OFF CACHE BOOL "catch signals in wxApp::OnFatalExce
 set(wxUSE_CMDLINE_PARSER OFF CACHE BOOL "use wxCmdLineParser class" FORCE)
 set(wxUSE_DATETIME OFF CACHE BOOL "use wxDateTime class" FORCE)
 set(wxUSE_DEBUGREPORT OFF CACHE BOOL "use wxDebugReport class" FORCE)
-set(wxUSE_DYNLIB_CLASS OFF CACHE BOOL "use wxDynamicLibrary class for DLL loading" FORCE)
-set(wxUSE_DYNAMIC_LOADER OFF CACHE BOOL "use wxPluginLibrary and wxPluginManager classes" FORCE)
+# set(wxUSE_DYNLIB_CLASS OFF CACHE BOOL "use wxDynamicLibrary class for DLL loading" FORCE)
+# set(wxUSE_DYNAMIC_LOADER OFF CACHE BOOL "use wxPluginLibrary and wxPluginManager classes" FORCE)
 set(wxUSE_EXCEPTIONS OFF CACHE BOOL "build exception-safe library" FORCE)
 # set(wxUSE_FFILE OFF CACHE BOOL "use wxFFile class" FORCE)
 # set(wxUSE_FILE OFF CACHE BOOL "use wxFile class" FORCE)
